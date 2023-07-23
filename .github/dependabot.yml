@@ -1,0 +1,20 @@
+version: 2
+
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "chore(gha)"
+    pull-request-branch-name:
+      separator: "/"
+
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "chore(gomod)"
+    pull-request-branch-name:
+      separator: "/"
