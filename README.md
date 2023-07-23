@@ -55,7 +55,7 @@ jlv file.json
 ### MacOS/Linux HomeBrew
 
 ```sh
-brew install hedhyw/main/json-log-viewer
+brew install hedhyw/main/jlv
 ```
 
 ### Go
