@@ -35,11 +35,11 @@
 {"time":"1970-01-01T00:00:00.00","level":"INFO","message": "Never mistake activity for achievement.","author": "John Wooden"}
 {"time":"1970-01-01T00:00:00.00","level":"INFO","message": "What worries you masters you.","author": "Haddon Robinson"}
 {"time":"1970-01-01T00:00:00.00","level":"INFO","message": "One faces the future with ones past.","author": "Pearl Buck"}
-{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "Goals are the fuel in the furnace of achievement.","author": "Brian Tracy"}
-{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "Who sows virtue reaps honour.","author": "Leonardo da Vinci"}
+{"time":"1970-01-01T00:00:00.00","level":"VERBOSE","message": "Goals are the fuel in the furnace of achievement.","author": "Brian Tracy"}
 {"time":"1970-01-01T00:00:00.00","level":"FATAL","message": "Be the chief but never the lord.","author": "Lao Tzu"}
 {"time":"1970-01-01T00:00:00.00","level":"PANIC","message": "Fate is in your hands and no one elses","author": "Byron Pulsifer"}
 {"time":"1970-01-01T00:00:00.00","level":"ERROR","message": "Genius is one percent inspiration and ninety-nine percent perspiration.","author": "Thomas Edison"}
+{"time":"1970-01-01T00:00:00.00","level":"WARN","message": "Who sows virtue reaps honour.","author": "Leonardo da Vinci"}
 {"time":"1970-01-01T00:00:00.00","level":"INFO","message": "You can observe a lot just by watching.","author": "Yogi Berra"}
 {"time":"1970-01-01T00:00:00.00","level":"DEBUG","message": "A house divided against itself cannot stand.","author": "Abraham Lincoln"}
 {"time":"1970-01-01T00:00:00.00","level":"TRACE","message": "Difficulties increase the nearer we get to the goal.","author": "Johann Wolfgang von Goethe"}

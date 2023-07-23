@@ -6,6 +6,8 @@ import (
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 )
 
+const cellIDLogLevel = 1
+
 func (m Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "esc":
@@ -44,12 +46,26 @@ func (m Model) handleWindowSizeMsg(msg tea.WindowSizeMsg) Model {
 }
 
 func (m Model) handleLogEntriesMsg(msg source.LogEntries) Model {
-	m.table.SetRows(msg.Rows())
-
 	if len(m.allLogEntries) == 0 {
 		m.allLogEntries = msg
+
+		tableStyles := getTableStyles()
+		tableStyles.RenderCell = func(value string, rowID, columnID int) string {
+			style := tableStyles.Cell
+
+			if columnID == cellIDLogLevel {
+				return removeClearSequence(
+					m.getLogLevelStyle(style, rowID).Render(value),
+				)
+			}
+
+			return style.Render(value)
+		}
+
+		m.table.SetStyles(tableStyles)
 	}
 
+	m.table.SetRows(msg.Rows())
 	m.filteredLogEntries = msg
 
 	return m
