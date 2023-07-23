@@ -18,11 +18,8 @@ func extractTime(value *fastjson.Value) string {
 
 func extractLevel(value *fastjson.Value) Level {
 	level := extractValue(value, "level", "lvl")
-	if level != "" {
-		return Level(strings.TrimSpace(strings.ToLower(level)))
-	}
 
-	return LevelUnknown
+	return ParseLevel(level)
 }
 
 func extractValue(value *fastjson.Value, keys ...string) string {
