@@ -19,7 +19,7 @@ build:
     - CGO_ENABLED=0
 
 gomod:
-  proxy: true
+  proxy: false
 
 archives:
   - name_template: "{{.Binary}}_{{.Os}}_{{.Arch}}"
