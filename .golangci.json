@@ -1,0 +1,45 @@
+{
+  "linters": {
+    "enable-all": true,
+    "disable": [
+      "lll",
+      "gochecknoglobals",
+      "bodyclose",
+      "wsl",
+      "funlen",
+      "maligned",
+      "exhaustivestruct",
+      "gci",
+      "wrapcheck",
+      "varnamelen",
+      "testpackage",
+      "exhaustive",
+      "gomnd",
+      "thelper",
+      "paralleltest",
+      "tagliatelle",
+      "scopelint",
+      "golint",
+      "interfacer",
+      "nonamedreturns",
+      "exhaustruct",
+      "nolintlint",
+      "deadcode",
+      "wastedassign",
+      "structcheck",
+      "varcheck",
+      "ifshort",
+      "nosnakecase",
+      "rowserrcheck",
+      "depguard",
+      "ireturn",
+      "gomoddirectives"
+    ]
+  },
+  "linters-settings": {
+    "goimports": {
+      "local-prefixes": "github.com/hedhyw/json-log-viewer/"
+    },
+    "revive": {}
+  }
+}
