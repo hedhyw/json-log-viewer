@@ -51,6 +51,8 @@ jlv file.json
 | Esc    | Back           |
 | ↑↓     | Navigation     |
 
+> \[↑\] Click Up on the first row to reload the file.
+
 ## Install
 
 ### MacOS/Linux HomeBrew
