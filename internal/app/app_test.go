@@ -1,10 +1,14 @@
 package app_test
 
 import (
+	"os"
+	"strings"
 	"testing"
+	"unicode/utf8"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/hedhyw/json-log-viewer/assets"
 	"github.com/hedhyw/json-log-viewer/internal/app"
@@ -119,26 +123,9 @@ func TestAppQuit(t *testing.T) {
 	})
 }
 
-func newTestModel(tb testing.TB, content []byte) app.Model {
-	tb.Helper()
-
-	testFile := tests.RequireCreateFile(tb, content)
-
-	appModel := app.NewModel(testFile)
-	cmd := appModel.Init()
-
-	appModel, _ = toAppModel(appModel.Update(cmd()))
-
-	return appModel
-}
-
-func toAppModel(teaModel tea.Model, cmd tea.Cmd) (app.Model, tea.Cmd) {
-	appModel, _ := teaModel.(app.Model)
-
-	return appModel, cmd
-}
-
 func TestAppViewFiltereRunes(t *testing.T) {
+	t.Parallel()
+
 	appModel := newTestModel(t, assets.ExampleJSONLog())
 
 	appModel, _ = toAppModel(appModel.Update(tea.KeyMsg{
@@ -159,4 +146,74 @@ func TestAppViewFiltereRunes(t *testing.T) {
 	}))
 	assert.NotEqual(t, tea.Quit(), cmd())
 	assert.True(t, appModel.IsFilterShown(), appModel.View())
+}
+
+func TestAppViewReload(t *testing.T) {
+	t.Parallel()
+
+	const expected = "included"
+
+	const (
+		jsonFile = `
+		{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "test2"}
+		{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "test1"}
+		`
+
+		jsonFileUpdated = `
+		{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "` + expected + `"}
+		` + jsonFile
+	)
+
+	appModel := newTestModel(t, []byte(jsonFile))
+
+	rendered := appModel.View()
+	assert.NotContains(t, rendered, expected)
+
+	err := os.WriteFile(appModel.File(), []byte(jsonFileUpdated), os.ModePerm)
+	require.NoError(t, err)
+
+	appModel, _ = toAppModel(appModel.Update(tea.KeyMsg{
+		Type: tea.KeyUp,
+	}))
+
+	rendered = appModel.View()
+	assert.NotContains(t, rendered, expected)
+}
+
+func TestAppViewResized(t *testing.T) {
+	t.Parallel()
+
+	appModel := newTestModel(t, assets.ExampleJSONLog())
+
+	windowSize := tea.WindowSizeMsg{
+		Width:  60,
+		Height: 10,
+	}
+
+	appModel, _ = toAppModel(appModel.Update(windowSize))
+
+	rendered := appModel.View()
+	lines := strings.Split(rendered, "\n")
+	if assert.NotEmpty(t, lines, rendered) {
+		assert.Less(t, utf8.RuneCountInString(lines[0]), windowSize.Width, rendered)
+	}
+}
+
+func newTestModel(tb testing.TB, content []byte) app.Model {
+	tb.Helper()
+
+	testFile := tests.RequireCreateFile(tb, content)
+
+	appModel := app.NewModel(testFile)
+	cmd := appModel.Init()
+
+	appModel, _ = toAppModel(appModel.Update(cmd()))
+
+	return appModel
+}
+
+func toAppModel(teaModel tea.Model, cmd tea.Cmd) (app.Model, tea.Cmd) {
+	appModel, _ := teaModel.(app.Model)
+
+	return appModel, cmd
 }

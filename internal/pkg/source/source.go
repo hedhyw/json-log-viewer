@@ -14,7 +14,7 @@ func LoadLogsFromFile(path string) func() tea.Msg {
 	return func() (msg tea.Msg) {
 		file, err := os.Open(path)
 		if err != nil {
-			return fmt.Errorf("opening: %w", err)
+			return fmt.Errorf("os: %w", err)
 		}
 
 		defer file.Close()
