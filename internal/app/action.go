@@ -31,7 +31,19 @@ func (m Model) quit() (Model, tea.Cmd) {
 	return m, tea.Quit
 }
 
+func (m Model) quitByRune() (tea.Model, tea.Cmd) {
+	if m.IsFilterShown() {
+		return nil, nil
+	}
+
+	return m, tea.Quit
+}
+
 func (m Model) showFilter() (tea.Model, tea.Cmd) {
+	if m.IsFilterShown() {
+		return nil, nil
+	}
+
 	if !m.IsTableShown() {
 		return nil, nil
 	}

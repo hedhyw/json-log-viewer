@@ -12,8 +12,10 @@ func (m Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "esc":
 		return m.back()
-	case "q", "ctrl+c":
+	case "ctrl+c":
 		return m.quit()
+	case "q":
+		return m.quitByRune()
 	case "enter":
 		return m.handleEnter()
 	case "f":
