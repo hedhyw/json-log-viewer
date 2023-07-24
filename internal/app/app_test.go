@@ -104,6 +104,19 @@ func TestAppQuit(t *testing.T) {
 			assert.Equal(t, tea.Quit(), cmd())
 		}
 	})
+
+	t.Run("q", func(t *testing.T) {
+		t.Parallel()
+
+		_, cmd := toAppModel(appModel.Update(tea.KeyMsg{
+			Type:  tea.KeyRunes,
+			Runes: []rune{'q'},
+		}))
+
+		if assert.NotNil(t, cmd) {
+			assert.Equal(t, tea.Quit(), cmd())
+		}
+	})
 }
 
 func newTestModel(tb testing.TB, content []byte) app.Model {
@@ -123,4 +136,27 @@ func toAppModel(teaModel tea.Model, cmd tea.Cmd) (app.Model, tea.Cmd) {
 	appModel, _ := teaModel.(app.Model)
 
 	return appModel, cmd
+}
+
+func TestAppViewFiltereRunes(t *testing.T) {
+	appModel := newTestModel(t, assets.ExampleJSONLog())
+
+	appModel, _ = toAppModel(appModel.Update(tea.KeyMsg{
+		Type:  tea.KeyRunes,
+		Runes: []rune{'f'},
+	}))
+	assert.True(t, appModel.IsFilterShown(), appModel.View())
+
+	appModel, cmd := toAppModel(appModel.Update(tea.KeyMsg{
+		Type:  tea.KeyRunes,
+		Runes: []rune{'q'},
+	}))
+	assert.NotEqual(t, tea.Quit(), cmd())
+
+	appModel, cmd = toAppModel(appModel.Update(tea.KeyMsg{
+		Type:  tea.KeyRunes,
+		Runes: []rune{'f'},
+	}))
+	assert.NotEqual(t, tea.Quit(), cmd())
+	assert.True(t, appModel.IsFilterShown(), appModel.View())
 }
