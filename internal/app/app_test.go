@@ -139,7 +139,7 @@ func toAppModel(teaModel tea.Model, cmd tea.Cmd) (app.Model, tea.Cmd) {
 }
 
 func TestAppViewFiltereRunes(t *testing.T) {
-	appModel := newTestModel(t, []byte(assets.ExampleJSONLog()))
+	appModel := newTestModel(t, assets.ExampleJSONLog())
 
 	appModel, _ = toAppModel(appModel.Update(tea.KeyMsg{
 		Type:  tea.KeyRunes,
