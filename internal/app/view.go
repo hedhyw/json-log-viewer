@@ -18,7 +18,7 @@ func (m Model) renderViews() string {
 	}
 
 	if m.IsErrorShown() {
-		return fmt.Sprintf("something went wrong: %s", m.err)
+		return fmt.Sprintf("Something went wrong: %s.", m.err)
 	}
 
 	var footer string

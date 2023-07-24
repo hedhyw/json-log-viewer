@@ -24,3 +24,8 @@ func (m Model) IsFilterShown() bool {
 func (m Model) IsFiltered() bool {
 	return len(m.allLogEntries) != len(m.filteredLogEntries)
 }
+
+// File returns the path to the current file.
+func (m Model) File() string {
+	return m.fileLogPath
+}

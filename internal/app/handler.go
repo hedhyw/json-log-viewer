@@ -9,6 +9,12 @@ import (
 const cellIDLogLevel = 1
 
 func (m Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	for _, key := range m.table.KeyMap.LineUp.Keys() {
+		if msg.String() == key {
+			return m.handleUp()
+		}
+	}
+
 	switch msg.String() {
 	case "esc":
 		return m.back()
@@ -26,6 +32,10 @@ func (m Model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) handleEnter() (tea.Model, tea.Cmd) {
+	if m.IsErrorShown() {
+		return m.quit()
+	}
+
 	if m.IsFilterShown() {
 		return m.applyFilter()
 	}
@@ -35,6 +45,16 @@ func (m Model) handleEnter() (tea.Model, tea.Cmd) {
 	}
 
 	return nil, nil
+}
+
+func (m Model) handleUp() (tea.Model, tea.Cmd) {
+	if m.table.Cursor() != 0 || !m.IsTableShown() || m.IsFiltered() {
+		return nil, nil
+	}
+
+	m.allLogEntries = nil
+
+	return m, m.Init()
 }
 
 func (m Model) handleWindowSizeMsg(msg tea.WindowSizeMsg) Model {
@@ -69,6 +89,7 @@ func (m Model) handleLogEntriesMsg(msg source.LogEntries) Model {
 
 	m.table.SetRows(msg.Rows())
 	m.filteredLogEntries = msg
+	m.table.UpdateViewport()
 
 	return m
 }
