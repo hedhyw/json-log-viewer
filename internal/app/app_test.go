@@ -233,3 +233,52 @@ func toAppModel(teaModel tea.Model, cmd tea.Cmd) (app.Model, tea.Cmd) {
 
 	return appModel, cmd
 }
+
+func TestAppViewFilterClear(t *testing.T) {
+	const termIncluded = "included"
+
+	const jsonFile = `
+	{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "` + termIncluded + `"}
+	`
+
+	appModel := newTestModel(t, []byte(jsonFile))
+
+	rendered := appModel.View()
+	assert.Contains(t, rendered, termIncluded)
+
+	// Open filter.
+	appModel, _ = toAppModel(appModel.Update(tea.KeyMsg{
+		Type:  tea.KeyRunes,
+		Runes: []rune{'f'},
+	}))
+	assert.True(t, appModel.IsFilterShown(), appModel.View())
+
+	// Filter to exclude everything.
+	appModel, _ = toAppModel(appModel.Update(tea.KeyMsg{
+		Type:  tea.KeyRunes,
+		Runes: []rune(termIncluded + "_not_found"),
+	}))
+	appModel, cmd := toAppModel(appModel.Update(tea.KeyMsg{
+		Type: tea.KeyEnter,
+	}))
+	assert.False(t, appModel.IsFilterShown(), appModel.View())
+
+	appModel, _ = toAppModel(appModel.Update(cmd()))
+
+	rendered = appModel.View()
+	assert.NotContains(t, rendered, termIncluded)
+
+	// Come back
+	appModel, cmd = toAppModel(appModel.Update(tea.KeyMsg{
+		Type: tea.KeyEsc,
+	}))
+	assert.False(t, appModel.IsFilterShown(), appModel.View())
+
+	appModel, _ = toAppModel(appModel.Update(cmd()))
+
+	// Assert.
+	if assert.False(t, appModel.IsFiltered()) {
+		rendered = appModel.View()
+		assert.Contains(t, rendered, termIncluded)
+	}
+}
