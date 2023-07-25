@@ -1,6 +1,7 @@
 package source_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,5 +34,19 @@ func TestLoadLogsFromFile(t *testing.T) {
 
 		_, ok := msg.(error)
 		assert.Truef(t, ok, "actual type: %T", msg)
+	})
+
+	t.Run("large_line", func(t *testing.T) {
+		t.Parallel()
+
+		longLine := strings.Repeat("1", 2*1024*1024)
+		testFile := tests.RequireCreateFile(t, []byte(longLine))
+
+		msg := source.LoadLogsFromFile(testFile)()
+
+		logEntries, ok := msg.(source.LogEntries)
+		if assert.Truef(t, ok, "actual type: %T", msg) {
+			assert.NotEmpty(t, logEntries)
+		}
 	})
 }
