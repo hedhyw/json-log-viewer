@@ -3,6 +3,8 @@ package source
 import (
 	"bytes"
 	"encoding/json"
+	"strings"
+	"unicode"
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/valyala/fastjson"
@@ -79,15 +81,29 @@ func ParseLogEntry(line json.RawMessage) LogEntry {
 		return LogEntry{
 			Line:    line,
 			Time:    "-",
-			Message: string(line),
+			Message: formatMessage(string(line)),
 			Level:   LevelUnknown,
 		}
 	}
 
 	return LogEntry{
 		Line:    line,
-		Time:    extractTime(value),
-		Message: extractMessage(value),
+		Time:    formatMessage(extractTime(value)),
+		Message: formatMessage(extractMessage(value)),
 		Level:   extractLevel(value),
 	}
+}
+
+func formatMessage(msg string) string {
+	msg = strings.NewReplacer("\n", "\\n", "\t", "\\t").Replace(msg)
+
+	msg = strings.Map(func(r rune) rune {
+		if unicode.IsPrint(r) {
+			return r
+		}
+
+		return -1
+	}, msg)
+
+	return msg
 }
