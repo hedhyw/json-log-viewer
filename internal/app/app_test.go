@@ -1,6 +1,7 @@
 package app_test
 
 import (
+	"errors"
 	"os"
 	"strings"
 	"testing"
@@ -197,6 +198,21 @@ func TestAppViewResized(t *testing.T) {
 	if assert.NotEmpty(t, lines, rendered) {
 		assert.Less(t, utf8.RuneCountInString(lines[0]), windowSize.Width, rendered)
 	}
+}
+
+func TestAppViewError(t *testing.T) {
+	t.Parallel()
+
+	appModel := newTestModel(t, assets.ExampleJSONLog())
+
+	// nolint: goerr113 // It is a test.
+	errMsg := errors.New("error description")
+
+	appModel, _ = toAppModel(appModel.Update(errMsg))
+	assert.True(t, appModel.IsErrorShown())
+
+	rendered := appModel.View()
+	assert.Contains(t, rendered, errMsg.Error())
 }
 
 func newTestModel(tb testing.TB, content []byte) app.Model {
