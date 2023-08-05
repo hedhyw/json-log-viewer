@@ -76,6 +76,14 @@ func TestParseLogEntry(t *testing.T) {
 			assert.Equal(t, "msg", logEntry.Message)
 		},
 	}, {
+		Name: "message_special_rune",
+		JSON: `{"message":"mes` + string(rune(1)) + `sage"}`,
+		Assert: func(tb testing.TB, logEntry source.LogEntry) {
+			tb.Helper()
+
+			assert.Equal(t, "message", logEntry.Message)
+		},
+	}, {
 		Name: "error",
 		JSON: `{"error":"error"}`,
 		Assert: func(tb testing.TB, logEntry source.LogEntry) {

@@ -10,7 +10,7 @@ import (
 func extractTime(value *fastjson.Value) string {
 	timeValue := extractValue(value, "timestamp", "time", "t")
 	if timeValue != "" {
-		return strings.TrimSpace(timeValue)
+		return formatMessage(strings.TrimSpace(timeValue))
 	}
 
 	return "-"
@@ -19,7 +19,7 @@ func extractTime(value *fastjson.Value) string {
 func extractLevel(value *fastjson.Value) Level {
 	level := extractValue(value, "level", "lvl")
 
-	return ParseLevel(level)
+	return ParseLevel(formatMessage(level))
 }
 
 func extractValue(value *fastjson.Value, keys ...string) string {
