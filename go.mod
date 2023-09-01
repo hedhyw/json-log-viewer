@@ -10,7 +10,7 @@ require (
 	github.com/antonmedv/fx v0.0.0-20230706101337-4fec4e492a52
 	github.com/charmbracelet/bubbles v0.16.1
 	github.com/charmbracelet/bubbletea v0.24.2
-	github.com/charmbracelet/lipgloss v0.7.1
+	github.com/charmbracelet/lipgloss v0.8.0
 	github.com/muesli/reflow v0.3.0
 	github.com/stretchr/testify v1.8.4
 	github.com/valyala/fastjson v1.6.4
