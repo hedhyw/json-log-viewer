@@ -8,7 +8,7 @@ import (
 )
 
 func extractTime(value *fastjson.Value) string {
-	timeValue := extractValue(value, "timestamp", "time", "t")
+	timeValue := extractValue(value, "timestamp", "time", "t", "ts")
 	if timeValue != "" {
 		return formatMessage(strings.TrimSpace(timeValue))
 	}
