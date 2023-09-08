@@ -44,6 +44,14 @@ func TestParseLogEntry(t *testing.T) {
 			assert.Equal(t, "1", logEntry.Time)
 		},
 	}, {
+		Name: "ts_number",
+		JSON: `{"ts":1}`,
+		Assert: func(tb testing.TB, logEntry source.LogEntry) {
+			tb.Helper()
+
+			assert.Equal(t, "1", logEntry.Time)
+		},
+	}, {
 		Name: "time_text",
 		JSON: `{"time":"1970-01-01T00:00:00.00"}`,
 		Assert: func(tb testing.TB, logEntry source.LogEntry) {
@@ -54,6 +62,14 @@ func TestParseLogEntry(t *testing.T) {
 	}, {
 		Name: "timestamp_text",
 		JSON: `{"timestamp":"1970-01-01T00:00:00.00"}`,
+		Assert: func(tb testing.TB, logEntry source.LogEntry) {
+			tb.Helper()
+
+			assert.Equal(t, "1970-01-01T00:00:00.00", logEntry.Time)
+		},
+	}, {
+		Name: "ts_text",
+		JSON: `{"ts":"1970-01-01T00:00:00.00"}`,
 		Assert: func(tb testing.TB, logEntry source.LogEntry) {
 			tb.Helper()
 
