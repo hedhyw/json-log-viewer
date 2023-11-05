@@ -27,7 +27,7 @@ type FieldKind string
 // Possible kinds.
 const (
 	FieldKindTime        FieldKind = "time"
-	FiledKindNumericTime FieldKind = "numerictme"
+	FieldKindNumericTime FieldKind = "numerictme"
 	FieldKindSecondTime  FieldKind = "secondtme"
 	FieldKindMilliTime   FieldKind = "millitme"
 	FieldKindMicroTime   FieldKind = "microtme"

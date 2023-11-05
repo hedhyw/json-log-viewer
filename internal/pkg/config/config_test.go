@@ -209,6 +209,30 @@ func TestValidateField(t *testing.T) {
 		},
 		IsValid: true,
 	}, {
+		Name: "kind_numeric_time",
+		Apply: func(value *config.Field) {
+			value.Kind = config.FieldKindNumericTime
+		},
+		IsValid: true,
+	}, {
+		Name: "kind_second_time",
+		Apply: func(value *config.Field) {
+			value.Kind = config.FieldKindSecondTime
+		},
+		IsValid: true,
+	}, {
+		Name: "kind_milli_time",
+		Apply: func(value *config.Field) {
+			value.Kind = config.FieldKindMilliTime
+		},
+		IsValid: true,
+	}, {
+		Name: "kind_micro_time",
+		Apply: func(value *config.Field) {
+			value.Kind = config.FieldKindMicroTime
+		},
+		IsValid: true,
+	}, {
 		Name: "unset_kind",
 		Apply: func(value *config.Field) {
 			value.Kind = ""
