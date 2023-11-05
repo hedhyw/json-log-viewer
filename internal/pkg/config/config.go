@@ -39,7 +39,7 @@ const (
 // Field customization.
 type Field struct {
 	Title      string    `json:"title" validate:"required,min=1,max=32"`
-	Kind       FieldKind `json:"kind" validate:"required,oneof=time numerictme secondtme millitme microtme level any"`
+	Kind       FieldKind `json:"kind" validate:"required,oneof=time message numerictme secondtme millitme microtme level any"`
 	References []string  `json:"ref" validate:"min=1,dive,required"`
 	Width      int       `json:"width" validate:"min=0"`
 }
