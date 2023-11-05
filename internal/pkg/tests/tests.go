@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"encoding/json"
 	"os"
 	"testing"
 
@@ -25,4 +26,14 @@ func RequireCreateFile(tb testing.TB, content []byte) string {
 	tb.Cleanup(func() { assert.NoError(tb, os.Remove(name)) })
 
 	return name
+}
+
+// RequireEncodeJSON marshals value to JSON.
+func RequireEncodeJSON(tb testing.TB, value any) []byte {
+	tb.Helper()
+
+	content, err := json.Marshal(value)
+	require.NoError(tb, err)
+
+	return content
 }

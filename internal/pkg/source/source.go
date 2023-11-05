@@ -8,6 +8,8 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
+
+	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 )
 
 const (
@@ -17,7 +19,10 @@ const (
 )
 
 // LoadLogsFromFile loads json log entries from file.
-func LoadLogsFromFile(path string) func() tea.Msg {
+func LoadLogsFromFile(
+	path string,
+	cfg *config.Config,
+) func() tea.Msg {
 	return func() (msg tea.Msg) {
 		file, err := os.Open(path)
 		if err != nil {
@@ -26,7 +31,7 @@ func LoadLogsFromFile(path string) func() tea.Msg {
 
 		defer file.Close()
 
-		logEntries, err := parseLogEntriesFromReader(file)
+		logEntries, err := parseLogEntriesFromReader(file, cfg)
 		if err != nil {
 			return fmt.Errorf("parsing from reader: %w", err)
 		}
@@ -35,7 +40,10 @@ func LoadLogsFromFile(path string) func() tea.Msg {
 	}
 }
 
-func parseLogEntriesFromReader(reader io.Reader) (LogEntries, error) {
+func parseLogEntriesFromReader(
+	reader io.Reader,
+	cfg *config.Config,
+) (LogEntries, error) {
 	bufReader := bufio.NewReaderSize(reader, maxLineSize)
 	logEntries := make(LogEntries, 0, logEntriesEstimateNumber)
 
@@ -50,7 +58,7 @@ func parseLogEntriesFromReader(reader io.Reader) (LogEntries, error) {
 		}
 
 		if len(bytes.TrimSpace(line)) > 0 {
-			logEntries = append(logEntries, ParseLogEntry(line))
+			logEntries = append(logEntries, ParseLogEntry(line, cfg))
 		}
 	}
 

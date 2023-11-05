@@ -61,7 +61,7 @@ func (m Model) handleWindowSizeMsg(msg tea.WindowSizeMsg) Model {
 	x, y := m.baseStyle.GetFrameSize()
 	m.table.SetWidth(msg.Width - x*2)
 	m.table.SetHeight(msg.Height - y*2 - footerSize)
-	m.table.SetColumns(getColumns(m.table.Width() - 10))
+	m.table.SetColumns(getColumns(m.table.Width()-10, m.config))
 	m.lastWindowSize = msg
 
 	return m
