@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -80,6 +81,10 @@ func parseField(parsedLine any, field config.Field) string {
 
 		unquotedField, err := strconv.Unquote(string(jsonField))
 		if err != nil {
+			/*
+				maybe this should be
+					return formatField(string(jsonField), field.Kind)
+			*/
 			return string(jsonField)
 		}
 
@@ -102,6 +107,8 @@ func formatField(
 		return string(ParseLevel(formatMessage(value)))
 	case config.FieldKindTime:
 		return formatMessage(value)
+	case config.FieldKindSecondTime:
+		return formatMessage(formatSecondTime(value))
 	case config.FieldKindAny:
 		return formatMessage(value)
 	default:
@@ -165,4 +172,24 @@ func formatMessage(msg string) string {
 	}, msg)
 
 	return msg
+}
+
+func formatSecondTime(timeStr string) string {
+	// This could be seconds or it could be a float
+	milliseconds, err := strconv.ParseFloat(timeStr, 64)
+	if err != nil {
+		return timeStr
+	}
+
+	seconds := int64(milliseconds / 1000)
+
+	nanoseconds := int64((milliseconds - float64(seconds*1000)) * 1e6) // leftover milliseconds to nanoseconds
+
+	time := time.Unix(seconds, nanoseconds)
+
+	return toRfc3339(time)
+}
+
+func toRfc3339(t time.Time) string {
+	return t.Format(time.RFC3339)
 }
