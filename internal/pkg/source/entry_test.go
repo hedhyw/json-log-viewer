@@ -5,123 +5,160 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseLogEntry(t *testing.T) {
+func TestParseLogEntryDefault(t *testing.T) {
 	t.Parallel()
 
 	testCases := [...]struct {
 		Name   string
 		JSON   string
-		Assert func(tb testing.TB, logEntry source.LogEntry)
+		Assert func(tb testing.TB, fieldKindToValue map[config.FieldKind]string)
 	}{{
 		Name: "plain_log",
 		JSON: "Hello World",
-		Assert: func(tb testing.TB, logEntry source.LogEntry) {
+		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "Hello World", logEntry.Message)
-			assert.Equal(t, source.LevelUnknown, logEntry.Level)
-			assert.Equal(t, "-", logEntry.Time)
+			assert.Equal(t, "Hello World", fieldKindToValue[config.FieldKindMessage], fieldKindToValue)
+			assert.Equal(t, "-", fieldKindToValue[config.FieldKindLevel], fieldKindToValue)
+			assert.Equal(t, "-", fieldKindToValue[config.FieldKindTime], fieldKindToValue)
 		},
 	}, {
 		Name: "time_number",
 		JSON: `{"time":1}`,
-		Assert: func(tb testing.TB, logEntry source.LogEntry) {
+		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "1", logEntry.Time)
+			assert.Equal(t, "1", fieldKindToValue[config.FieldKindTime], fieldKindToValue)
 		},
 	}, {
 		Name: "timestamp_number",
 		JSON: `{"timestamp":1}`,
-		Assert: func(tb testing.TB, logEntry source.LogEntry) {
+		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "1", logEntry.Time)
+			assert.Equal(t, "1", fieldKindToValue[config.FieldKindTime], fieldKindToValue)
 		},
 	}, {
 		Name: "ts_number",
 		JSON: `{"ts":1}`,
-		Assert: func(tb testing.TB, logEntry source.LogEntry) {
+		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "1", logEntry.Time)
+			assert.Equal(t, "1", fieldKindToValue[config.FieldKindTime], fieldKindToValue)
 		},
 	}, {
 		Name: "time_text",
 		JSON: `{"time":"1970-01-01T00:00:00.00"}`,
-		Assert: func(tb testing.TB, logEntry source.LogEntry) {
+		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "1970-01-01T00:00:00.00", logEntry.Time)
+			assert.Equal(t,
+				"1970-01-01T00:00:00.00",
+				fieldKindToValue[config.FieldKindTime],
+				fieldKindToValue,
+			)
 		},
 	}, {
 		Name: "timestamp_text",
 		JSON: `{"timestamp":"1970-01-01T00:00:00.00"}`,
-		Assert: func(tb testing.TB, logEntry source.LogEntry) {
+		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "1970-01-01T00:00:00.00", logEntry.Time)
+			assert.Equal(t,
+				"1970-01-01T00:00:00.00",
+				fieldKindToValue[config.FieldKindTime],
+				fieldKindToValue,
+			)
 		},
 	}, {
 		Name: "ts_text",
 		JSON: `{"ts":"1970-01-01T00:00:00.00"}`,
-		Assert: func(tb testing.TB, logEntry source.LogEntry) {
+		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "1970-01-01T00:00:00.00", logEntry.Time)
+			assert.Equal(t,
+				"1970-01-01T00:00:00.00",
+				fieldKindToValue[config.FieldKindTime],
+				fieldKindToValue,
+			)
 		},
 	}, {
 		Name: "message",
 		JSON: `{"message":"message"}`,
-		Assert: func(tb testing.TB, logEntry source.LogEntry) {
+		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "message", logEntry.Message)
+			assert.Equal(t,
+				"message",
+				fieldKindToValue[config.FieldKindMessage],
+				fieldKindToValue,
+			)
 		},
 	}, {
 		Name: "msg",
 		JSON: `{"msg":"msg"}`,
-		Assert: func(tb testing.TB, logEntry source.LogEntry) {
+		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "msg", logEntry.Message)
+			assert.Equal(t,
+				"msg",
+				fieldKindToValue[config.FieldKindMessage],
+				fieldKindToValue,
+			)
 		},
 	}, {
 		Name: "message_special_rune",
 		JSON: `{"message":"mes` + string(rune(1)) + `sage"}`,
-		Assert: func(tb testing.TB, logEntry source.LogEntry) {
+		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "message", logEntry.Message)
+			assert.Equal(t,
+				"message",
+				fieldKindToValue[config.FieldKindMessage],
+				fieldKindToValue,
+			)
 		},
 	}, {
 		Name: "error",
 		JSON: `{"error":"error"}`,
-		Assert: func(tb testing.TB, logEntry source.LogEntry) {
+		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "error", logEntry.Message)
+			assert.Equal(t,
+				"error",
+				fieldKindToValue[config.FieldKindMessage],
+				fieldKindToValue,
+			)
 		},
 	}, {
 		Name: "err",
 		JSON: `{"err":"err"}`,
-		Assert: func(tb testing.TB, logEntry source.LogEntry) {
+		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "err", logEntry.Message)
+			assert.Equal(t,
+				"err",
+				fieldKindToValue[config.FieldKindMessage],
+				fieldKindToValue,
+			)
 		},
 	}, {
 		Name: "level",
 		JSON: `{"level":"INFO"}`,
-		Assert: func(tb testing.TB, logEntry source.LogEntry) {
+		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "info", logEntry.Level.String())
+			assert.Equal(t,
+				"info",
+				fieldKindToValue[config.FieldKindLevel],
+				fieldKindToValue,
+			)
 		},
 	}}
 
@@ -131,8 +168,11 @@ func TestParseLogEntry(t *testing.T) {
 		t.Run(testCase.Name, func(t *testing.T) {
 			t.Parallel()
 
-			actual := source.ParseLogEntry(json.RawMessage(testCase.JSON))
-			testCase.Assert(t, actual)
+			cfg := config.GetDefaultConfig()
+
+			actual := source.ParseLogEntry(json.RawMessage(testCase.JSON), cfg)
+
+			testCase.Assert(t, getFieldKindToValue(cfg, actual.Fields))
 		})
 	}
 }
@@ -143,11 +183,7 @@ func TestLogEntryRow(t *testing.T) {
 	entry := getFakeLogEntry()
 	row := entry.Row()
 
-	if assert.Len(t, row, 3) {
-		assert.Equal(t, entry.Time, row[0])
-		assert.Equal(t, string(entry.Level), row[1])
-		assert.Equal(t, entry.Message, row[2])
-	}
+	assert.Equal(t, []string(row), entry.Fields)
 }
 
 func TestLogEntriesRows(t *testing.T) {
@@ -209,10 +245,12 @@ func TestLogEntriesReverse(t *testing.T) {
 
 func getFakeLogEntry() source.LogEntry {
 	return source.LogEntry{
-		Time:    "time",
-		Level:   source.LevelUnknown,
-		Message: "message",
-		Line:    []byte(`{"hello":"world"}`),
+		Fields: []string{
+			"time",
+			source.LevelUnknown.String(),
+			"message",
+		},
+		Line: []byte(`{"hello":"world"}`),
 	}
 }
 
@@ -222,7 +260,7 @@ func TestLogEntriesFilter(t *testing.T) {
 	term := "special MESSAGE to search by in the test: " + t.Name()
 
 	logEntry := getFakeLogEntry()
-	logEntry.Message = term
+	logEntry.Fields = append(logEntry.Fields, term)
 	logEntry.Line = json.RawMessage(`{"message": "` + term + `"}`)
 
 	logEntries := source.LogEntries{
@@ -261,4 +299,14 @@ func TestLogEntriesFilter(t *testing.T) {
 		filtered := logEntries.Filter(term + " - not found!")
 		assert.Empty(t, filtered)
 	})
+}
+
+func getFieldKindToValue(cfg *config.Config, entries []string) map[config.FieldKind]string {
+	fieldKindToValue := make(map[config.FieldKind]string, len(entries))
+
+	for i, f := range cfg.Fields {
+		fieldKindToValue[f.Kind] = entries[i]
+	}
+
+	return fieldKindToValue
 }

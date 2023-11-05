@@ -13,6 +13,7 @@ import (
 
 	"github.com/hedhyw/json-log-viewer/assets"
 	"github.com/hedhyw/json-log-viewer/internal/app"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/tests"
 )
 
@@ -220,7 +221,7 @@ func newTestModel(tb testing.TB, content []byte) app.Model {
 
 	testFile := tests.RequireCreateFile(tb, content)
 
-	appModel := app.NewModel(testFile)
+	appModel := app.NewModel(testFile, config.GetDefaultConfig())
 	cmd := appModel.Init()
 
 	appModel, _ = toAppModel(appModel.Update(cmd()))

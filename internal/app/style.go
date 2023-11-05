@@ -4,6 +4,7 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/lipgloss"
 
+	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 )
 
@@ -46,7 +47,7 @@ func (m Model) getLogLevelStyle(baseStyle lipgloss.Style, rowID int) lipgloss.St
 		return baseStyle
 	}
 
-	color := getColorForLogLevel(m.filteredLogEntries[rowID].Level)
+	color := getColorForLogLevel(m.getLogLevelFromLogEntry(m.filteredLogEntries[rowID]))
 	if color == "" {
 		return baseStyle
 	}
@@ -71,4 +72,8 @@ func getColorForLogLevel(level source.Level) lipgloss.Color {
 	default:
 		return ""
 	}
+}
+
+func (m Model) getLogLevelFromLogEntry(logEntry source.LogEntry) source.Level {
+	return source.Level(getFieldByKind(m.config, config.FieldKindLevel, logEntry))
 }

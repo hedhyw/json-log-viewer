@@ -33,6 +33,7 @@ The application is designed to help in visualization, navigation, and analyzing 
         - [Package](#package)
         - [Standalone Binary](#standalone-binary)
         - [Source](#source)
+    - [Customization](#customization)
     - [Resources](#resources)
     - [Contribution](#contribution)
     - [License](#license)
@@ -87,6 +88,69 @@ cp ./bin/jlv /usr/local/bin
 chmod +x /usr/local/bin/jlv
 
 # jlv application.log
+```
+
+## Customization
+
+The application will look for the config `.jlv.jsonc` in the working directory or in the home directory:
+- `$PWD/.jlv.jsonc`;
+- `$HOME/.jlv.jsonc`.
+
+The Json path supports the described in [yalp/jsonpath](https://github.com/yalp/jsonpath#jsonpath-quick-intro) syntax.
+
+Example configuration:
+```json
+{
+    // Comments are allowed.
+    "fields": [
+        {
+            "title": "Time", // Max length is 32.
+            // Kind affects rendering. There are:
+            // * time;
+            // * level;
+            // * message;
+            // * any.
+            "kind": "time",
+            "ref": [
+                // The application will display the first matched value.
+                "$.timestamp",
+                "$.time",
+                "$.t",
+                "$.ts"
+            ],
+            "width": 30
+        },
+        {
+            "title": "Level",
+            "kind": "level",
+            "ref": [
+                "$.level",
+                "$.lvl",
+                "$.l"
+            ],
+            "width": 10
+        },
+        {
+            "title": "Message",
+            "kind": "message",
+            "ref": [
+                "$.message",
+                "$.msg",
+                "$.error",
+                "$.err"
+            ],
+            "width": 0 // The width will be calculated automatically.
+        },
+        {
+            "title": "Custom",
+            "kind": "any",
+            "ref": [
+                "$.custom"
+            ],
+            "width": 0
+        }
+    ]
+}
 ```
 
 ## Resources

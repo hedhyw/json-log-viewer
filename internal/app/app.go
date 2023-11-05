@@ -6,11 +6,14 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
+	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 )
 
 // Model of the application.
 type Model struct {
+	config *config.Config
+
 	baseStyle   lipgloss.Style
 	footerStyle lipgloss.Style
 
@@ -32,9 +35,9 @@ type Model struct {
 
 // NewModel initializes a new application model. It accept the path
 // to the file with logs.
-func NewModel(path string) Model {
+func NewModel(path string, cfg *config.Config) Model {
 	tableLogs := table.New(
-		table.WithColumns(getColumns(100)),
+		table.WithColumns(getColumns(100, cfg)),
 		table.WithFocused(true),
 		table.WithHeight(7),
 	)
@@ -42,6 +45,8 @@ func NewModel(path string) Model {
 	tableLogs.SetStyles(getTableStyles())
 
 	return Model{
+		config: cfg,
+
 		baseStyle:   getBaseStyle(),
 		footerStyle: getFooterStyle(),
 
@@ -62,7 +67,7 @@ func NewModel(path string) Model {
 
 // Init implements team.Model interface.
 func (m Model) Init() tea.Cmd {
-	return source.LoadLogsFromFile(m.fileLogPath)
+	return source.LoadLogsFromFile(m.fileLogPath, m.config)
 }
 
 // Update implements team.Model interface.

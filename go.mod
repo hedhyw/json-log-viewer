@@ -1,6 +1,6 @@
 module github.com/hedhyw/json-log-viewer
 
-go 1.20
+go 1.21
 
 replace github.com/antonmedv/fx => github.com/hedhyw/fx v0.0.1
 
@@ -11,9 +11,11 @@ require (
 	github.com/charmbracelet/bubbles v0.16.1
 	github.com/charmbracelet/bubbletea v0.24.2
 	github.com/charmbracelet/lipgloss v0.7.1
+	github.com/go-playground/validator/v10 v10.16.0
+	github.com/hedhyw/jsoncjson v1.1.0
 	github.com/muesli/reflow v0.3.0
 	github.com/stretchr/testify v1.8.4
-	github.com/valyala/fastjson v1.6.4
+	github.com/yalp/jsonpath v0.0.0-20180802001716-5cc68e5049a0
 )
 
 require (
@@ -21,7 +23,11 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
+	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
@@ -33,6 +39,8 @@ require (
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
+	golang.org/x/crypto v0.7.0 // indirect
+	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/term v0.10.0 // indirect

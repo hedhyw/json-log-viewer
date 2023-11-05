@@ -1,4 +1,4 @@
-GOLANG_CI_LINT_VER:=v1.53.3
+GOLANG_CI_LINT_VER:=v1.55.2
 OUT_BIN?=${PWD}/bin/jlv
 COVER_PACKAGES=./...
 VERSION?=${shell git describe --tags}

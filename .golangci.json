@@ -33,7 +33,9 @@
       "rowserrcheck",
       "depguard",
       "ireturn",
-      "gomoddirectives"
+      "gomoddirectives",
+      "tagalign",
+      "testifylint"
     ]
   },
   "linters-settings": {
