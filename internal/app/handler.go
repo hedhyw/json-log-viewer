@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
@@ -58,9 +59,11 @@ func (m Model) handleUp() (tea.Model, tea.Cmd) {
 }
 
 func (m Model) handleWindowSizeMsg(msg tea.WindowSizeMsg) Model {
+	const heightOffset = 4
+
 	x, y := m.baseStyle.GetFrameSize()
 	m.table.SetWidth(msg.Width - x*2)
-	m.table.SetHeight(msg.Height - y*2 - footerSize)
+	m.table.SetHeight(msg.Height - y*2 - footerSize - heightOffset)
 	m.table.SetColumns(getColumns(m.table.Width()-10, m.config))
 	m.lastWindowSize = msg
 
@@ -76,12 +79,12 @@ func (m Model) handleLogEntriesMsg(msg source.LogEntries) Model {
 	m.filteredLogEntries = msg
 
 	tableStyles := getTableStyles()
-	tableStyles.RenderCell = func(value string, rowID, columnID int) string {
+	tableStyles.RenderCell = func(model table.Model, value string, position table.CellPosition) string {
 		style := tableStyles.Cell
 
-		if columnID == cellIDLogLevel {
+		if position.Column == cellIDLogLevel {
 			return removeClearSequence(
-				m.getLogLevelStyle(style, rowID).Render(value),
+				m.getLogLevelStyle(style, position.RowID).Render(value),
 			)
 		}
 

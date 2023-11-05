@@ -4,13 +4,13 @@ go 1.21
 
 replace github.com/antonmedv/fx => github.com/hedhyw/fx v0.0.2
 
-replace github.com/charmbracelet/bubbles => github.com/hedhyw/bubbles v0.0.2
+replace github.com/charmbracelet/bubbles => github.com/hedhyw/bubbles v0.0.4
 
 require (
 	github.com/antonmedv/fx v0.0.0-20230706101337-4fec4e492a52
 	github.com/charmbracelet/bubbles v0.16.1
 	github.com/charmbracelet/bubbletea v0.24.2
-	github.com/charmbracelet/lipgloss v0.8.0
+	github.com/charmbracelet/lipgloss v0.9.1
 	github.com/go-playground/validator/v10 v10.16.0
 	github.com/hedhyw/jsoncjson v1.1.0
 	github.com/muesli/reflow v0.3.0
@@ -41,7 +41,7 @@ require (
 	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/term v0.10.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
