@@ -99,7 +99,7 @@ The application will look for the config `.jlv.jsonc` in the working directory o
 The Json path supports the described in [yalp/jsonpath](https://github.com/yalp/jsonpath#jsonpath-quick-intro) syntax.
 
 Example configuration:
-```json
+```jsonc
 {
     // Comments are allowed.
     "fields": [
