@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -80,12 +81,11 @@ func parseField(parsedLine any, field config.Field) string {
 		}
 
 		unquotedField, err := strconv.Unquote(string(jsonField))
-		if err != nil {
-			/*
-				maybe this should be
-					return formatField(string(jsonField), field.Kind)
-			*/
-			return string(jsonField)
+		// It's possible that what were were given is an integer or float
+		// in which case, calling Unquote isn't doing us a lot of good.
+		// Therefore, we just convert to a string value and proceed.
+		if err == strconv.ErrSyntax {
+			unquotedField = string(jsonField)
 		}
 
 		return formatField(unquotedField, field.Kind)
@@ -186,6 +186,10 @@ func formatSecondTime(timeStr string) string {
 	nanoseconds := int64((milliseconds - float64(seconds*1000)) * 1e6) // leftover milliseconds to nanoseconds
 
 	time := time.Unix(seconds, nanoseconds)
+	log.Println("input: " + timeStr)
+	log.Println("seconds: " + fmt.Sprint(seconds))
+	log.Println("milliseconds: " + fmt.Sprint(milliseconds))
+	log.Println("Nanoseconds: " + fmt.Sprint(nanoseconds))
 
 	return toRfc3339(time)
 }
