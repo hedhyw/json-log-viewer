@@ -109,6 +109,8 @@ func formatField(
 		return formatMessage(value)
 	case config.FieldKindSecondTime:
 		return formatMessage(formatSecondTime(value))
+	case config.FieldKindMilliTime:
+		return formatMessage(formatMillisecondTime(value))
 	case config.FieldKindAny:
 		return formatMessage(value)
 	default:
@@ -175,6 +177,29 @@ func formatMessage(msg string) string {
 }
 
 func formatSecondTime(timeStr string) string {
+	// Parse the string to float64
+	seconds, err := strconv.ParseFloat(timeStr, 64)
+	if err != nil {
+		log.Println("error parsing floating: " + err.Error())
+		panic("Could not parse float")
+	}
+
+	// Separate the seconds into integer and fractional parts
+	secInt := int64(seconds)
+	secFrac := seconds - float64(secInt)
+
+	// Convert fractional seconds to nanoseconds
+	nanoSec := int64(secFrac * float64(time.Second))
+
+	time := time.Unix(secInt, nanoSec)
+	log.Println("input: " + timeStr)
+	log.Println("seconds: " + fmt.Sprint(seconds))
+	log.Println("nanoSec: " + fmt.Sprint(nanoSec))
+
+	return toRfc3339(time)
+}
+
+func formatMillisecondTime(timeStr string) string {
 	// This could be seconds or it could be a float
 	milliseconds, err := strconv.ParseFloat(timeStr, 64)
 	if err != nil {
