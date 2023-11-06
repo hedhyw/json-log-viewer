@@ -50,7 +50,7 @@ func GetDefaultConfig() *Config {
 		Path: "default",
 		Fields: []Field{{
 			Title:      "Time",
-			Kind:       FieldKindSecondTime,
+			Kind:       FieldKindTime,
 			References: []string{"$.timestamp", "$.time", "$.t", "$.ts"},
 			Width:      30,
 		}, {

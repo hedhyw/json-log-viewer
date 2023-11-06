@@ -108,9 +108,11 @@ func formatField(
 	case config.FieldKindTime:
 		return formatMessage(value)
 	case config.FieldKindSecondTime:
-		return formatMessage(formatSecondTime(value))
+		return formatMessage(formatTimeString(value, "s"))
 	case config.FieldKindMilliTime:
-		return formatMessage(formatMillisecondTime(value))
+		return formatMessage(formatTimeString(value, "ms"))
+	case config.FieldKindMicroTime:
+		return formatMessage(formatTimeString(value, "us"))
 	case config.FieldKindAny:
 		return formatMessage(value)
 	default:
@@ -176,49 +178,17 @@ func formatMessage(msg string) string {
 	return msg
 }
 
-func formatSecondTime(timeStr string) string {
-	// Parse the string to float64
-	seconds, err := strconv.ParseFloat(timeStr, 64)
+func formatTimeString(timeStr string, unit string) string {
+	duration, err := time.ParseDuration(timeStr + unit)
 	if err != nil {
-		log.Println("error parsing floating: " + err.Error())
-		panic("Could not parse float")
-	}
-
-	// Separate the seconds into integer and fractional parts
-	secInt := int64(seconds)
-	secFrac := seconds - float64(secInt)
-
-	// Convert fractional seconds to nanoseconds
-	nanoSec := int64(secFrac * float64(time.Second))
-
-	time := time.Unix(secInt, nanoSec)
-	log.Println("input: " + timeStr)
-	log.Println("seconds: " + fmt.Sprint(seconds))
-	log.Println("nanoSec: " + fmt.Sprint(nanoSec))
-
-	return toRfc3339(time)
-}
-
-func formatMillisecondTime(timeStr string) string {
-	// This could be seconds or it could be a float
-	milliseconds, err := strconv.ParseFloat(timeStr, 64)
-	if err != nil {
+		log.Println("Error parsing time: " + timeStr + " unit: " + unit + "\nError: " + err.Error())
 		return timeStr
 	}
 
-	seconds := int64(milliseconds / 1000)
+	seconds := int64(duration.Seconds())
+	nanoseconds := duration.Nanoseconds()
 
-	nanoseconds := int64((milliseconds - float64(seconds*1000)) * 1e6) // leftover milliseconds to nanoseconds
+	var t time.Time = time.Unix(seconds, nanoseconds-(seconds*int64(time.Second)))
 
-	time := time.Unix(seconds, nanoseconds)
-	log.Println("input: " + timeStr)
-	log.Println("seconds: " + fmt.Sprint(seconds))
-	log.Println("milliseconds: " + fmt.Sprint(milliseconds))
-	log.Println("Nanoseconds: " + fmt.Sprint(nanoseconds))
-
-	return toRfc3339(time)
-}
-
-func toRfc3339(t time.Time) string {
 	return t.Format(time.RFC3339)
 }
