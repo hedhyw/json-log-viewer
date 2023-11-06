@@ -84,7 +84,7 @@ func parseField(parsedLine any, field config.Field) string {
 		// It's possible that what were were given is an integer or float
 		// in which case, calling Unquote isn't doing us a lot of good.
 		// Therefore, we just convert to a string value and proceed.
-		if err == strconv.ErrSyntax {
+		if err != nil {
 			unquotedField = string(jsonField)
 		}
 
