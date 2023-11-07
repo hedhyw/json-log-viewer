@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
@@ -26,7 +27,7 @@ func TestParseLogEntryDefault(t *testing.T) {
 
 			assert.Equal(t, "Hello World", fieldKindToValue[config.FieldKindMessage], fieldKindToValue)
 			assert.Equal(t, "-", fieldKindToValue[config.FieldKindLevel], fieldKindToValue)
-			assert.Equal(t, "-", fieldKindToValue[config.FieldKindTime], fieldKindToValue)
+			assert.Equal(t, "-", fieldKindToValue[config.FieldKindNumericTime], fieldKindToValue)
 		},
 	}, {
 		Name: "time_number",
@@ -34,7 +35,7 @@ func TestParseLogEntryDefault(t *testing.T) {
 		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "1", fieldKindToValue[config.FieldKindTime], fieldKindToValue)
+			assert.Equal(t, time.Unix(1, 0).Format(time.RFC3339), fieldKindToValue[config.FieldKindNumericTime], fieldKindToValue)
 		},
 	}, {
 		Name: "timestamp_number",
@@ -42,7 +43,7 @@ func TestParseLogEntryDefault(t *testing.T) {
 		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "1", fieldKindToValue[config.FieldKindTime], fieldKindToValue)
+			assert.Equal(t, time.Unix(1, 0).Format(time.RFC3339), fieldKindToValue[config.FieldKindNumericTime], fieldKindToValue)
 		},
 	}, {
 		Name: "ts_number",
@@ -50,7 +51,7 @@ func TestParseLogEntryDefault(t *testing.T) {
 		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "1", fieldKindToValue[config.FieldKindTime], fieldKindToValue)
+			assert.Equal(t, time.Unix(1, 0).Format(time.RFC3339), fieldKindToValue[config.FieldKindNumericTime], fieldKindToValue)
 		},
 	}, {
 		Name: "time_text",
@@ -60,7 +61,7 @@ func TestParseLogEntryDefault(t *testing.T) {
 
 			assert.Equal(t,
 				"1970-01-01T00:00:00.00",
-				fieldKindToValue[config.FieldKindTime],
+				fieldKindToValue[config.FieldKindNumericTime],
 				fieldKindToValue,
 			)
 		},
@@ -72,7 +73,7 @@ func TestParseLogEntryDefault(t *testing.T) {
 
 			assert.Equal(t,
 				"1970-01-01T00:00:00.00",
-				fieldKindToValue[config.FieldKindTime],
+				fieldKindToValue[config.FieldKindNumericTime],
 				fieldKindToValue,
 			)
 		},
@@ -84,7 +85,7 @@ func TestParseLogEntryDefault(t *testing.T) {
 
 			assert.Equal(t,
 				"1970-01-01T00:00:00.00",
-				fieldKindToValue[config.FieldKindTime],
+				fieldKindToValue[config.FieldKindNumericTime],
 				fieldKindToValue,
 			)
 		},
