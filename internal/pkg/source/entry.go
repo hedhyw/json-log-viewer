@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -100,12 +99,19 @@ func formatField(
 ) string {
 	value = strings.TrimSpace(value)
 
+	// Numeric time attempts to infer the duration based on the length of the string
+	if kind == config.FieldKindNumericTime {
+		kind = guessTimeFieldKind(value)
+	}
+
 	switch kind {
 	case config.FieldKindMessage:
 		return formatMessage(value)
 	case config.FieldKindLevel:
 		return string(ParseLevel(formatMessage(value)))
 	case config.FieldKindTime:
+		return formatMessage(value)
+	case config.FieldKindNumericTime:
 		return formatMessage(value)
 	case config.FieldKindSecondTime:
 		return formatMessage(formatTimeString(value, "s"))
@@ -178,17 +184,43 @@ func formatMessage(msg string) string {
 	return msg
 }
 
+func guessTimeFieldKind(timeStr string) config.FieldKind {
+	intValue, err := strconv.ParseInt(strings.Split(timeStr, ".")[0], 10, 64)
+
+	if err != nil {
+		return config.FieldKindTime
+	}
+
+	if intValue <= 0 {
+		return config.FieldKindTime
+	}
+
+	intLength := len(fmt.Sprint(intValue))
+
+	switch {
+	case intLength <= 10:
+		return config.FieldKindSecondTime
+	case intLength > 10 && intLength <= 13:
+		return config.FieldKindMilliTime
+	case intLength > 13 && intLength <= 16:
+		return config.FieldKindMicroTime
+	}
+
+	return config.FieldKindTime
+
+}
+
 func formatTimeString(timeStr string, unit string) string {
 	duration, err := time.ParseDuration(timeStr + unit)
 	if err != nil {
-		log.Println("Error parsing time: " + timeStr + " unit: " + unit + "\nError: " + err.Error())
 		return timeStr
 	}
 
 	seconds := int64(duration.Seconds())
+
+	// Since we're displaying in RFC3339, the nanoseconds will never be
+	// visible to the end-user but for posterity it is included here.
 	nanoseconds := duration.Nanoseconds()
 
-	var t time.Time = time.Unix(seconds, nanoseconds-(seconds*int64(time.Second)))
-
-	return t.Format(time.RFC3339)
+	return time.Unix(seconds, nanoseconds-(seconds*int64(time.Second))).Format(time.RFC3339)
 }
