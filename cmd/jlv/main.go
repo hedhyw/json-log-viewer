@@ -14,12 +14,6 @@ import (
 const configFileName = ".jlv.jsonc"
 
 func main() {
-	//os.Args = append(os.Args, "assets/seconds.log")
-	f, err := tea.LogToFile("debug.log", "debug")
-	if err != nil {
-		fmt.Println("An error occurred!", err.Error())
-	}
-	defer f.Close()
 	if len(os.Args) != 2 {
 		fatalf("Invalid arguments, usage: %s file.log\n", os.Args[0])
 	}
