@@ -184,8 +184,8 @@ func formatMessage(msg string) string {
 	return msg
 }
 
-// We can only guess the time via a heuristic. We do this by looking at
-// the number of integers in the string. This is far from perfect.
+// We can only guess the time via a heuristic. We do this by looking at the number of digits
+// (before the decimal point) in the string. This is far from perfect.
 func guessTimeFieldKind(timeStr string) config.FieldKind {
 	intValue, err := strconv.ParseInt(strings.Split(timeStr, ".")[0], 10, 64)
 
