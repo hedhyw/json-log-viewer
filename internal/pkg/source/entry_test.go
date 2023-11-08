@@ -337,8 +337,9 @@ func getFieldKindToValue(cfg *config.Config, entries []string) map[config.FieldK
 }
 
 type TimeFormattingTestCase struct {
-	TestName   string
-	JsonString string
+	TestName       string
+	JsonString     string
+	ExpectedOutput string
 }
 
 func getTimestampFormattingConfig(fieldKind config.FieldKind) *config.Config {
@@ -357,18 +358,24 @@ func TestSecondTimeFormatting(t *testing.T) {
 
 	cfg := getTimestampFormattingConfig(config.FieldKindSecondTime)
 
+	expectedOutput := time.Unix(1, 0).Format(time.RFC3339)
+
 	secondsTestCases := []TimeFormattingTestCase{{
-		TestName:   "Seconds (float)",
-		JsonString: `{"timestamp":1.0}`,
+		TestName:       "Seconds (float)",
+		JsonString:     `{"timestamp":1.0}`,
+		ExpectedOutput: expectedOutput,
 	}, {
-		TestName:   "Seconds (int)",
-		JsonString: `{"timestamp":1}`,
+		TestName:       "Seconds (int)",
+		JsonString:     `{"timestamp":1}`,
+		ExpectedOutput: expectedOutput,
 	}, {
-		TestName:   "Seconds (float as string)",
-		JsonString: `{"timestamp":"1.0"}`,
+		TestName:       "Seconds (float as string)",
+		JsonString:     `{"timestamp":"1.0"}`,
+		ExpectedOutput: expectedOutput,
 	}, {
-		TestName:   "Seconds (int as string)",
-		JsonString: `{"timestamp":"1"}`,
+		TestName:       "Seconds (int as string)",
+		JsonString:     `{"timestamp":"1"}`,
+		ExpectedOutput: expectedOutput,
 	}}
 
 	for _, testCase := range secondsTestCases {
@@ -376,7 +383,7 @@ func TestSecondTimeFormatting(t *testing.T) {
 		t.Run(testCase.TestName, func(t *testing.T) {
 			t.Parallel()
 			actual := source.ParseLogEntry(json.RawMessage(testCase.JsonString), cfg)
-			assert.Equal(t, time.Unix(1, 0).Format(time.RFC3339), actual.Fields[0])
+			assert.Equal(t, testCase.ExpectedOutput, actual.Fields[0])
 		})
 	}
 }
@@ -386,18 +393,24 @@ func TestMillisecondTimeFormatting(t *testing.T) {
 
 	cfg := getTimestampFormattingConfig(config.FieldKindMilliTime)
 
+	var expectedOutput string = time.Unix(2, 0).Format(time.RFC3339)
+
 	millisecondTestCases := []TimeFormattingTestCase{{
-		TestName:   "Milliseconds (float)",
-		JsonString: `{"timestamp":2000.0}`,
+		TestName:       "Milliseconds (float)",
+		JsonString:     `{"timestamp":2000.0}`,
+		ExpectedOutput: expectedOutput,
 	}, {
-		TestName:   "Milliseconds (int)",
-		JsonString: `{"timestamp":2000}`,
+		TestName:       "Milliseconds (int)",
+		JsonString:     `{"timestamp":2000}`,
+		ExpectedOutput: expectedOutput,
 	}, {
-		TestName:   "Milliseconds (float as string)",
-		JsonString: `{"timestamp":"2000.0"}`,
+		TestName:       "Milliseconds (float as string)",
+		JsonString:     `{"timestamp":"2000.0"}`,
+		ExpectedOutput: expectedOutput,
 	}, {
-		TestName:   "Milliseconds (int as string)",
-		JsonString: `{"timestamp":"2000"}`,
+		TestName:       "Milliseconds (int as string)",
+		JsonString:     `{"timestamp":"2000"}`,
+		ExpectedOutput: expectedOutput,
 	}}
 
 	for _, testCase := range millisecondTestCases {
@@ -405,7 +418,7 @@ func TestMillisecondTimeFormatting(t *testing.T) {
 		t.Run(testCase.TestName, func(t *testing.T) {
 			t.Parallel()
 			actual := source.ParseLogEntry(json.RawMessage(testCase.JsonString), cfg)
-			assert.Equal(t, time.Unix(2, 0).Format(time.RFC3339), actual.Fields[0])
+			assert.Equal(t, testCase.ExpectedOutput, actual.Fields[0])
 		})
 	}
 }
@@ -415,18 +428,24 @@ func TestMicrosecondTimeFormatting(t *testing.T) {
 
 	cfg := getTimestampFormattingConfig(config.FieldKindMicroTime)
 
+	var expectedOutput string = time.Unix(4, 0).Format(time.RFC3339)
+
 	microsecondTestCases := []TimeFormattingTestCase{{
-		TestName:   "Microseconds (float)",
-		JsonString: `{"timestamp":4000000.0}`,
+		TestName:       "Microseconds (float)",
+		JsonString:     `{"timestamp":4000000.0}`,
+		ExpectedOutput: expectedOutput,
 	}, {
-		TestName:   "Microseconds (int)",
-		JsonString: `{"timestamp":4000000}`,
+		TestName:       "Microseconds (int)",
+		JsonString:     `{"timestamp":4000000}`,
+		ExpectedOutput: expectedOutput,
 	}, {
-		TestName:   "Microseconds (float as string)",
-		JsonString: `{"timestamp":"4000000.0"}`,
+		TestName:       "Microseconds (float as string)",
+		JsonString:     `{"timestamp":"4000000.0"}`,
+		ExpectedOutput: expectedOutput,
 	}, {
-		TestName:   "Microseconds (int as string)",
-		JsonString: `{"timestamp":"4000000"}`,
+		TestName:       "Microseconds (int as string)",
+		JsonString:     `{"timestamp":"4000000"}`,
+		ExpectedOutput: expectedOutput,
 	}}
 
 	for _, testCase := range microsecondTestCases {
@@ -434,7 +453,65 @@ func TestMicrosecondTimeFormatting(t *testing.T) {
 		t.Run(testCase.TestName, func(t *testing.T) {
 			t.Parallel()
 			actual := source.ParseLogEntry(json.RawMessage(testCase.JsonString), cfg)
-			assert.Equal(t, time.Unix(4, 0).Format(time.RFC3339), actual.Fields[0])
+			assert.Equal(t, testCase.ExpectedOutput, actual.Fields[0])
 		})
 	}
+}
+
+func TestNumericKindTimeFormatting(t *testing.T) {
+	t.Parallel()
+
+	cfg := getTimestampFormattingConfig(config.FieldKindNumericTime)
+
+	var numericKindCases []TimeFormattingTestCase = []TimeFormattingTestCase{{
+		TestName:       "Date passthru",
+		JsonString:     `{"timestamp":"2023-10-08 20:00:00"}`,
+		ExpectedOutput: "2023-10-08 20:00:00",
+	}, {
+		TestName:       "Non-date string",
+		JsonString:     `{"timestamp":"-"}`,
+		ExpectedOutput: "-",
+	}, {
+		TestName:       "Seconds as int",
+		JsonString:     `{"timestamp":4000000}`,
+		ExpectedOutput: time.Unix(4000000, 0).Format(time.RFC3339),
+	}, {
+		TestName:       "Seconds as int string",
+		JsonString:     `{"timestamp":"4000000"}`,
+		ExpectedOutput: time.Unix(4000000, 0).Format(time.RFC3339),
+	}, {
+		TestName:       "Seconds as float",
+		JsonString:     `{"timestamp":4000000.1}`,
+		ExpectedOutput: time.Unix(4000000, 0).Format(time.RFC3339),
+	}, {
+		TestName:       "Seconds as float string",
+		JsonString:     `{"timestamp":"4000000.1"}`,
+		ExpectedOutput: time.Unix(4000000, 0).Format(time.RFC3339),
+	}, {
+		TestName:       "11 character int is in milliseconds",
+		JsonString:     `{"timestamp":12345678900}`,
+		ExpectedOutput: time.Unix(12345678, 0).Format(time.RFC3339),
+	}, {
+		TestName:       "float with 11 digits before the decimal is milliseconds",
+		JsonString:     `{"timestamp":12345678000000.222}`,
+		ExpectedOutput: time.Unix(12345678, 0).Format(time.RFC3339),
+	}, {
+		TestName:       "14 character int is in microseconds",
+		JsonString:     `{"timestamp":12345678900000}`,
+		ExpectedOutput: time.Unix(12345678, 0).Format(time.RFC3339),
+	}, {
+		TestName:       "float with 14 digits before the decimal is microseconds",
+		JsonString:     `{"timestamp":12345678900000.222}`,
+		ExpectedOutput: time.Unix(12345678, 0).Format(time.RFC3339),
+	}}
+
+	for _, testCase := range numericKindCases {
+		testCase := testCase
+		t.Run(testCase.TestName, func(t *testing.T) {
+			t.Parallel()
+			actual := source.ParseLogEntry(json.RawMessage(testCase.JsonString), cfg)
+			assert.Equal(t, testCase.ExpectedOutput, actual.Fields[0])
+		})
+	}
+
 }
