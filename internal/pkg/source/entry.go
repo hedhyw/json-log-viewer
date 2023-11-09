@@ -93,6 +93,7 @@ func parseField(parsedLine any, field config.Field) string {
 	return "-"
 }
 
+//nolint:cyclop // The cyclomatic complexity here is so high because of the number of FieldKinds.
 func formatField(
 	value string,
 	kind config.FieldKind,
