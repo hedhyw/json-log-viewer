@@ -353,6 +353,7 @@ func getTimestampFormattingConfig(fieldKind config.FieldKind) *config.Config {
 		}},
 	}
 }
+
 func TestSecondTimeFormatting(t *testing.T) {
 	t.Parallel()
 

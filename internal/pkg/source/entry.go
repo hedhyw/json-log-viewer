@@ -188,7 +188,6 @@ func formatMessage(msg string) string {
 // (before the decimal point) in the string. This is far from perfect.
 func guessTimeFieldKind(timeStr string) config.FieldKind {
 	intValue, err := strconv.ParseInt(strings.Split(timeStr, ".")[0], 10, 64)
-
 	if err != nil {
 		return config.FieldKindTime
 	}
@@ -209,7 +208,6 @@ func guessTimeFieldKind(timeStr string) config.FieldKind {
 	default:
 		return config.FieldKindTime
 	}
-
 }
 
 func formatTimeString(timeStr string, unit string) string {
