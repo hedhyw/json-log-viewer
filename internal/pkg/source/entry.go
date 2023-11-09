@@ -196,7 +196,7 @@ func guessTimeFieldKind(timeStr string) config.FieldKind {
 		return config.FieldKindTime
 	}
 
-	intLength := len(fmt.Sprint(intValue))
+	intLength := len(strconv.FormatInt(intValue, 10))
 
 	switch {
 	case intLength <= 10:
