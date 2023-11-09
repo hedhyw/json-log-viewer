@@ -107,10 +107,14 @@ Example configuration:
             "title": "Time", // Max length is 32.
             // Kind affects rendering. There are:
             // * time;
+            // * numerictime
+            // * secondtime
+            // * millitime
+            // * microtime
             // * level;
             // * message;
             // * any.
-            "kind": "time",
+            "kind": "numerictime",
             "ref": [
                 // The application will display the first matched value.
                 "$.timestamp",
