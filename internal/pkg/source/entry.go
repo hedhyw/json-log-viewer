@@ -80,7 +80,7 @@ func parseField(parsedLine any, field config.Field) string {
 		}
 
 		unquotedField, err := strconv.Unquote(string(jsonField))
-		// It's possible that what were were given is an integer or float
+		// It's possible that what we were given is an integer or float
 		// in which case, calling Unquote isn't doing us a lot of good.
 		// Therefore, we just convert to a string value and proceed.
 		if err != nil {
@@ -206,9 +206,9 @@ func guessTimeFieldKind(timeStr string) config.FieldKind {
 		return config.FieldKindMilliTime
 	case intLength > 13 && intLength <= 16:
 		return config.FieldKindMicroTime
+	default:
+		return config.FieldKindTime
 	}
-
-	return config.FieldKindTime
 
 }
 
@@ -218,11 +218,5 @@ func formatTimeString(timeStr string, unit string) string {
 		return timeStr
 	}
 
-	seconds := int64(duration.Seconds())
-
-	// Since we're displaying in RFC3339, the nanoseconds will never be
-	// visible to the end-user but for posterity it is included here.
-	nanoseconds := duration.Nanoseconds()
-
-	return time.Unix(seconds, nanoseconds-(seconds*int64(time.Second))).Format(time.RFC3339)
+	return time.UnixMilli(0).Add(duration).UTC().Format(time.RFC3339)
 }
