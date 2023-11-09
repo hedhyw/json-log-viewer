@@ -107,10 +107,10 @@ Example configuration:
             "title": "Time", // Max length is 32.
             // Kind affects rendering. There are:
             // * time;
-            // * numerictime
-            // * secondtime
-            // * millitime
-            // * microtime
+            // * numerictime;
+            // * secondtime;
+            // * millitime;
+            // * microtime;
             // * level;
             // * message;
             // * any.
