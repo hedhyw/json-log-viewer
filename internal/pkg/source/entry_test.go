@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
@@ -26,7 +27,7 @@ func TestParseLogEntryDefault(t *testing.T) {
 
 			assert.Equal(t, "Hello World", fieldKindToValue[config.FieldKindMessage], fieldKindToValue)
 			assert.Equal(t, "-", fieldKindToValue[config.FieldKindLevel], fieldKindToValue)
-			assert.Equal(t, "-", fieldKindToValue[config.FieldKindTime], fieldKindToValue)
+			assert.Equal(t, "-", fieldKindToValue[config.FieldKindNumericTime], fieldKindToValue)
 		},
 	}, {
 		Name: "time_number",
@@ -34,7 +35,7 @@ func TestParseLogEntryDefault(t *testing.T) {
 		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "1", fieldKindToValue[config.FieldKindTime], fieldKindToValue)
+			assert.Equal(t, time.Unix(1, 0).UTC().Format(time.RFC3339), fieldKindToValue[config.FieldKindNumericTime], fieldKindToValue)
 		},
 	}, {
 		Name: "timestamp_number",
@@ -42,7 +43,7 @@ func TestParseLogEntryDefault(t *testing.T) {
 		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "1", fieldKindToValue[config.FieldKindTime], fieldKindToValue)
+			assert.Equal(t, time.Unix(1, 0).UTC().Format(time.RFC3339), fieldKindToValue[config.FieldKindNumericTime], fieldKindToValue)
 		},
 	}, {
 		Name: "ts_number",
@@ -50,7 +51,31 @@ func TestParseLogEntryDefault(t *testing.T) {
 		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "1", fieldKindToValue[config.FieldKindTime], fieldKindToValue)
+			assert.Equal(t, time.Unix(1, 0).UTC().Format(time.RFC3339), fieldKindToValue[config.FieldKindNumericTime], fieldKindToValue)
+		},
+	}, {
+		Name: "ts_int_seconds_as_string",
+		JSON: `{"ts":"1"}`,
+		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
+			tb.Helper()
+
+			assert.Equal(t, time.Unix(1, 0).UTC().Format(time.RFC3339), fieldKindToValue[config.FieldKindNumericTime], fieldKindToValue)
+		},
+	}, {
+		Name: "ts_float_seconds_as_string",
+		JSON: `{"ts":"1.29333384"}`,
+		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
+			tb.Helper()
+
+			assert.Equal(t, time.Unix(1, 0).UTC().Format(time.RFC3339), fieldKindToValue[config.FieldKindNumericTime], fieldKindToValue)
+		},
+	}, {
+		Name: "ts_",
+		JSON: `{"ts":"1.29333384"}`,
+		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
+			tb.Helper()
+
+			assert.Equal(t, time.Unix(1, 0).UTC().Format(time.RFC3339), fieldKindToValue[config.FieldKindNumericTime], fieldKindToValue)
 		},
 	}, {
 		Name: "time_text",
@@ -60,7 +85,7 @@ func TestParseLogEntryDefault(t *testing.T) {
 
 			assert.Equal(t,
 				"1970-01-01T00:00:00.00",
-				fieldKindToValue[config.FieldKindTime],
+				fieldKindToValue[config.FieldKindNumericTime],
 				fieldKindToValue,
 			)
 		},
@@ -72,7 +97,7 @@ func TestParseLogEntryDefault(t *testing.T) {
 
 			assert.Equal(t,
 				"1970-01-01T00:00:00.00",
-				fieldKindToValue[config.FieldKindTime],
+				fieldKindToValue[config.FieldKindNumericTime],
 				fieldKindToValue,
 			)
 		},
@@ -84,7 +109,7 @@ func TestParseLogEntryDefault(t *testing.T) {
 
 			assert.Equal(t,
 				"1970-01-01T00:00:00.00",
-				fieldKindToValue[config.FieldKindTime],
+				fieldKindToValue[config.FieldKindNumericTime],
 				fieldKindToValue,
 			)
 		},
@@ -309,4 +334,184 @@ func getFieldKindToValue(cfg *config.Config, entries []string) map[config.FieldK
 	}
 
 	return fieldKindToValue
+}
+
+type TimeFormattingTestCase struct {
+	TestName       string
+	JSON           string
+	ExpectedOutput string
+}
+
+func getTimestampFormattingConfig(fieldKind config.FieldKind) *config.Config {
+	return &config.Config{
+		Path: config.PathDefault,
+		Fields: []config.Field{{
+			Title:      "Time",
+			Kind:       fieldKind,
+			References: []string{"$.timestamp", "$.time", "$.t", "$.ts"},
+			Width:      30,
+		}},
+	}
+}
+
+func TestSecondTimeFormatting(t *testing.T) {
+	t.Parallel()
+
+	cfg := getTimestampFormattingConfig(config.FieldKindSecondTime)
+
+	expectedOutput := time.Unix(1, 0).UTC().Format(time.RFC3339)
+
+	secondsTestCases := [...]TimeFormattingTestCase{{
+		TestName:       "Seconds (float)",
+		JSON:           `{"timestamp":1.0}`,
+		ExpectedOutput: expectedOutput,
+	}, {
+		TestName:       "Seconds (int)",
+		JSON:           `{"timestamp":1}`,
+		ExpectedOutput: expectedOutput,
+	}, {
+		TestName:       "Seconds (float as string)",
+		JSON:           `{"timestamp":"1.0"}`,
+		ExpectedOutput: expectedOutput,
+	}, {
+		TestName:       "Seconds (int as string)",
+		JSON:           `{"timestamp":"1"}`,
+		ExpectedOutput: expectedOutput,
+	}}
+
+	for _, testCase := range secondsTestCases {
+		testCase := testCase
+		t.Run(testCase.TestName, func(t *testing.T) {
+			t.Parallel()
+			actual := source.ParseLogEntry(json.RawMessage(testCase.JSON), cfg)
+			assert.Equal(t, testCase.ExpectedOutput, actual.Fields[0])
+		})
+	}
+}
+
+func TestMillisecondTimeFormatting(t *testing.T) {
+	t.Parallel()
+
+	cfg := getTimestampFormattingConfig(config.FieldKindMilliTime)
+
+	expectedOutput := time.Unix(2, 0).UTC().Format(time.RFC3339)
+
+	millisecondTestCases := [...]TimeFormattingTestCase{{
+		TestName:       "Milliseconds (float)",
+		JSON:           `{"timestamp":2000.0}`,
+		ExpectedOutput: expectedOutput,
+	}, {
+		TestName:       "Milliseconds (int)",
+		JSON:           `{"timestamp":2000}`,
+		ExpectedOutput: expectedOutput,
+	}, {
+		TestName:       "Milliseconds (float as string)",
+		JSON:           `{"timestamp":"2000.0"}`,
+		ExpectedOutput: expectedOutput,
+	}, {
+		TestName:       "Milliseconds (int as string)",
+		JSON:           `{"timestamp":"2000"}`,
+		ExpectedOutput: expectedOutput,
+	}}
+
+	for _, testCase := range millisecondTestCases {
+		testCase := testCase
+		t.Run(testCase.TestName, func(t *testing.T) {
+			t.Parallel()
+			actual := source.ParseLogEntry(json.RawMessage(testCase.JSON), cfg)
+			assert.Equal(t, testCase.ExpectedOutput, actual.Fields[0])
+		})
+	}
+}
+
+func TestMicrosecondTimeFormatting(t *testing.T) {
+	t.Parallel()
+
+	cfg := getTimestampFormattingConfig(config.FieldKindMicroTime)
+
+	expectedOutput := time.Unix(4, 0).UTC().Format(time.RFC3339)
+
+	microsecondTestCases := [...]TimeFormattingTestCase{{
+		TestName:       "Microseconds (float)",
+		JSON:           `{"timestamp":4000000.0}`,
+		ExpectedOutput: expectedOutput,
+	}, {
+		TestName:       "Microseconds (int)",
+		JSON:           `{"timestamp":4000000}`,
+		ExpectedOutput: expectedOutput,
+	}, {
+		TestName:       "Microseconds (float as string)",
+		JSON:           `{"timestamp":"4000000.0"}`,
+		ExpectedOutput: expectedOutput,
+	}, {
+		TestName:       "Microseconds (int as string)",
+		JSON:           `{"timestamp":"4000000"}`,
+		ExpectedOutput: expectedOutput,
+	}}
+
+	for _, testCase := range microsecondTestCases {
+		testCase := testCase
+		t.Run(testCase.TestName, func(t *testing.T) {
+			t.Parallel()
+			actual := source.ParseLogEntry(json.RawMessage(testCase.JSON), cfg)
+			assert.Equal(t, testCase.ExpectedOutput, actual.Fields[0])
+		})
+	}
+}
+
+func TestNumericKindTimeFormatting(t *testing.T) {
+	t.Parallel()
+
+	cfg := getTimestampFormattingConfig(config.FieldKindNumericTime)
+
+	numericKindCases := [...]TimeFormattingTestCase{{
+		TestName:       "Date passthru",
+		JSON:           `{"timestamp":"2023-10-08 20:00:00"}`,
+		ExpectedOutput: "2023-10-08 20:00:00",
+	}, {
+		TestName:       "Non-date string",
+		JSON:           `{"timestamp":"-"}`,
+		ExpectedOutput: "-",
+	}, {
+		TestName:       "Seconds as int",
+		JSON:           `{"timestamp":4000000}`,
+		ExpectedOutput: time.Unix(4000000, 0).UTC().Format(time.RFC3339),
+	}, {
+		TestName:       "Seconds as int string",
+		JSON:           `{"timestamp":"4000000"}`,
+		ExpectedOutput: time.Unix(4000000, 0).UTC().Format(time.RFC3339),
+	}, {
+		TestName:       "Seconds as float",
+		JSON:           `{"timestamp":4000000.1}`,
+		ExpectedOutput: time.Unix(4000000, 0).UTC().Format(time.RFC3339),
+	}, {
+		TestName:       "Seconds as float string",
+		JSON:           `{"timestamp":"4000000.1"}`,
+		ExpectedOutput: time.Unix(4000000, 0).UTC().Format(time.RFC3339),
+	}, {
+		TestName:       "11 character int is in milliseconds",
+		JSON:           `{"timestamp":12345678900}`,
+		ExpectedOutput: time.Unix(12345678, 0).UTC().Format(time.RFC3339),
+	}, {
+		TestName:       "float with 11 digits before the decimal is milliseconds",
+		JSON:           `{"timestamp":12345678000000.222}`,
+		ExpectedOutput: time.Unix(12345678, 0).UTC().Format(time.RFC3339),
+	}, {
+		TestName:       "14 character int is in microseconds",
+		JSON:           `{"timestamp":12345678900000}`,
+		ExpectedOutput: time.Unix(12345678, 0).UTC().Format(time.RFC3339),
+	}, {
+		TestName:       "float with 14 digits before the decimal is microseconds",
+		JSON:           `{"timestamp":12345678900000.222}`,
+		ExpectedOutput: time.Unix(12345678, 0).UTC().Format(time.RFC3339),
+	}}
+
+	for _, testCase := range numericKindCases {
+		testCase := testCase
+		t.Run(testCase.TestName, func(t *testing.T) {
+			t.Parallel()
+			actual := source.ParseLogEntry(json.RawMessage(testCase.JSON), cfg)
+			assert.Equal(t, testCase.ExpectedOutput, actual.Fields[0])
+		})
+	}
 }

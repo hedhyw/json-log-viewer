@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -79,8 +80,11 @@ func parseField(parsedLine any, field config.Field) string {
 		}
 
 		unquotedField, err := strconv.Unquote(string(jsonField))
+		// It's possible that what we were given is an integer or float
+		// in which case, calling Unquote isn't doing us a lot of good.
+		// Therefore, we just convert to a string value and proceed.
 		if err != nil {
-			return string(jsonField)
+			unquotedField = string(jsonField)
 		}
 
 		return formatField(unquotedField, field.Kind)
@@ -89,11 +93,17 @@ func parseField(parsedLine any, field config.Field) string {
 	return "-"
 }
 
+//nolint:cyclop // The cyclomatic complexity here is so high because of the number of FieldKinds.
 func formatField(
 	value string,
 	kind config.FieldKind,
 ) string {
 	value = strings.TrimSpace(value)
+
+	// Numeric time attempts to infer the duration based on the length of the string
+	if kind == config.FieldKindNumericTime {
+		kind = guessTimeFieldKind(value)
+	}
 
 	switch kind {
 	case config.FieldKindMessage:
@@ -102,6 +112,14 @@ func formatField(
 		return string(ParseLevel(formatMessage(value)))
 	case config.FieldKindTime:
 		return formatMessage(value)
+	case config.FieldKindNumericTime:
+		return formatMessage(value)
+	case config.FieldKindSecondTime:
+		return formatMessage(formatTimeString(value, "s"))
+	case config.FieldKindMilliTime:
+		return formatMessage(formatTimeString(value, "ms"))
+	case config.FieldKindMicroTime:
+		return formatMessage(formatTimeString(value, "us"))
 	case config.FieldKindAny:
 		return formatMessage(value)
 	default:
@@ -165,4 +183,39 @@ func formatMessage(msg string) string {
 	}, msg)
 
 	return msg
+}
+
+// We can only guess the time via a heuristic. We do this by looking at the number of digits
+// (before the decimal point) in the string. This is far from perfect.
+func guessTimeFieldKind(timeStr string) config.FieldKind {
+	intValue, err := strconv.ParseInt(strings.Split(timeStr, ".")[0], 10, 64)
+	if err != nil {
+		return config.FieldKindTime
+	}
+
+	if intValue <= 0 {
+		return config.FieldKindTime
+	}
+
+	intLength := len(strconv.FormatInt(intValue, 10))
+
+	switch {
+	case intLength <= 10:
+		return config.FieldKindSecondTime
+	case intLength > 10 && intLength <= 13:
+		return config.FieldKindMilliTime
+	case intLength > 13 && intLength <= 16:
+		return config.FieldKindMicroTime
+	default:
+		return config.FieldKindTime
+	}
+}
+
+func formatTimeString(timeStr string, unit string) string {
+	duration, err := time.ParseDuration(timeStr + unit)
+	if err != nil {
+		return timeStr
+	}
+
+	return time.UnixMilli(0).Add(duration).UTC().Format(time.RFC3339)
 }

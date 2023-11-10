@@ -26,16 +26,20 @@ type FieldKind string
 
 // Possible kinds.
 const (
-	FieldKindTime    FieldKind = "time"
-	FieldKindMessage FieldKind = "message"
-	FieldKindLevel   FieldKind = "level"
-	FieldKindAny     FieldKind = "any"
+	FieldKindTime        FieldKind = "time"
+	FieldKindNumericTime FieldKind = "numerictime"
+	FieldKindSecondTime  FieldKind = "secondtime"
+	FieldKindMilliTime   FieldKind = "millitime"
+	FieldKindMicroTime   FieldKind = "microtime"
+	FieldKindMessage     FieldKind = "message"
+	FieldKindLevel       FieldKind = "level"
+	FieldKindAny         FieldKind = "any"
 )
 
 // Field customization.
 type Field struct {
 	Title      string    `json:"title" validate:"required,min=1,max=32"`
-	Kind       FieldKind `json:"kind" validate:"required,oneof=time message level any"`
+	Kind       FieldKind `json:"kind" validate:"required,oneof=time message numerictime secondtime millitime microtime level any"`
 	References []string  `json:"ref" validate:"min=1,dive,required"`
 	Width      int       `json:"width" validate:"min=0"`
 }
@@ -46,7 +50,7 @@ func GetDefaultConfig() *Config {
 		Path: "default",
 		Fields: []Field{{
 			Title:      "Time",
-			Kind:       FieldKindTime,
+			Kind:       FieldKindNumericTime,
 			References: []string{"$.timestamp", "$.time", "$.t", "$.ts"},
 			Width:      30,
 		}, {

@@ -103,7 +103,7 @@ func ExampleGetDefaultConfig() {
 	// 	"fields": [
 	// 		{
 	// 			"title": "Time",
-	// 			"kind": "time",
+	// 			"kind": "numerictime",
 	// 			"ref": [
 	// 				"$.timestamp",
 	// 				"$.time",
@@ -206,6 +206,30 @@ func TestValidateField(t *testing.T) {
 		Name: "kind_time",
 		Apply: func(value *config.Field) {
 			value.Kind = config.FieldKindTime
+		},
+		IsValid: true,
+	}, {
+		Name: "kind_numeric_time",
+		Apply: func(value *config.Field) {
+			value.Kind = config.FieldKindNumericTime
+		},
+		IsValid: true,
+	}, {
+		Name: "kind_second_time",
+		Apply: func(value *config.Field) {
+			value.Kind = config.FieldKindSecondTime
+		},
+		IsValid: true,
+	}, {
+		Name: "kind_milli_time",
+		Apply: func(value *config.Field) {
+			value.Kind = config.FieldKindMilliTime
+		},
+		IsValid: true,
+	}, {
+		Name: "kind_micro_time",
+		Apply: func(value *config.Field) {
+			value.Kind = config.FieldKindMicroTime
 		},
 		IsValid: true,
 	}, {
