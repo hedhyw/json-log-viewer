@@ -157,6 +157,26 @@ Example configuration:
 }
 ```
 
+### Time Formats
+JSON Log Viewer can handle a variety of datetime formats when parsing your logs.
+
+#### `time`
+This will return the exact value that was set in the JSON document.
+
+#### `numerictime`
+This is a "smart" parser. It can accept an integer, a float, or a string. If it is numeric (`1234443`, `1234443.589`, `"1234443"`, `"1234443.589"`), based on the number of digits, it will parse as seconds, milliseconds, or microseconds. If a date string such as `"2023-05-01T12:00:34Z"` is used, the value will just be carried forward to your column.  The output is a UTC-based RFC 3339 date.
+
+If you find that the smart parsing is giving unwanted results or you need greater control over how a datetime is parsed, considered using one of the other time formats instead.
+
+#### `secondtime`
+This will attempt to parse the value as number of seconds and render as a UTC-based RFC 3339. Values accepted are integer, string, or float.
+
+#### `millitime`
+Similar to `secondtime`, this will attempt to parse the value as number of milliseconds. Values accepted are integer, string, or float.
+
+#### `microtime`
+Similar to `secondtime` and `millistime`, this will attempt to parse the value as number of microseconds. Values accepted are integer, string, or float.
+
 ## Resources
 
 Alternatives:
