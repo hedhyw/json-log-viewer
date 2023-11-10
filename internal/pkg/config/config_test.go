@@ -103,7 +103,7 @@ func ExampleGetDefaultConfig() {
 	// 	"fields": [
 	// 		{
 	// 			"title": "Time",
-	// 			"kind": "time",
+	// 			"kind": "numerictime",
 	// 			"ref": [
 	// 				"$.timestamp",
 	// 				"$.time",
