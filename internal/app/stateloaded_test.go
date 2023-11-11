@@ -14,6 +14,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestStateLoadedEmpty(t *testing.T) {
+	t.Parallel()
+
+	model := newTestModel(t, []byte(""))
+
+	_, ok := model.(app.StateLoaded)
+	require.Truef(t, ok, "%s", model)
+
+	model, cmd := model.Update(events.EnterKeyClicked())
+	require.NotNil(t, model)
+	requireCmdMsg(t, tea.Quit(), cmd)
+}
+
 func TestStateLoaded(t *testing.T) {
 	t.Parallel()
 

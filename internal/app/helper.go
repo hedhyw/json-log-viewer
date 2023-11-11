@@ -96,7 +96,7 @@ func (h helper) handleOpenJSONRowRequestedMsg(
 	previousState state,
 ) (tea.Model, tea.Cmd) {
 	if msg.Index < 0 || msg.Index >= len(msg.LogEntries) {
-		return nil, nil
+		return previousState, nil
 	}
 
 	logEntry := msg.LogEntries[msg.Index]

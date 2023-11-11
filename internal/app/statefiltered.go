@@ -100,6 +100,10 @@ func (s StateFiltered) handleFilterKeyClickedMsg() (tea.Model, tea.Cmd) {
 }
 
 func (s StateFiltered) handleRequestOpenJSON() (tea.Model, tea.Cmd) {
+	if len(s.logEntries) == 0 {
+		return s, events.BackKeyClicked
+	}
+
 	return s, events.OpenJSONRowRequested(s.logEntries, s.table.Cursor())
 }
 

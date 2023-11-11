@@ -73,7 +73,11 @@ func requireCmdMsg(tb testing.TB, expected tea.Msg, cmd tea.Cmd) {
 
 	if batch, ok := msg.(tea.BatchMsg); ok {
 		for _, cmd := range batch {
-			if cmd() == expected {
+			msg := cmd()
+
+			tb.Logf("%T: %v\n", msg, msg)
+
+			if msg == expected {
 				return
 			}
 		}
