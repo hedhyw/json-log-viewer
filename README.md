@@ -17,6 +17,7 @@ Main features:
 5. Fields are [customizable](#customization).
 6. Filtering is easy to use.
 7. Log levels are colorized.
+8. Transforming numeric timestamps.
 
 It uses [antonmedv/fx](https://github.com/antonmedv/fx) for viewing JSON records and [charmbracelet/bubbletea](https://github.com/charmbracelet/bubbletea) for organizing the terminal UI. The tool is inspired by the project [json-log-viewer](https://github.com/gistia/json-log-viewer) which is unfortunately outdated and deserted.
 
