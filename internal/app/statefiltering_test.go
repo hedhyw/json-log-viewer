@@ -96,6 +96,8 @@ func TestStateFiltering(t *testing.T) {
 }
 
 func TestStateFilteringReset(t *testing.T) {
+	t.Parallel()
+
 	const termIncluded = "included"
 
 	const jsonFile = `

@@ -139,7 +139,7 @@ func TestStateLoadedReload(t *testing.T) {
 			Type: tea.KeyUp,
 		})
 
-		rendered = model.View()
+		rendered := model.View()
 		assert.Contains(t, rendered, expected)
 	})
 
@@ -160,7 +160,7 @@ func TestStateLoadedReload(t *testing.T) {
 			Type: tea.KeyUp,
 		})
 
-		rendered = model.View()
+		rendered := model.View()
 		assert.Contains(t, rendered, expected)
 	})
 }
