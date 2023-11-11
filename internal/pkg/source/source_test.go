@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/hedhyw/json-log-viewer/assets"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
@@ -20,27 +21,22 @@ func TestLoadLogsFromFile(t *testing.T) {
 
 		testFile := tests.RequireCreateFile(t, assets.ExampleJSONLog())
 
-		msg := source.LoadLogsFromFile(
+		logEntries, err := source.LoadLogsFromFile(
 			testFile,
 			config.GetDefaultConfig(),
-		)()
-
-		logEntries, ok := msg.(source.LogEntries)
-		if assert.Truef(t, ok, "actual type: %T", msg) {
-			assert.NotEmpty(t, logEntries)
-		}
+		)
+		require.NoError(t, err)
+		assert.NotEmpty(t, logEntries)
 	})
 
 	t.Run("not_found", func(t *testing.T) {
 		t.Parallel()
 
-		msg := source.LoadLogsFromFile(
+		_, err := source.LoadLogsFromFile(
 			"not_found_for_"+t.Name(),
 			config.GetDefaultConfig(),
-		)()
-
-		_, ok := msg.(error)
-		assert.Truef(t, ok, "actual type: %T", msg)
+		)
+		assert.Error(t, err)
 	})
 
 	t.Run("large_line", func(t *testing.T) {
@@ -49,14 +45,11 @@ func TestLoadLogsFromFile(t *testing.T) {
 		longLine := strings.Repeat("1", 2*1024*1024)
 		testFile := tests.RequireCreateFile(t, []byte(longLine))
 
-		msg := source.LoadLogsFromFile(
+		logEntries, err := source.LoadLogsFromFile(
 			testFile,
 			config.GetDefaultConfig(),
-		)()
-
-		logEntries, ok := msg.(source.LogEntries)
-		if assert.Truef(t, ok, "actual type: %T", msg) {
-			assert.NotEmpty(t, logEntries)
-		}
+		)
+		require.NoError(t, err)
+		assert.NotEmpty(t, logEntries)
 	})
 }

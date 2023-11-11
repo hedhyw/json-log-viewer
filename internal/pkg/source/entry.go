@@ -132,11 +132,14 @@ func ParseLogEntry(
 	line json.RawMessage,
 	cfg *config.Config,
 ) LogEntry {
+	lineClone := make([]byte, len(line))
+	copy(lineClone, line)
+
 	var parsedLine any
 
-	err := json.Unmarshal(normalizeJSON(line), &parsedLine)
+	err := json.Unmarshal(normalizeJSON(lineClone), &parsedLine)
 	if err != nil {
-		return getPlainLogEntry(line, cfg)
+		return getPlainLogEntry(lineClone, cfg)
 	}
 
 	fields := make([]string, 0, len(cfg.Fields))
@@ -146,7 +149,7 @@ func ParseLogEntry(
 	}
 
 	return LogEntry{
-		Line:   line,
+		Line:   lineClone,
 		Fields: fields,
 	}
 }

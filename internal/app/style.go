@@ -3,9 +3,11 @@ package app
 import (
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/lipgloss"
+)
 
-	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
-	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
+// Component sizes.
+const (
+	footerSize = 1
 )
 
 // Possible colors.
@@ -40,40 +42,4 @@ func getBaseStyle() lipgloss.Style {
 
 func getFooterStyle() lipgloss.Style {
 	return lipgloss.NewStyle().Height(footerSize).PaddingLeft(2)
-}
-
-func (m Model) getLogLevelStyle(baseStyle lipgloss.Style, rowID int) lipgloss.Style {
-	if rowID < 0 || rowID >= len(m.filteredLogEntries) {
-		return baseStyle
-	}
-
-	color := getColorForLogLevel(m.getLogLevelFromLogEntry(m.filteredLogEntries[rowID]))
-	if color == "" {
-		return baseStyle
-	}
-
-	return baseStyle.Copy().Foreground(color)
-}
-
-func getColorForLogLevel(level source.Level) lipgloss.Color {
-	switch level {
-	case source.LevelTrace:
-		return colorMagenta
-	case source.LevelDebug:
-		return colorYellow
-	case source.LevelInfo:
-		return colorGreen
-	case source.LevelWarning:
-		return colorOrange
-	case source.LevelError,
-		source.LevelFatal,
-		source.LevelPanic:
-		return colorRed
-	default:
-		return ""
-	}
-}
-
-func (m Model) getLogLevelFromLogEntry(logEntry source.LogEntry) source.Level {
-	return source.Level(getFieldByKind(m.config, config.FieldKindLevel, logEntry))
 }
