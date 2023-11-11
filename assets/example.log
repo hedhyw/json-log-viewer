@@ -45,11 +45,11 @@
 {"time":"1970-01-01T00:00:00.00","level":"DEBUG","message": "A house divided against itself cannot stand.","author": "Abraham Lincoln"}
 {"time":"1970-01-01T00:00:00.00","level":"TRACE","message": "Difficulties increase the nearer we get to the goal.","author": "Johann Wolfgang von Goethe"}
 plain text log
-{"time":"12444334.222","level":"TRACE","message": "Wealth consists not in having great possessions, but in having few wants.","author": "Epictetus"}
-{"time":12444334.222,"level":"INFO","message": "Laugh at the world's foolishness or weep over it, you will regret both","author": "Kierkegaard"}
-{"time":12444334,"level":"WARN","message": "Wealth consists not in having great possessions, but in having few wants.","author": "Epictetus"}
-{"time":"12444334","level":"DEBUG","message": "Wealth consists not in having great possessions, but in having few wants.","author": "Epictetus"}
-{"time":124999444443,"level":"TRACE","message": "Money doesn't talk, it swears","author": "Bob Dylan"}
-{"time":124999444443.45,"level":"WARN","message": "If a man knows not to which port he sails, no wind is favorable","author": "Seneca"}
-{"time":"124999444443.45","level":"VERBOSE","message": "Begin at once to live, and count each separate day as a separate life","author": "Seneca"}
-{"time":12499944444398.45,"level":"VERBOSE","message": "Begin at once to live, and count each separate day as a separate life","author": "Seneca"}
+{"time":"725850000.222","level":"TRACE","message": "Wealth consists not in having great possessions, but in having few wants.","author": "Epictetus"}
+{"time":757386000.222,"level":"INFO","message": "Laugh at the world's foolishness or weep over it, you will regret both","author": "Kierkegaard"}
+{"time":788922000,"level":"WARN","message": "Wealth consists not in having great possessions, but in having few wants.","author": "Epictetus"}
+{"time":"820454400","level":"DEBUG","message": "Wealth consists not in having great possessions, but in having few wants.","author": "Epictetus"}
+{"time":865900800,"level":"TRACE","message": "Money doesn't talk, it swears","author": "Bob Dylan"}
+{"time":883612800.45,"level":"WARN","message": "If a man knows not to which port he sails, no wind is favorable","author": "Seneca"}
+{"time":"915148800000.45","level":"VERBOSE","message": "Begin at once to live, and count each separate day as a separate life","author": "Seneca"}
+{"time":946684800.45,"level":"VERBOSE","message": "Begin at once to live, and count each separate day as a separate life","author": "Seneca"}
