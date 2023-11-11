@@ -26,8 +26,8 @@ func TestStateViewRow(t *testing.T) {
 	t.Run("close", func(t *testing.T) {
 		t.Parallel()
 
-		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyEnter})
-		_, ok = model.(app.StateLoaded)
+		model := handleUpdate(model, tea.KeyMsg{Type: tea.KeyEnter})
+		_, ok := model.(app.StateLoaded)
 		require.Truef(t, ok, "%s", model)
 	})
 
@@ -45,18 +45,17 @@ func TestStateViewRow(t *testing.T) {
 
 		model := handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
 
-		_, ok = model.(app.StateError)
+		_, ok := model.(app.StateError)
 		assert.Truef(t, ok, "%s", model)
 	})
 
+	// nolint: tparallel // antonmedv/fx uses mutable model.
 	t.Run("navigation", func(t *testing.T) {
-		t.Parallel()
-
-		model := handleUpdate(model, tea.KeyMsg{
+		model = handleUpdate(model, tea.KeyMsg{
 			Type: tea.KeyRight,
 		})
 
-		_, ok = model.(app.StateViewRow)
+		_, ok := model.(app.StateViewRow)
 		assert.Truef(t, ok, "%s", model)
 	})
 }

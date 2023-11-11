@@ -134,7 +134,7 @@ func TestStateLoadedReload(t *testing.T) {
 		t.Parallel()
 
 		// Go from the first row to the second and back.
-		model = handleUpdate(model, tea.KeyMsg{
+		model := handleUpdate(model, tea.KeyMsg{
 			Type: tea.KeyDown,
 		})
 		model = handleUpdate(model, tea.KeyMsg{

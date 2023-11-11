@@ -35,7 +35,7 @@ func TestStateInitial(t *testing.T) {
 
 		model := handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
 
-		_, ok = model.(app.StateError)
+		_, ok := model.(app.StateError)
 		assert.Truef(t, ok, "%s", model)
 	})
 

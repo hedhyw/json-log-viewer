@@ -39,7 +39,7 @@ func TestStateFiltering(t *testing.T) {
 			Runes: []rune{'f'},
 		})
 
-		_, ok = model.(app.StateFiltering)
+		_, ok := model.(app.StateFiltering)
 		assert.Truef(t, ok, "%s", model)
 	})
 
@@ -50,7 +50,7 @@ func TestStateFiltering(t *testing.T) {
 			Type: tea.KeyEsc,
 		})
 
-		_, ok = model.(app.StateLoaded)
+		_, ok := model.(app.StateLoaded)
 		assert.Truef(t, ok, "%s", model)
 	})
 
@@ -61,7 +61,7 @@ func TestStateFiltering(t *testing.T) {
 			Type: tea.KeyEnter,
 		})
 
-		_, ok = model.(app.StateLoaded)
+		_, ok := model.(app.StateLoaded)
 		require.Truef(t, ok, "%s", model)
 	})
 
@@ -79,7 +79,7 @@ func TestStateFiltering(t *testing.T) {
 
 		model := handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
 
-		_, ok = model.(app.StateError)
+		_, ok := model.(app.StateError)
 		assert.Truef(t, ok, "%s", model)
 	})
 
@@ -90,7 +90,7 @@ func TestStateFiltering(t *testing.T) {
 			Type: tea.KeyUp,
 		})
 
-		_, ok = model.(app.StateFiltering)
+		_, ok := model.(app.StateFiltering)
 		assert.Truef(t, ok, "%s", model)
 	})
 }

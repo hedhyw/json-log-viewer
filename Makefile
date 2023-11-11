@@ -29,7 +29,8 @@ lint: bin/golangci-lint
 test:
 	go test \
 		-coverpkg=${COVER_PACKAGES} \
-		-covermode=count \
+		-covermode=atomic \
+		-race \
 		-coverprofile=coverage.out \
 		./...
 	go tool cover -func=coverage.out
