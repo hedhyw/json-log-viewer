@@ -108,6 +108,10 @@ func (s StateLoaded) handleArrowUpKeyClicked() tea.Cmd {
 }
 
 func (s StateLoaded) handleRequestOpenJSON() (tea.Model, tea.Cmd) {
+	if len(s.logEntries) == 0 {
+		return s, tea.Quit
+	}
+
 	return s, events.OpenJSONRowRequested(s.logEntries, s.table.Cursor())
 }
 

@@ -96,6 +96,8 @@ func TestStateFiltering(t *testing.T) {
 }
 
 func TestStateFilteringReset(t *testing.T) {
+	t.Parallel()
+
 	const termIncluded = "included"
 
 	const jsonFile = `
@@ -128,24 +130,42 @@ func TestStateFilteringReset(t *testing.T) {
 	_, ok = model.(app.StateFiltered)
 	assert.Truef(t, ok, "%s", model)
 
-	rendered = model.View()
+	t.Run("record_not_included", func(t *testing.T) {
+		t.Parallel()
 
-	index := strings.Index(rendered, "filtered by:")
-	if index > 0 {
-		rendered = rendered[:index]
-	}
+		rendered := model.View()
 
-	assert.NotContains(t, rendered, termIncluded)
+		index := strings.Index(rendered, "filtered by:")
+		if assert.Greater(t, index, 0) {
+			rendered = rendered[:index]
+		}
 
-	// Come back
-	model = handleUpdate(model, tea.KeyMsg{
-		Type: tea.KeyEsc,
+		assert.NotContains(t, rendered, termIncluded)
+
+		// Come back
+		model := handleUpdate(model, tea.KeyMsg{
+			Type: tea.KeyEsc,
+		})
+
+		_, ok = model.(app.StateLoaded)
+		assert.Truef(t, ok, "%s", model)
+
+		// Assert.
+		rendered = model.View()
+		assert.Contains(t, rendered, termIncluded)
 	})
 
-	_, ok = model.(app.StateLoaded)
-	assert.Truef(t, ok, "%s", model)
+	t.Run("record_not_included", func(t *testing.T) {
+		t.Parallel()
 
-	// Assert.
-	rendered = model.View()
-	assert.Contains(t, rendered, termIncluded)
+		// Try to open a record where there are no records.
+		model := handleUpdate(model, tea.KeyMsg{
+			Type: tea.KeyEnter,
+		})
+
+		assert.NotNil(t, model)
+
+		_, ok := model.(app.StateLoaded)
+		assert.Truef(t, ok, "%s", model)
+	})
 }
