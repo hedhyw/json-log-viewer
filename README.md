@@ -14,9 +14,9 @@ Main features:
 2. It displays a compact list of log entries.
 3. It is possible to expand the log and see the full prettified JSON tree.
 4. All non-json logs are captured.
-5. It understands different field names: `time`, `timestamp`, `msg`, `message`, `err`, `error` etc.
-6. It supports case-insensitive filtering.
-7. Colorized log levels.
+5. Fields are [customizable](#customization).
+6. Filtering is easy to use.
+7. Log levels are colorized.
 
 It uses [antonmedv/fx](https://github.com/antonmedv/fx) for viewing JSON records and [charmbracelet/bubbletea](https://github.com/charmbracelet/bubbletea) for organizing the terminal UI. The tool is inspired by the project [json-log-viewer](https://github.com/gistia/json-log-viewer) which is unfortunately outdated and deserted.
 
@@ -34,6 +34,12 @@ The application is designed to help in visualization, navigation, and analyzing 
         - [Standalone Binary](#standalone-binary)
         - [Source](#source)
     - [Customization](#customization)
+        - [Time Formats](#time-formats)
+            - [`time`](#time)
+            - [`numerictime`](#numerictime)
+            - [`secondtime`](#secondtime)
+            - [`millitime`](#millitime)
+            - [`microtime`](#microtime)
     - [Resources](#resources)
     - [Contribution](#contribution)
     - [License](#license)
@@ -49,6 +55,7 @@ jlv file.json
 | Enter  | Open/Close log |
 | F      | Filter         |
 | Ctrl+C | Exit           |
+| F10    | Exit           |
 | Esc    | Back           |
 | ↑↓     | Navigation     |
 
