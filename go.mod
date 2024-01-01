@@ -9,7 +9,7 @@ replace github.com/charmbracelet/bubbles => github.com/hedhyw/bubbles v0.0.4
 require (
 	github.com/antonmedv/fx v0.0.0-20230706101337-4fec4e492a52
 	github.com/charmbracelet/bubbles v0.16.1
-	github.com/charmbracelet/bubbletea v0.24.2
+	github.com/charmbracelet/bubbletea v0.25.0
 	github.com/charmbracelet/lipgloss v0.9.1
 	github.com/go-playground/validator/v10 v10.16.0
 	github.com/hedhyw/jsoncjson v1.1.0
