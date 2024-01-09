@@ -79,8 +79,8 @@ func (s StateLoaded) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return s.handleFilterKeyClickedMsg()
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, s.keys.Back):
-			return s, tea.Quit
+			case key.Matches(msg, s.keys.Back), key.Matches(msg, s.keys.BackQ):
+				return s, tea.Quit
 		}
 		cmdBatch = append(cmdBatch, s.handleKeyMsg(msg)...)
 

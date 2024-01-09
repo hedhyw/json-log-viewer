@@ -34,9 +34,6 @@ type (
 
 	// FilterKeyClickedMsg is a keyboard event for "Filtering" key.
 	FilterKeyClickedMsg struct{}
-
-	// FilterKeyClickedMsg is a keyboard event after pressing any "Back" key.
-	BackKeyClickedMsg struct{}
 )
 
 // OpenJSONRowRequested implements tea.Cmd. It creates OpenJSONRowRequestedMsg.
@@ -69,7 +66,7 @@ func FilterKeyClicked() tea.Msg {
 	return FilterKeyClickedMsg{}
 }
 
-// BackKeyClicked implements tea.Cmd. It creates BackKeyClickedMsg.
+// BackKeyClicked implements tea.Cmd. It triggers a back key click event.
 func BackKeyClicked() tea.Msg {
-	return BackKeyClickedMsg{}
+	return tea.KeyMsg{Type: tea.KeyEscape}
 }

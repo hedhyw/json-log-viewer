@@ -28,12 +28,3 @@ func (a Application) isArrowRightKeyMap(msg tea.KeyMsg) bool {
 func (a Application) isFilterKeyMap(msg tea.KeyMsg) bool {
 	return msg.String() == "f"
 }
-
-func (a Application) isBackKeyMap(msg tea.KeyMsg) bool {
-	switch msg.String() {
-	case "esc", "q":
-		return true
-	default:
-		return false
-	}
-}

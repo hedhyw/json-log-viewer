@@ -72,9 +72,6 @@ func TestStateLoadedQuit(t *testing.T) {
 		t.Parallel()
 
 		_, cmd := model.Update(tea.KeyMsg{Type: tea.KeyEsc})
-		requireCmdMsg(t, events.BackKeyClickedMsg{}, cmd)
-
-		_, cmd = model.Update(events.BackKeyClickedMsg{})
 		requireCmdMsg(t, tea.Quit(), cmd)
 	})
 
@@ -85,9 +82,6 @@ func TestStateLoadedQuit(t *testing.T) {
 			Type:  tea.KeyRunes,
 			Runes: []rune{'q'},
 		})
-		requireCmdMsg(t, events.BackKeyClickedMsg{}, cmd)
-
-		_, cmd = model.Update(events.BackKeyClickedMsg{})
 		requireCmdMsg(t, tea.Quit(), cmd)
 	})
 
