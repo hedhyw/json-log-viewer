@@ -75,19 +75,15 @@ func (s StateLoaded) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return s.handleOpenJSONRowRequestedMsg(msg, s)
 	case events.EnterKeyClickedMsg, events.ArrowRightKeyClickedMsg:
 		return s.handleRequestOpenJSON()
-	case events.FilterKeyClickedMsg:
-		return s.handleFilterKeyClickedMsg()
 	case tea.KeyMsg:
 		switch {
 			case key.Matches(msg, s.keys.Back), key.Matches(msg, s.keys.BackQ):
 				return s, tea.Quit
+			case key.Matches(msg, s.keys.Filter):
+				return s.handleFilterKeyClickedMsg()
 		}
 		cmdBatch = append(cmdBatch, s.handleKeyMsg(msg)...)
 
-		if s.isFilterKeyMap(msg) {
-			// Intercept table update.
-			return s, tea.Batch(cmdBatch...)
-		}
 	}
 
 	s.table, cmdBatch = batched(s.table.Update(msg))(cmdBatch)

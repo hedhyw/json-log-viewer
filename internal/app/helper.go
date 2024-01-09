@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -112,7 +113,7 @@ func (h helper) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 	switch {
 	case h.isQuitKeyMap(msg):
 		return tea.Quit
-	case h.isFilterKeyMap(msg):
+	case key.Matches(msg, defaultKeys.Filter):
 		return events.FilterKeyClicked
 	case h.isEnterKeyMap(msg):
 		return events.EnterKeyClicked

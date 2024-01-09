@@ -24,7 +24,3 @@ func (a Application) isArrowUpKeyMap(msg tea.KeyMsg) bool {
 func (a Application) isArrowRightKeyMap(msg tea.KeyMsg) bool {
 	return msg.Type == tea.KeyRight
 }
-
-func (a Application) isFilterKeyMap(msg tea.KeyMsg) bool {
-	return msg.String() == "f"
-}
