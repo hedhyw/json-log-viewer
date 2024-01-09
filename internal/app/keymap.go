@@ -1,39 +1,51 @@
 package app
 
-import tea "github.com/charmbracelet/bubbletea"
+import "github.com/charmbracelet/bubbles/key"
 
-func (a Application) isQuitKeyMap(
-	msg tea.KeyMsg,
-) bool {
-	switch msg.String() {
-	case "ctrl+c", "f10":
-		return true
-	default:
-		return false
-	}
+type KeyMap struct {
+	Exit       key.Binding
+	Back       key.Binding
+	ToggleView key.Binding
+	Up         key.Binding
+	Down       key.Binding
+	Filter     key.Binding
 }
 
-func (a Application) isEnterKeyMap(msg tea.KeyMsg) bool {
-	return msg.String() == "enter"
+
+var defaultKeys = KeyMap{
+	Exit: key.NewBinding(
+		key.WithKeys("ctrl", "c"),
+		key.WithHelp("Ctrl+C", "Exit"),
+	),
+	Back: key.NewBinding(
+		key.WithKeys("esc"),
+		key.WithHelp("Esc", "Back"),
+	),
+	ToggleView: key.NewBinding(
+		key.WithKeys("enter"),
+		key.WithHelp("Enter", "Open/Hide"),
+	),
+	Up: key.NewBinding(
+		key.WithKeys("up"),
+		key.WithHelp("↑", "Up"),
+	),
+	Down: key.NewBinding(
+		key.WithKeys("down"),
+		key.WithHelp("↓", "Down"),
+	),
+	Filter: key.NewBinding(
+		key.WithKeys("f"),
+		key.WithHelp("F", "Filter"),
+	),
 }
 
-func (a Application) isArrowUpKeyMap(msg tea.KeyMsg) bool {
-	return msg.Type == tea.KeyUp
+func (k KeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Exit, k.Back, k.ToggleView, k.Up, k.Down, k.Filter}
 }
 
-func (a Application) isArrowRightKeyMap(msg tea.KeyMsg) bool {
-	return msg.Type == tea.KeyRight
-}
-
-func (a Application) isFilterKeyMap(msg tea.KeyMsg) bool {
-	return msg.String() == "f"
-}
-
-func (a Application) isBackKeyMap(msg tea.KeyMsg) bool {
-	switch msg.String() {
-	case "esc", "q":
-		return true
-	default:
-		return false
+func (k KeyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Back, k.Up, k.Down},           // first column
+		{k.ToggleView, k.Exit, k.Filter}, // second column
 	}
 }

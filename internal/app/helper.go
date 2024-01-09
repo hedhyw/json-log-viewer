@@ -112,8 +112,6 @@ func (h helper) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 	switch {
 	case h.isQuitKeyMap(msg):
 		return tea.Quit
-	case h.isBackKeyMap(msg):
-		return events.BackKeyClicked
 	case h.isFilterKeyMap(msg):
 		return events.FilterKeyClicked
 	case h.isEnterKeyMap(msg):

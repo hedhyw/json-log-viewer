@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
@@ -17,6 +18,8 @@ type StateViewRow struct {
 
 	logEntry source.LogEntry
 	jsonView tea.Model
+
+	keys KeyMap
 }
 
 func newStateViewRow(
@@ -34,6 +37,8 @@ func newStateViewRow(
 
 		logEntry: logEntry,
 		jsonView: jsonViewModel,
+
+		keys: defaultKeys,
 	}
 }
 
@@ -56,11 +61,13 @@ func (s StateViewRow) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case events.ErrorOccuredMsg:
 		return s.handleErrorOccuredMsg(msg)
-	case events.BackKeyClickedMsg:
-		return s.previousState.withApplication(s.Application)
 	case events.EnterKeyClickedMsg:
 		return s.previousState.withApplication(s.Application)
 	case tea.KeyMsg:
+		switch {
+			case key.Matches(msg, s.keys.Back):
+				return s.previousState.withApplication(s.Application)
+		}
 		if cmd = s.handleKeyMsg(msg); cmd != nil {
 			return s, cmd
 		}
