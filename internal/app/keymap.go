@@ -5,7 +5,6 @@ import "github.com/charmbracelet/bubbles/key"
 type KeyMap struct {
 	Exit       key.Binding
 	Back       key.Binding
-	BackQ       key.Binding
 	ToggleView key.Binding
 	ToggleViewArrow key.Binding
 	Up         key.Binding
@@ -16,15 +15,12 @@ type KeyMap struct {
 
 var defaultKeys = KeyMap{
 	Exit: key.NewBinding(
-		key.WithKeys("ctrl", "c"),
+		key.WithKeys("ctrl+c", "f10"),
 		key.WithHelp("Ctrl+C", "Exit"),
 	),
 	Back: key.NewBinding(
-		key.WithKeys("esc"),
+		key.WithKeys("esc", "q"),
 		key.WithHelp("Esc", "Back"),
-	),
-	BackQ: key.NewBinding(
-		key.WithKeys("q"),
 	),
 	ToggleView: key.NewBinding(
 		key.WithKeys("enter"),

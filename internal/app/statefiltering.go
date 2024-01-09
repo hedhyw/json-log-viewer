@@ -58,7 +58,7 @@ func (s StateFiltering) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return s.handleErrorOccuredMsg(msg)
 	case tea.KeyMsg:
 		switch {
-			case key.Matches(msg, s.keys.Back), key.Matches(msg, s.keys.BackQ):
+			case key.Matches(msg, s.keys.Back):
 				return s.previousState.withApplication(s.Application)
 			case key.Matches(msg, s.keys.ToggleView):
 				return s.handleEnterKeyClickedMsg()

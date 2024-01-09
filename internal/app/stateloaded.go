@@ -75,7 +75,7 @@ func (s StateLoaded) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return s.handleOpenJSONRowRequestedMsg(msg, s)
 	case tea.KeyMsg:
 		switch {
-			case key.Matches(msg, s.keys.Back), key.Matches(msg, s.keys.BackQ):
+			case key.Matches(msg, s.keys.Back):
 				return s, tea.Quit
 			case key.Matches(msg, s.keys.Filter):
 				return s.handleFilterKeyClickedMsg()

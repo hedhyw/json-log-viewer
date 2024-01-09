@@ -111,7 +111,7 @@ func (h helper) handleOpenJSONRowRequestedMsg(
 
 func (h helper) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 	switch {
-	case h.isQuitKeyMap(msg):
+	case key.Matches(msg, defaultKeys.Exit):
 		return tea.Quit
 	case key.Matches(msg, defaultKeys.Filter):
 		return events.FilterKeyClicked
