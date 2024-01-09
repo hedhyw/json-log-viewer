@@ -26,9 +26,6 @@ type (
 	// ViewRowsReloadRequestedMsg is an event to start reloading of logs.
 	ViewRowsReloadRequestedMsg struct{}
 
-	// EnterKeyClickedMsg is a keyboard event after pressing <Enter>.
-	EnterKeyClickedMsg struct{}
-
 )
 
 // OpenJSONRowRequested implements tea.Cmd. It creates OpenJSONRowRequestedMsg.
@@ -46,9 +43,9 @@ func ViewRowsReloadRequested() tea.Msg {
 	return ViewRowsReloadRequestedMsg{}
 }
 
-// EnterKeyClicked implements tea.Cmd. It creates EnterKeyClickedMsg.
+// EnterKeyClicked implements tea.Cmd. It creates a message indicating 'Enter' has been clicked.
 func EnterKeyClicked() tea.Msg {
-	return EnterKeyClickedMsg{}
+	return tea.KeyMsg{Type: tea.KeyEnter}
 }
 
 // ArrowRightKeyClicked implements tea.Cmd. It creates a message indicating 'arrow-right' has been clicked.

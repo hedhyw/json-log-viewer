@@ -56,12 +56,12 @@ func (s StateFiltering) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case events.ErrorOccuredMsg:
 		return s.handleErrorOccuredMsg(msg)
-	case events.EnterKeyClickedMsg:
-		return s.handleEnterKeyClickedMsg()
 	case tea.KeyMsg:
 		switch {
 			case key.Matches(msg, s.keys.Back), key.Matches(msg, s.keys.BackQ):
 				return s.previousState.withApplication(s.Application)
+			case key.Matches(msg, s.keys.ToggleView):
+				return s.handleEnterKeyClickedMsg()
 		}
 		if cmd := s.handleKeyMsg(msg); cmd != nil {
 			// Intercept table update.

@@ -13,11 +13,3 @@ func (a Application) isQuitKeyMap(
 	}
 }
 
-func (a Application) isEnterKeyMap(msg tea.KeyMsg) bool {
-	return msg.String() == "enter"
-}
-
-func (a Application) isArrowUpKeyMap(msg tea.KeyMsg) bool {
-	return msg.Type == tea.KeyUp
-}
-
