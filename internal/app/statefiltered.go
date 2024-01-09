@@ -61,7 +61,7 @@ func (s StateFiltered) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case events.ErrorOccuredMsg:
 		return s.handleErrorOccuredMsg(msg)
-	case events.EnterKeyClickedMsg, events.ArrowRightKeyClickedMsg:
+	case events.EnterKeyClickedMsg:
 		return s.handleRequestOpenJSON()
 	case events.LogEntriesLoadedMsg:
 		return s.handleLogEntriesLoadedMsg(msg)
@@ -73,6 +73,8 @@ func (s StateFiltered) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return s.previousState.withApplication(s.Application)
 			case key.Matches(msg, s.keys.Filter):
 				return s.handleFilterKeyClickedMsg()
+			case key.Matches(msg, s.keys.ToggleViewArrow):
+				return s.handleRequestOpenJSON()
 		}
 		if cmd := s.handleKeyMsg(msg); cmd != nil {
 			return s, cmd

@@ -29,8 +29,6 @@ type (
 	// EnterKeyClickedMsg is a keyboard event after pressing <Enter>.
 	EnterKeyClickedMsg struct{}
 
-	// EnterKeyClickedMsg is a keyboard event after pressing <Right>.
-	ArrowRightKeyClickedMsg struct{}
 )
 
 // OpenJSONRowRequested implements tea.Cmd. It creates OpenJSONRowRequestedMsg.
@@ -53,12 +51,12 @@ func EnterKeyClicked() tea.Msg {
 	return EnterKeyClickedMsg{}
 }
 
-// ArrowRightKeyClicked implements tea.Cmd. It creates ArrowRightKeyClickedMsg.
+// ArrowRightKeyClicked implements tea.Cmd. It creates a message indicating 'arrow-right' has been clicked.
 func ArrowRightKeyClicked() tea.Msg {
-	return ArrowRightKeyClickedMsg{}
+	return tea.KeyMsg{Type: tea.KeyRight}
 }
 
-// FilterKeyClicked implements tea.Cmd. It triggers a click on 'f'
+// FilterKeyClicked implements tea.Cmd. It creates a message indicating 'f' has been clicked.
 func FilterKeyClicked() tea.Msg {
 	return tea.KeyMsg{
 		Type:  tea.KeyRunes,
@@ -66,7 +64,7 @@ func FilterKeyClicked() tea.Msg {
 	}
 }
 
-// BackKeyClicked implements tea.Cmd. It triggers a back key click event.
+// BackKeyClicked implements tea.Cmd.  It creates a message indicating 'Esc' has been clicked.
 func BackKeyClicked() tea.Msg {
 	return tea.KeyMsg{Type: tea.KeyEscape}
 }

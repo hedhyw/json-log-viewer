@@ -7,6 +7,7 @@ type KeyMap struct {
 	Back       key.Binding
 	BackQ       key.Binding
 	ToggleView key.Binding
+	ToggleViewArrow key.Binding
 	Up         key.Binding
 	Down       key.Binding
 	Filter     key.Binding
@@ -28,6 +29,9 @@ var defaultKeys = KeyMap{
 	ToggleView: key.NewBinding(
 		key.WithKeys("enter"),
 		key.WithHelp("Enter", "Open/Hide"),
+	),
+	ToggleViewArrow: key.NewBinding(
+		key.WithKeys("right"),
 	),
 	Up: key.NewBinding(
 		key.WithKeys("up"),

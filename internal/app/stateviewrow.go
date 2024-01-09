@@ -79,7 +79,7 @@ func (s StateViewRow) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (s StateViewRow) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
-	if s.isArrowRightKeyMap(msg) {
+	if key.Matches(msg, s.keys.ToggleViewArrow) {
 		return nil
 	}
 

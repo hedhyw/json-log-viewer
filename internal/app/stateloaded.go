@@ -73,7 +73,7 @@ func (s StateLoaded) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return s.handleViewRowsReloadRequestedMsg()
 	case events.OpenJSONRowRequestedMsg:
 		return s.handleOpenJSONRowRequestedMsg(msg, s)
-	case events.EnterKeyClickedMsg, events.ArrowRightKeyClickedMsg:
+	case events.EnterKeyClickedMsg:
 		return s.handleRequestOpenJSON()
 	case tea.KeyMsg:
 		switch {
@@ -81,6 +81,8 @@ func (s StateLoaded) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return s, tea.Quit
 			case key.Matches(msg, s.keys.Filter):
 				return s.handleFilterKeyClickedMsg()
+			case key.Matches(msg, s.keys.ToggleViewArrow):
+				return s.handleRequestOpenJSON()
 		}
 		cmdBatch = append(cmdBatch, s.handleKeyMsg(msg)...)
 

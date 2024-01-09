@@ -117,7 +117,7 @@ func (h helper) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		return events.FilterKeyClicked
 	case h.isEnterKeyMap(msg):
 		return events.EnterKeyClicked
-	case h.isArrowRightKeyMap(msg):
+	case key.Matches(msg, defaultKeys.ToggleViewArrow):
 		return events.ArrowRightKeyClicked
 	default:
 		return nil
