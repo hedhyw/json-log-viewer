@@ -16,7 +16,7 @@ type StateFiltering struct {
 	table         logsTableModel
 
 	textInput textinput.Model
-	keys KeyMap
+	keys      KeyMap
 }
 
 func newStateFiltering(
@@ -33,7 +33,7 @@ func newStateFiltering(
 		table:         previousState.table,
 
 		textInput: textInput,
-		keys: defaultKeys,
+		keys:      defaultKeys,
 	}
 }
 
@@ -58,10 +58,10 @@ func (s StateFiltering) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return s.handleErrorOccuredMsg(msg)
 	case tea.KeyMsg:
 		switch {
-			case key.Matches(msg, s.keys.Back):
-				return s.previousState.withApplication(s.Application)
-			case key.Matches(msg, s.keys.ToggleView):
-				return s.handleEnterKeyClickedMsg()
+		case key.Matches(msg, s.keys.Back):
+			return s.previousState.withApplication(s.Application)
+		case key.Matches(msg, s.keys.ToggleView):
+			return s.handleEnterKeyClickedMsg()
 		}
 		if cmd := s.handleKeyMsg(msg); cmd != nil {
 			// Intercept table update.

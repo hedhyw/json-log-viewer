@@ -3,15 +3,14 @@ package app
 import "github.com/charmbracelet/bubbles/key"
 
 type KeyMap struct {
-	Exit       key.Binding
-	Back       key.Binding
-	ToggleView key.Binding
+	Exit            key.Binding
+	Back            key.Binding
+	ToggleView      key.Binding
 	ToggleViewArrow key.Binding
-	Up         key.Binding
-	Down       key.Binding
-	Filter     key.Binding
+	Up              key.Binding
+	Down            key.Binding
+	Filter          key.Binding
 }
-
 
 var defaultKeys = KeyMap{
 	Exit: key.NewBinding(

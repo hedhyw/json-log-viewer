@@ -75,15 +75,14 @@ func (s StateLoaded) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return s.handleOpenJSONRowRequestedMsg(msg, s)
 	case tea.KeyMsg:
 		switch {
-			case key.Matches(msg, s.keys.Back):
-				return s, tea.Quit
-			case key.Matches(msg, s.keys.Filter):
-				return s.handleFilterKeyClickedMsg()
-			case key.Matches(msg, s.keys.ToggleViewArrow), key.Matches(msg, s.keys.ToggleView):
-				return s.handleRequestOpenJSON()
+		case key.Matches(msg, s.keys.Back):
+			return s, tea.Quit
+		case key.Matches(msg, s.keys.Filter):
+			return s.handleFilterKeyClickedMsg()
+		case key.Matches(msg, s.keys.ToggleViewArrow), key.Matches(msg, s.keys.ToggleView):
+			return s.handleRequestOpenJSON()
 		}
 		cmdBatch = append(cmdBatch, s.handleKeyMsg(msg)...)
-
 	}
 
 	s.table, cmdBatch = batched(s.table.Update(msg))(cmdBatch)

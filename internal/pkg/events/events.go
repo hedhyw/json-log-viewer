@@ -25,7 +25,6 @@ type (
 
 	// ViewRowsReloadRequestedMsg is an event to start reloading of logs.
 	ViewRowsReloadRequestedMsg struct{}
-
 )
 
 // OpenJSONRowRequested implements tea.Cmd. It creates OpenJSONRowRequestedMsg.

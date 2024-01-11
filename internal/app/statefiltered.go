@@ -17,7 +17,7 @@ type StateFiltered struct {
 	logEntries    source.LogEntries
 
 	filterText string
-	keys KeyMap
+	keys       KeyMap
 }
 
 func newStateFiltered(
@@ -32,7 +32,7 @@ func newStateFiltered(
 		table:         previousState.table,
 
 		filterText: filterText,
-		keys: defaultKeys,
+		keys:       defaultKeys,
 	}
 }
 
@@ -67,12 +67,12 @@ func (s StateFiltered) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return s.handleOpenJSONRowRequestedMsg(msg, s)
 	case tea.KeyMsg:
 		switch {
-			case key.Matches(msg, s.keys.Back):
-				return s.previousState.withApplication(s.Application)
-			case key.Matches(msg, s.keys.Filter):
-				return s.handleFilterKeyClickedMsg()
-			case key.Matches(msg, s.keys.ToggleViewArrow) , key.Matches(msg, s.keys.ToggleView):
-				return s.handleRequestOpenJSON()
+		case key.Matches(msg, s.keys.Back):
+			return s.previousState.withApplication(s.Application)
+		case key.Matches(msg, s.keys.Filter):
+			return s.handleFilterKeyClickedMsg()
+		case key.Matches(msg, s.keys.ToggleViewArrow), key.Matches(msg, s.keys.ToggleView):
+			return s.handleRequestOpenJSON()
 		}
 		if cmd := s.handleKeyMsg(msg); cmd != nil {
 			return s, cmd
