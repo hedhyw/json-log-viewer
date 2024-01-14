@@ -1,13 +1,13 @@
 package app
 
 import (
+	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 )
-
-const defaultFooter = "[Ctrl+C] Exit; [Esc] Back; [Enter] Open/Hide; [↑↓] Navigation; [F] Filter"
 
 // StateLoaded is a state that shows all loaded records.
 type StateLoaded struct {
@@ -17,6 +17,9 @@ type StateLoaded struct {
 
 	table      logsTableModel
 	logEntries source.LogEntries
+
+	keys KeyMap
+	help help.Model
 }
 
 func newStateViewLogs(application Application, logEntries source.LogEntries) StateLoaded {
@@ -29,6 +32,9 @@ func newStateViewLogs(application Application, logEntries source.LogEntries) Sta
 
 		table:      table,
 		logEntries: logEntries,
+
+		keys: defaultKeys,
+		help: help.New(),
 	}
 }
 
@@ -39,15 +45,15 @@ func (s StateLoaded) Init() tea.Cmd {
 
 // View renders component. It implements tea.Model.
 func (s StateLoaded) View() string {
-	return s.viewTable() + "\n" + s.viewFooter()
+	return s.viewTable() + s.viewHelp()
 }
 
 func (s StateLoaded) viewTable() string {
 	return s.BaseStyle.Render(s.table.View())
 }
 
-func (s StateLoaded) viewFooter() string {
-	return s.FooterStyle.Render(defaultFooter)
+func (s StateLoaded) viewHelp() string {
+	return "\n" + s.help.View(s.keys)
 }
 
 // Update handles events. It implements tea.Model.
@@ -67,19 +73,16 @@ func (s StateLoaded) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return s.handleViewRowsReloadRequestedMsg()
 	case events.OpenJSONRowRequestedMsg:
 		return s.handleOpenJSONRowRequestedMsg(msg, s)
-	case events.BackKeyClickedMsg:
-		return s, tea.Quit
-	case events.EnterKeyClickedMsg, events.ArrowRightKeyClickedMsg:
-		return s.handleRequestOpenJSON()
-	case events.FilterKeyClickedMsg:
-		return s.handleFilterKeyClickedMsg()
 	case tea.KeyMsg:
-		cmdBatch = append(cmdBatch, s.handleKeyMsg(msg)...)
-
-		if s.isFilterKeyMap(msg) {
-			// Intercept table update.
-			return s, tea.Batch(cmdBatch...)
+		switch {
+		case key.Matches(msg, s.keys.Back):
+			return s, tea.Quit
+		case key.Matches(msg, s.keys.Filter):
+			return s.handleFilterKeyClickedMsg()
+		case key.Matches(msg, s.keys.ToggleViewArrow), key.Matches(msg, s.keys.ToggleView):
+			return s.handleRequestOpenJSON()
 		}
+		cmdBatch = append(cmdBatch, s.handleKeyMsg(msg)...)
 	}
 
 	s.table, cmdBatch = batched(s.table.Update(msg))(cmdBatch)
@@ -92,7 +95,7 @@ func (s StateLoaded) handleKeyMsg(msg tea.KeyMsg) []tea.Cmd {
 
 	cmdBatch = appendCmd(cmdBatch, s.helper.handleKeyMsg(msg))
 
-	if s.isArrowUpKeyMap(msg) {
+	if key.Matches(msg, s.keys.Up) {
 		cmdBatch = appendCmd(cmdBatch, s.handleArrowUpKeyClicked())
 	}
 

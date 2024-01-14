@@ -25,18 +25,6 @@ type (
 
 	// ViewRowsReloadRequestedMsg is an event to start reloading of logs.
 	ViewRowsReloadRequestedMsg struct{}
-
-	// EnterKeyClickedMsg is a keyboard event after pressing <Enter>.
-	EnterKeyClickedMsg struct{}
-
-	// EnterKeyClickedMsg is a keyboard event after pressing <Right>.
-	ArrowRightKeyClickedMsg struct{}
-
-	// FilterKeyClickedMsg is a keyboard event for "Filtering" key.
-	FilterKeyClickedMsg struct{}
-
-	// FilterKeyClickedMsg is a keyboard event after pressing any "Back" key.
-	BackKeyClickedMsg struct{}
 )
 
 // OpenJSONRowRequested implements tea.Cmd. It creates OpenJSONRowRequestedMsg.
@@ -54,22 +42,25 @@ func ViewRowsReloadRequested() tea.Msg {
 	return ViewRowsReloadRequestedMsg{}
 }
 
-// EnterKeyClicked implements tea.Cmd. It creates EnterKeyClickedMsg.
+// EnterKeyClicked implements tea.Cmd. It creates a message indicating 'Enter' has been clicked.
 func EnterKeyClicked() tea.Msg {
-	return EnterKeyClickedMsg{}
+	return tea.KeyMsg{Type: tea.KeyEnter}
 }
 
-// ArrowRightKeyClicked implements tea.Cmd. It creates ArrowRightKeyClickedMsg.
+// ArrowRightKeyClicked implements tea.Cmd. It creates a message indicating 'arrow-right' has been clicked.
 func ArrowRightKeyClicked() tea.Msg {
-	return ArrowRightKeyClickedMsg{}
+	return tea.KeyMsg{Type: tea.KeyRight}
 }
 
-// FilterKeyClicked implements tea.Cmd. It creates FilterKeyClickedMsg.
+// FilterKeyClicked implements tea.Cmd. It creates a message indicating 'f' has been clicked.
 func FilterKeyClicked() tea.Msg {
-	return FilterKeyClickedMsg{}
+	return tea.KeyMsg{
+		Type:  tea.KeyRunes,
+		Runes: []rune{'f'},
+	}
 }
 
-// BackKeyClicked implements tea.Cmd. It creates BackKeyClickedMsg.
+// BackKeyClicked implements tea.Cmd. It creates a message indicating 'Esc' has been clicked.
 func BackKeyClicked() tea.Msg {
-	return BackKeyClickedMsg{}
+	return tea.KeyMsg{Type: tea.KeyEscape}
 }

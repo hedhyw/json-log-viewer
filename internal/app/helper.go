@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -110,15 +111,13 @@ func (h helper) handleOpenJSONRowRequestedMsg(
 
 func (h helper) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 	switch {
-	case h.isQuitKeyMap(msg):
+	case key.Matches(msg, defaultKeys.Exit):
 		return tea.Quit
-	case h.isBackKeyMap(msg):
-		return events.BackKeyClicked
-	case h.isFilterKeyMap(msg):
+	case key.Matches(msg, defaultKeys.Filter):
 		return events.FilterKeyClicked
-	case h.isEnterKeyMap(msg):
+	case key.Matches(msg, defaultKeys.ToggleView):
 		return events.EnterKeyClicked
-	case h.isArrowRightKeyMap(msg):
+	case key.Matches(msg, defaultKeys.ToggleViewArrow):
 		return events.ArrowRightKeyClicked
 	default:
 		return nil

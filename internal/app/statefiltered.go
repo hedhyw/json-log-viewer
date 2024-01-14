@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
@@ -16,6 +17,7 @@ type StateFiltered struct {
 	logEntries    source.LogEntries
 
 	filterText string
+	keys       KeyMap
 }
 
 func newStateFiltered(
@@ -30,6 +32,7 @@ func newStateFiltered(
 		table:         previousState.table,
 
 		filterText: filterText,
+		keys:       defaultKeys,
 	}
 }
 
@@ -58,17 +61,19 @@ func (s StateFiltered) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case events.ErrorOccuredMsg:
 		return s.handleErrorOccuredMsg(msg)
-	case events.BackKeyClickedMsg:
-		return s.previousState.withApplication(s.Application)
-	case events.FilterKeyClickedMsg:
-		return s.handleFilterKeyClickedMsg()
-	case events.EnterKeyClickedMsg, events.ArrowRightKeyClickedMsg:
-		return s.handleRequestOpenJSON()
 	case events.LogEntriesLoadedMsg:
 		return s.handleLogEntriesLoadedMsg(msg)
 	case events.OpenJSONRowRequestedMsg:
 		return s.handleOpenJSONRowRequestedMsg(msg, s)
 	case tea.KeyMsg:
+		switch {
+		case key.Matches(msg, s.keys.Back):
+			return s.previousState.withApplication(s.Application)
+		case key.Matches(msg, s.keys.Filter):
+			return s.handleFilterKeyClickedMsg()
+		case key.Matches(msg, s.keys.ToggleViewArrow), key.Matches(msg, s.keys.ToggleView):
+			return s.handleRequestOpenJSON()
+		}
 		if cmd := s.handleKeyMsg(msg); cmd != nil {
 			return s, cmd
 		}
