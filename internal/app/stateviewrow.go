@@ -62,10 +62,10 @@ func (s StateViewRow) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case events.ErrorOccuredMsg:
 		return s.handleErrorOccuredMsg(msg)
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, s.keys.Back), key.Matches(msg, s.keys.ToggleView):
+		if key.Matches(msg, s.keys.Back) || key.Matches(msg, s.keys.ToggleView) {
 			return s.previousState.withApplication(s.Application)
 		}
+
 		if cmd = s.handleKeyMsg(msg); cmd != nil {
 			return s, cmd
 		}
