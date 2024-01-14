@@ -60,7 +60,7 @@ func FilterKeyClicked() tea.Msg {
 	}
 }
 
-// BackKeyClicked implements tea.Cmd.  It creates a message indicating 'Esc' has been clicked.
+// BackKeyClicked implements tea.Cmd. It creates a message indicating 'Esc' has been clicked.
 func BackKeyClicked() tea.Msg {
 	return tea.KeyMsg{Type: tea.KeyEscape}
 }
