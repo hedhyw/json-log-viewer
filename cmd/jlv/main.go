@@ -47,7 +47,7 @@ func readConfig() (*config.Config, error) {
 	}
 
 	homeDir, err := os.UserHomeDir()
-	if err != nil {
+	if err == nil {
 		paths = append(paths, path.Join(homeDir, configFileName))
 	}
 
