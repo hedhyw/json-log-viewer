@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 )
 
@@ -50,6 +51,24 @@ func TestParseLevel(t *testing.T) {
 	}, {
 		Input:    "  Unknown\t\n",
 		Expected: source.Level("unknown"),
+	}, {
+		Input:    "10",
+		Expected: source.LevelTrace,
+	}, {
+		Input:    "20",
+		Expected: source.LevelDebug,
+	}, {
+		Input:    "30",
+		Expected: source.LevelInfo,
+	}, {
+		Input:    "40",
+		Expected: source.LevelWarning,
+	}, {
+		Input:    "50",
+		Expected: source.LevelError,
+	}, {
+		Input:    "60",
+		Expected: source.LevelFatal,
 	}}
 
 	for _, testCase := range testCases {
@@ -58,7 +77,7 @@ func TestParseLevel(t *testing.T) {
 		t.Run(testCase.Input, func(t *testing.T) {
 			t.Parallel()
 
-			actual := source.ParseLevel(testCase.Input)
+			actual := source.ParseLevel(testCase.Input, config.GetDefaultCustomLevelMapping())
 			assert.Equal(t, testCase.Expected, actual)
 		})
 	}

@@ -67,7 +67,11 @@ func (entries LogEntries) Rows() []table.Row {
 	return rows
 }
 
-func parseField(parsedLine any, field config.Field) string {
+func parseField(
+	parsedLine any,
+	field config.Field,
+	cfg *config.Config,
+) string {
 	for _, ref := range field.References {
 		foundField, err := jsonpath.Read(parsedLine, ref)
 		if err != nil {
@@ -87,7 +91,7 @@ func parseField(parsedLine any, field config.Field) string {
 			unquotedField = string(jsonField)
 		}
 
-		return formatField(unquotedField, field.Kind)
+		return formatField(unquotedField, field.Kind, cfg)
 	}
 
 	return "-"
@@ -97,6 +101,7 @@ func parseField(parsedLine any, field config.Field) string {
 func formatField(
 	value string,
 	kind config.FieldKind,
+	cfg *config.Config,
 ) string {
 	value = strings.TrimSpace(value)
 
@@ -109,7 +114,7 @@ func formatField(
 	case config.FieldKindMessage:
 		return formatMessage(value)
 	case config.FieldKindLevel:
-		return string(ParseLevel(formatMessage(value)))
+		return string(ParseLevel(formatMessage(value), cfg.CustomLevelMapping))
 	case config.FieldKindTime:
 		return formatMessage(value)
 	case config.FieldKindNumericTime:
@@ -145,7 +150,7 @@ func ParseLogEntry(
 	fields := make([]string, 0, len(cfg.Fields))
 
 	for _, f := range cfg.Fields {
-		fields = append(fields, parseField(parsedLine, f))
+		fields = append(fields, parseField(parsedLine, f, cfg))
 	}
 
 	return LogEntry{

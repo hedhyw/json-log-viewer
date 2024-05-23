@@ -22,8 +22,8 @@ install:
 	go install ./cmd/jlv
 .PHONY: install
 
-lint: bin/golangci-lint
-	./bin/golangci-lint run
+lint: bin/golangci-lint-${GOLANG_CI_LINT_VER}
+	./bin/golangci-lint-${GOLANG_CI_LINT_VER} run
 .PHONY: lint
 
 test:
@@ -41,8 +41,9 @@ vendor:
 	go mod vendor
 .PHONY: vendor
 
-bin/golangci-lint:
+bin/golangci-lint-${GOLANG_CI_LINT_VER}:
 	curl \
 		-sSfL \
 		https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
 		| sh -s $(GOLANG_CI_LINT_VER)
+	mv ./bin/golangci-lint ./bin/golangci-lint-${GOLANG_CI_LINT_VER}
