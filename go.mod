@@ -1,6 +1,6 @@
 module github.com/hedhyw/json-log-viewer
 
-go 1.21
+go 1.22
 
 replace github.com/antonmedv/fx => github.com/hedhyw/fx v0.0.2
 
