@@ -44,7 +44,7 @@ func (h helper) getLogLevelStyle(
 		return baseStyle
 	}
 
-	return baseStyle.Copy().Foreground(color)
+	return baseStyle.Foreground(color)
 }
 
 // Update application state.
