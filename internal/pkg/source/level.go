@@ -6,9 +6,15 @@ import "strings"
 type Level string
 
 // ParseLevel parses level from the text value.
-func ParseLevel(value string) Level {
+//
+// nolint: cyclop // Switch-case.
+func ParseLevel(value string, customMapping map[string]string) Level {
 	value = strings.ToLower(value)
 	value = strings.TrimSpace(value)
+
+	if customLevel, ok := customMapping[value]; ok {
+		return Level(customLevel)
+	}
 
 	switch {
 	case value == "":

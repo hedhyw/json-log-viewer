@@ -160,8 +160,19 @@ Example configuration:
                 "$.custom"
             ],
             "width": 0
-        }
-    ]
+        },
+    ],
+    // Mapping of log level.
+    // Possible values: none, trace, debug, info, warn, error, panic, fatal.
+    "customLevelMapping": {
+        // Replace "10" to "trace" in log level.
+        "10": "trace",
+        "20": "debug",
+        "30": "info",
+        "40": "warn",
+        "50": "error",
+        "60": "fatal"
+    }
 }
 ```
 

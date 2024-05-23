@@ -19,6 +19,8 @@ type Config struct {
 	Path string `json:"-"`
 
 	Fields []Field `json:"fields" validate:"min=1"`
+
+	CustomLevelMapping map[string]string `json:"customLevelMapping"`
 }
 
 // FieldKind describes the type of the log field.
@@ -47,7 +49,8 @@ type Field struct {
 // GetDefaultConfig returns the configuration with default values.
 func GetDefaultConfig() *Config {
 	return &Config{
-		Path: "default",
+		Path:               "default",
+		CustomLevelMapping: GetDefaultCustomLevelMapping(),
 		Fields: []Field{{
 			Title:      "Time",
 			Kind:       FieldKindNumericTime,
@@ -76,6 +79,10 @@ func Read(paths ...string) (*Config, error) {
 	err = validator.New().Struct(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("validating config: %s: %w", cfg.Path, err)
+	}
+
+	if cfg.CustomLevelMapping == nil {
+		cfg.CustomLevelMapping = map[string]string{}
 	}
 
 	return cfg, nil
@@ -121,4 +128,17 @@ func readConfigFromFile(path string) (cfg *Config, err error) {
 	cfg.Path = path
 
 	return cfg, nil
+}
+
+// GetDefaultCustomLevelMapping returns the custom mapping of levels.
+func GetDefaultCustomLevelMapping() map[string]string {
+	// https://github.com/pinojs/pino/blob/main/docs/api.md#loggerlevels-object
+	return map[string]string{
+		"10": "trace",
+		"20": "debug",
+		"30": "info",
+		"40": "warn",
+		"50": "error",
+		"60": "fatal",
+	}
 }
