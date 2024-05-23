@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"path"
@@ -14,16 +15,19 @@ import (
 const configFileName = ".jlv.jsonc"
 
 func main() {
-	if len(os.Args) != 2 {
+	configPath := flag.String("config", "", "Path to the config")
+	flag.Parse()
+
+	if flag.NArg() != 1 {
 		fatalf("Invalid arguments, usage: %s file.log\n", os.Args[0])
 	}
 
-	cfg, err := readConfig()
+	cfg, err := readConfig(*configPath)
 	if err != nil {
 		fatalf("Error reading config: %s\n", err)
 	}
 
-	appModel := app.NewModel(os.Args[1], cfg)
+	appModel := app.NewModel(flag.Args()[0], cfg)
 	program := tea.NewProgram(appModel, tea.WithAltScreen())
 
 	if _, err := program.Run(); err != nil {
@@ -38,8 +42,12 @@ func fatalf(message string, args ...any) {
 
 // readConfig tries to read config from working directory or home directory.
 // If configs are not found, then it returns a default configuration.
-func readConfig() (*config.Config, error) {
+func readConfig(configPath string) (*config.Config, error) {
 	paths := []string{}
+
+	if configPath != "" {
+		paths = append(paths, configPath)
+	}
 
 	workDir, err := os.Getwd()
 	if err == nil {

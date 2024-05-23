@@ -49,6 +49,7 @@ The application is designed to help in visualization, navigation, and analyzing 
 
 ```sh
 jlv file.json
+jlv -config .jlv.jsonc file.json
 ```
 
 | Key    | Action         |
@@ -104,77 +105,11 @@ The application will look for the config `.jlv.jsonc` in the working directory o
 - `$PWD/.jlv.jsonc`;
 - `$HOME/.jlv.jsonc`.
 
+It's also possible to define the path to the configuration using "-config" flag.
+
 The Json path supports the described in [yalp/jsonpath](https://github.com/yalp/jsonpath#jsonpath-quick-intro) syntax.
 
-Example configuration:
-```jsonc
-{
-    // Comments are allowed.
-    "fields": [
-        {
-            "title": "Time", // Max length is 32.
-            // Kind affects rendering. There are:
-            // * time;
-            // * numerictime;
-            // * secondtime;
-            // * millitime;
-            // * microtime;
-            // * level;
-            // * message;
-            // * any.
-            "kind": "numerictime",
-            "ref": [
-                // The application will display the first matched value.
-                "$.timestamp",
-                "$.time",
-                "$.t",
-                "$.ts"
-            ],
-            "width": 30
-        },
-        {
-            "title": "Level",
-            "kind": "level",
-            "ref": [
-                "$.level",
-                "$.lvl",
-                "$.l"
-            ],
-            "width": 10
-        },
-        {
-            "title": "Message",
-            "kind": "message",
-            "ref": [
-                "$.message",
-                "$.msg",
-                "$.error",
-                "$.err"
-            ],
-            "width": 0 // The width will be calculated automatically.
-        },
-        {
-            "title": "Custom",
-            "kind": "any",
-            "ref": [
-                "$.custom"
-            ],
-            "width": 0
-        },
-    ],
-    // Mapping of log level.
-    // Possible values: none, trace, debug, info, warn, error, panic, fatal.
-    "customLevelMapping": {
-        // Replace "10" to "trace" in log level.
-        "10": "trace",
-        "20": "debug",
-        "30": "info",
-        "40": "warn",
-        "50": "error",
-        "60": "fatal"
-    }
-}
-```
+Example configuration: [example.jlv.jsonc](example.jlv.jsonc).
 
 ### Time Formats
 JSON Log Viewer can handle a variety of datetime formats when parsing your logs.
