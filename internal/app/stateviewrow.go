@@ -9,11 +9,11 @@ import (
 	"github.com/hedhyw/json-log-viewer/internal/pkg/widgets"
 )
 
-// StateViewRow is a state that shows extended JSON view.
-type StateViewRow struct {
+// StateViewRowModel is a state that shows extended JSON view.
+type StateViewRowModel struct {
 	helper
 
-	previousState state
+	previousState stateModel
 	initCmd       tea.Cmd
 
 	logEntry source.LogEntry
@@ -25,11 +25,11 @@ type StateViewRow struct {
 func newStateViewRow(
 	application Application,
 	logEntry source.LogEntry,
-	previousState state,
-) StateViewRow {
+	previousState stateModel,
+) StateViewRowModel {
 	jsonViewModel, cmd := widgets.NewJSONViewModel(logEntry.Line, application.LastWindowSize)
 
-	return StateViewRow{
+	return StateViewRowModel{
 		helper: helper{Application: application},
 
 		previousState: previousState,
@@ -43,17 +43,17 @@ func newStateViewRow(
 }
 
 // Init initializes component. It implements tea.Model.
-func (s StateViewRow) Init() tea.Cmd {
+func (s StateViewRowModel) Init() tea.Cmd {
 	return s.initCmd
 }
 
 // View renders component. It implements tea.Model.
-func (s StateViewRow) View() string {
+func (s StateViewRowModel) View() string {
 	return s.jsonView.View()
 }
 
 // Update handles events. It implements tea.Model.
-func (s StateViewRow) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s StateViewRowModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	s.helper = s.helper.Update(msg)
@@ -76,7 +76,7 @@ func (s StateViewRow) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return s, cmd
 }
 
-func (s StateViewRow) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
+func (s StateViewRowModel) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 	if key.Matches(msg, s.keys.ToggleViewArrow) {
 		return nil
 	}
@@ -85,6 +85,6 @@ func (s StateViewRow) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 }
 
 // String implements fmt.Stringer.
-func (s StateViewRow) String() string {
+func (s StateViewRowModel) String() string {
 	return modelValue(s)
 }

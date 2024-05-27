@@ -21,7 +21,7 @@ func TestStateError(t *testing.T) {
 	model := newTestModel(t, assets.ExampleJSONLog())
 	model = handleUpdate(model, events.ErrorOccuredMsg{Err: errTest})
 
-	_, ok := model.(app.StateError)
+	_, ok := model.(app.StateErrorModel)
 	assert.Truef(t, ok, "%s", model)
 
 	t.Run("rendered", func(t *testing.T) {
@@ -52,7 +52,7 @@ func TestStateError(t *testing.T) {
 
 		model := handleUpdate(model, events.ViewRowsReloadRequestedMsg{})
 
-		_, ok := model.(app.StateError)
+		_, ok := model.(app.StateErrorModel)
 		require.Truef(t, ok, "%s", model)
 	})
 }

@@ -22,7 +22,7 @@ func TestStateLoadedEmpty(t *testing.T) {
 
 	model := newTestModel(t, []byte(""))
 
-	_, ok := model.(app.StateLoaded)
+	_, ok := model.(app.StateLoadedModel)
 	require.Truef(t, ok, "%s", model)
 
 	model, cmd := model.Update(events.EnterKeyClicked())
@@ -37,7 +37,7 @@ func TestStateLoaded(t *testing.T) {
 
 	model := newTestModel(t, []byte(jsonFile))
 
-	_, ok := model.(app.StateLoaded)
+	_, ok := model.(app.StateLoadedModel)
 	require.Truef(t, ok, "%s", model)
 
 	t.Run("stringer", func(t *testing.T) {
@@ -54,7 +54,7 @@ func TestStateLoaded(t *testing.T) {
 
 		model := handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
 
-		_, ok = model.(app.StateError)
+		_, ok = model.(app.StateErrorModel)
 		assert.Truef(t, ok, "%s", model)
 	})
 }
@@ -190,7 +190,7 @@ func BenchmarkStateLoadedBig(b *testing.B) {
 
 	model := newTestModel(b, []byte(`{}`))
 
-	_, ok := model.(app.StateLoaded)
+	_, ok := model.(app.StateLoadedModel)
 	if !ok {
 		b.Fatal(model.View())
 	}
@@ -208,7 +208,7 @@ func BenchmarkStateLoadedBig(b *testing.B) {
 func overwriteFileInStateLoaded(tb testing.TB, model tea.Model, content []byte) {
 	tb.Helper()
 
-	stateLoaded, ok := model.(app.StateLoaded)
+	stateLoaded, ok := model.(app.StateLoadedModel)
 	require.True(tb, ok)
 
 	err := os.WriteFile(

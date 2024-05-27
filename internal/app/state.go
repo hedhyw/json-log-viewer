@@ -6,9 +6,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type state interface {
+type stateModel interface {
 	tea.Model
 	fmt.Stringer
 
-	withApplication(application Application) (state, tea.Cmd)
+	withApplication(application Application) (stateModel, tea.Cmd)
 }
