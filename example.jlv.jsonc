@@ -66,8 +66,8 @@
     // The number of rows to pre-render.
     "prerenderRows": 100,
     // The number nanoseconds between manual file reloads.
-	"reloadThreshold": 1000000000,
+    "reloadThreshold": 1000000000,
     // The maximum size of the file in bytes.
     // The rest of the file will be ignored.
-	"maxFileSizeBytes": 1073741824
+    "maxFileSizeBytes": 1073741824
 }
