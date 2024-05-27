@@ -23,7 +23,11 @@ func RequireCreateFile(tb testing.TB, content []byte) string {
 	require.NoError(tb, err)
 
 	name := f.Name()
-	tb.Cleanup(func() { assert.NoError(tb, os.Remove(name)) })
+	tb.Cleanup(func() {
+		if _, err := os.Stat(name); err == nil {
+			assert.NoError(tb, os.Remove(name))
+		}
+	})
 
 	return name
 }

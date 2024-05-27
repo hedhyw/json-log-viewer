@@ -3,11 +3,14 @@ package app_test
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hedhyw/json-log-viewer/assets"
 	"github.com/hedhyw/json-log-viewer/internal/app"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/stretchr/testify/assert"
@@ -113,18 +116,10 @@ func TestStateLoadedReload(t *testing.T) {
 
 	model := newTestModel(t, []byte(jsonFile))
 
-	stateLoaded, ok := model.(app.StateLoaded)
-	require.True(t, ok)
-
 	rendered := model.View()
 	assert.NotContains(t, rendered, expected)
 
-	err := os.WriteFile(
-		stateLoaded.Application().Path,
-		[]byte(jsonFileUpdated),
-		os.ModePerm,
-	)
-	require.NoError(t, err)
+	overwriteFileInStateLoaded(t, model, []byte(jsonFileUpdated))
 
 	t.Run("up", func(t *testing.T) {
 		t.Parallel()
@@ -157,4 +152,69 @@ func TestStateLoadedReload(t *testing.T) {
 		rendered := model.View()
 		assert.Contains(t, rendered, expected)
 	})
+
+	t.Run("threshold", func(t *testing.T) {
+		t.Parallel()
+
+		model := newTestModel(t, []byte(jsonFile))
+
+		model = handleUpdate(model, tea.KeyMsg{
+			Type: tea.KeyUp,
+		})
+
+		overwriteFileInStateLoaded(t, model, []byte(jsonFileUpdated))
+
+		model = handleUpdate(model, tea.KeyMsg{
+			Type: tea.KeyUp,
+		})
+
+		rendered := model.View()
+		assert.NotContains(t, rendered, expected)
+	})
+}
+
+/*
+go test -benchmem -run=^$ -bench ^BenchmarkStateLoadedBig$ github.com/hedhyw/json-log-viewer/internal/app
+
+goos: linux
+goarch: amd64
+pkg: github.com/hedhyw/json-log-viewer/internal/app
+cpu: 12th Gen Intel(R) Core(TM) i7-1255U
+BenchmarkStateLoadedBig-12    	16499398	        78.08 ns/op	     199 B/op	       0 allocs/op
+*/
+func BenchmarkStateLoadedBig(b *testing.B) {
+	content := strings.Repeat(`{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "test2"}`+"\n", b.N)
+	contentReader := strings.NewReader(content)
+
+	cfg := config.GetDefaultConfig()
+
+	model := newTestModel(b, []byte(`{}`))
+
+	_, ok := model.(app.StateLoaded)
+	if !ok {
+		b.Fatal(model.View())
+	}
+
+	b.ResetTimer()
+
+	logEntries, err := source.ParseLogEntriesFromReader(contentReader, cfg)
+	if err != nil {
+		b.Fatal(model.View())
+	}
+
+	model.Update(events.LogEntriesLoadedMsg(logEntries))
+}
+
+func overwriteFileInStateLoaded(tb testing.TB, model tea.Model, content []byte) {
+	tb.Helper()
+
+	stateLoaded, ok := model.(app.StateLoaded)
+	require.True(tb, ok)
+
+	err := os.WriteFile(
+		stateLoaded.Application().Path,
+		content,
+		os.ModePerm,
+	)
+	require.NoError(tb, err)
 }

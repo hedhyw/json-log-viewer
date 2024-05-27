@@ -1,6 +1,8 @@
 package app
 
 import (
+	"time"
+
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -15,14 +17,20 @@ type StateLoaded struct {
 
 	initCmd tea.Cmd
 
-	table      logsTableModel
-	logEntries source.LogEntries
+	table        logsTableModel
+	logEntries   source.LazyLogEntries
+	lastReloadAt time.Time
 
-	keys KeyMap
-	help help.Model
+	keys      KeyMap
+	help      help.Model
+	reloading bool
 }
 
-func newStateViewLogs(application Application, logEntries source.LogEntries) StateLoaded {
+func newStateViewLogs(
+	application Application,
+	logEntries source.LazyLogEntries,
+	lastReloadAt time.Time,
+) StateLoaded {
 	table := newLogsTableModel(application, logEntries)
 
 	return StateLoaded{
@@ -35,6 +43,8 @@ func newStateViewLogs(application Application, logEntries source.LogEntries) Sta
 
 		keys: defaultKeys,
 		help: help.New(),
+
+		lastReloadAt: lastReloadAt,
 	}
 }
 
@@ -45,6 +55,10 @@ func (s StateLoaded) Init() tea.Cmd {
 
 // View renders component. It implements tea.Model.
 func (s StateLoaded) View() string {
+	if s.reloading {
+		return s.viewTable() + "\nreloading..."
+	}
+
 	return s.viewTable() + s.viewHelp()
 }
 
@@ -68,12 +82,16 @@ func (s StateLoaded) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case events.ErrorOccuredMsg:
 		return s.handleErrorOccuredMsg(msg)
 	case events.LogEntriesLoadedMsg:
-		return s.handleLogEntriesLoadedMsg(msg)
+		return s.handleLogEntriesLoadedMsg(msg, s.lastReloadAt)
 	case events.ViewRowsReloadRequestedMsg:
 		return s.handleViewRowsReloadRequestedMsg()
 	case events.OpenJSONRowRequestedMsg:
 		return s.handleOpenJSONRowRequestedMsg(msg, s)
 	case tea.KeyMsg:
+		if s.reloading {
+			return s, nil
+		}
+
 		switch {
 		case key.Matches(msg, s.keys.Back):
 			return s, tea.Quit
@@ -119,6 +137,13 @@ func (s StateLoaded) handleRequestOpenJSON() (tea.Model, tea.Cmd) {
 }
 
 func (s StateLoaded) handleViewRowsReloadRequestedMsg() (tea.Model, tea.Cmd) {
+	if time.Since(s.lastReloadAt) < s.Config.ReloadThreshold {
+		return s, nil
+	}
+
+	s.lastReloadAt = time.Now()
+	s.reloading = true
+
 	return s, s.helper.LoadEntries
 }
 

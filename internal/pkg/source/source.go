@@ -21,7 +21,7 @@ const (
 func LoadLogsFromFile(
 	path string,
 	cfg *config.Config,
-) (_ LogEntries, err error) {
+) (_ LazyLogEntries, err error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("os: %w", err)
@@ -29,7 +29,7 @@ func LoadLogsFromFile(
 
 	defer func() { err = errors.Join(err, file.Close()) }()
 
-	logEntries, err := parseLogEntriesFromReader(file, cfg)
+	logEntries, err := ParseLogEntriesFromReader(file, cfg)
 	if err != nil {
 		return nil, fmt.Errorf("parsing from reader: %w", err)
 	}
@@ -37,17 +37,19 @@ func LoadLogsFromFile(
 	return logEntries.Reverse(), nil
 }
 
-func parseLogEntriesFromReader(
+func ParseLogEntriesFromReader(
 	reader io.Reader,
 	cfg *config.Config,
-) (LogEntries, error) {
+) (LazyLogEntries, error) {
+	reader = io.LimitReader(reader, cfg.MaxFileSizeBytes)
+
 	bufReader := bufio.NewReaderSize(reader, maxLineSize)
-	logEntries := make(LogEntries, 0, logEntriesEstimateNumber)
+	logEntries := make(LazyLogEntries, 0, logEntriesEstimateNumber)
 
 	for {
 		line, _, err := bufReader.ReadLine()
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				break
 			}
 
@@ -57,7 +59,10 @@ func parseLogEntriesFromReader(
 		line = bytes.TrimSpace(line)
 
 		if len(line) > 0 {
-			logEntries = append(logEntries, ParseLogEntry(line, cfg))
+			lineClone := make([]byte, len(line))
+			copy(lineClone, line)
+
+			logEntries = append(logEntries, LazyLogEntry{Line: lineClone})
 		}
 	}
 

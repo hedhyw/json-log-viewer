@@ -2,7 +2,9 @@ package app
 
 import (
 	"fmt"
+	"runtime"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
@@ -27,11 +29,13 @@ func (h helper) LoadEntries() tea.Msg {
 		return events.ErrorOccuredMsg{Err: err}
 	}
 
+	runtime.GC()
+
 	return events.LogEntriesLoadedMsg(logEntries)
 }
 
 func (h helper) getLogLevelStyle(
-	logEntries source.LogEntries,
+	logEntries source.LazyLogEntries,
 	baseStyle lipgloss.Style,
 	rowID int,
 ) lipgloss.Style {
@@ -39,7 +43,9 @@ func (h helper) getLogLevelStyle(
 		return baseStyle
 	}
 
-	color := getColorForLogLevel(h.getLogLevelFromLogEntry(logEntries[rowID]))
+	entry := logEntries[rowID].LogEntry(h.Config)
+
+	color := getColorForLogLevel(h.getLogLevelFromLogEntry(entry))
 	if color == "" {
 		return baseStyle
 	}
@@ -85,11 +91,13 @@ func (h helper) handleErrorOccuredMsg(msg events.ErrorOccuredMsg) (tea.Model, te
 
 func (h helper) handleLogEntriesLoadedMsg(
 	msg events.LogEntriesLoadedMsg,
+	lastReloadAt time.Time,
 ) (tea.Model, tea.Cmd) {
 	return initializeModel(newStateViewLogs(
 		h.Application,
-		source.LogEntries(msg)),
-	)
+		source.LazyLogEntries(msg),
+		lastReloadAt,
+	))
 }
 
 func (h helper) handleOpenJSONRowRequestedMsg(
@@ -104,7 +112,7 @@ func (h helper) handleOpenJSONRowRequestedMsg(
 
 	return initializeModel(newStateViewRow(
 		h.Application,
-		logEntry,
+		logEntry.LogEntry(h.Config),
 		previousState,
 	))
 }

@@ -14,7 +14,7 @@ type StateFiltered struct {
 
 	previousState StateLoaded
 	table         logsTableModel
-	logEntries    source.LogEntries
+	logEntries    source.LazyLogEntries
 
 	filterText string
 	keys       KeyMap
@@ -89,7 +89,7 @@ func (s StateFiltered) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (s StateFiltered) handleLogEntriesLoadedMsg(
 	msg events.LogEntriesLoadedMsg,
 ) (tea.Model, tea.Cmd) {
-	s.logEntries = source.LogEntries(msg)
+	s.logEntries = source.LazyLogEntries(msg)
 	s.table = newLogsTableModel(s.Application, s.logEntries)
 
 	return s, s.table.Init()

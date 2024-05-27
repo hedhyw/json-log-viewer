@@ -15,6 +15,19 @@ import (
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 )
 
+type LazyLogEntry struct {
+	Line json.RawMessage
+}
+
+func (e LazyLogEntry) LogEntry(cfg *config.Config) LogEntry {
+	return ParseLogEntry(e.Line, cfg)
+}
+
+// Row returns table.Row representation of the log entry.
+func (e LazyLogEntry) Row(cfg *config.Config) table.Row {
+	return e.LogEntry(cfg).Fields
+}
+
 // LogEntry is a single partly-parse record of the log.
 type LogEntry struct {
 	Fields []string
@@ -26,18 +39,18 @@ func (e LogEntry) Row() table.Row {
 	return e.Fields
 }
 
-// LogEntries is a helper type definition for the slice of log entries.
-type LogEntries []LogEntry
+// LazyLogEntries is a helper type definition for the slice of lazy log entries.
+type LazyLogEntries []LazyLogEntry
 
 // Filter filters entries by ignore case exact match.
-func (entries LogEntries) Filter(term string) LogEntries {
+func (entries LazyLogEntries) Filter(term string) LazyLogEntries {
 	if term == "" {
 		return entries
 	}
 
 	termLower := bytes.ToLower([]byte(term))
 
-	filtered := make([]LogEntry, 0, len(entries))
+	filtered := make(LazyLogEntries, 0, len(entries))
 
 	for _, f := range entries {
 		if bytes.Contains(bytes.ToLower(f.Line), termLower) {
@@ -48,23 +61,13 @@ func (entries LogEntries) Filter(term string) LogEntries {
 	return filtered
 }
 
-func (entries LogEntries) Reverse() LogEntries {
+// Reverse all entries.
+func (entries LazyLogEntries) Reverse() LazyLogEntries {
 	for i, j := 0, len(entries)-1; i < j; i, j = i+1, j-1 {
 		entries[i], entries[j] = entries[j], entries[i]
 	}
 
 	return entries
-}
-
-// Rows returns all table.Row by log entries.
-func (entries LogEntries) Rows() []table.Row {
-	rows := make([]table.Row, len(entries))
-
-	for i, e := range entries {
-		rows[i] = e.Row()
-	}
-
-	return rows
 }
 
 func parseField(
@@ -137,14 +140,11 @@ func ParseLogEntry(
 	line json.RawMessage,
 	cfg *config.Config,
 ) LogEntry {
-	lineClone := make([]byte, len(line))
-	copy(lineClone, line)
-
 	var parsedLine any
 
-	err := json.Unmarshal(normalizeJSON(lineClone), &parsedLine)
+	err := json.Unmarshal(normalizeJSON(line), &parsedLine)
 	if err != nil {
-		return getPlainLogEntry(lineClone, cfg)
+		return getPlainLogEntry(line, cfg)
 	}
 
 	fields := make([]string, 0, len(cfg.Fields))
@@ -154,7 +154,7 @@ func ParseLogEntry(
 	}
 
 	return LogEntry{
-		Line:   lineClone,
+		Line:   line,
 		Fields: fields,
 	}
 }

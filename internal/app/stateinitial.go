@@ -1,6 +1,8 @@
 package app
 
 import (
+	"time"
+
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
@@ -35,7 +37,7 @@ func (s StateInitial) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case events.ErrorOccuredMsg:
 		return s.handleErrorOccuredMsg(msg)
 	case events.LogEntriesLoadedMsg:
-		return s.handleLogEntriesLoadedMsg(msg)
+		return s.handleLogEntriesLoadedMsg(msg, time.UnixMilli(0))
 	case tea.KeyMsg:
 		return s, tea.Quit
 	default:

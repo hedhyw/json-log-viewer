@@ -211,36 +211,19 @@ func TestLogEntryRow(t *testing.T) {
 	assert.Equal(t, []string(row), entry.Fields)
 }
 
-func TestLogEntriesRows(t *testing.T) {
-	t.Parallel()
-
-	entries := source.LogEntries{
-		getFakeLogEntry(),
-		getFakeLogEntry(),
-		getFakeLogEntry(),
-	}
-	rows := entries.Rows()
-
-	if assert.Len(t, rows, len(entries)) {
-		for i, e := range entries {
-			assert.Equal(t, e.Row(), rows[i])
-		}
-	}
-}
-
-func TestLogEntriesReverse(t *testing.T) {
+func TestLazyLogEntriesReverse(t *testing.T) {
 	t.Parallel()
 
 	t.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
-		original := source.LogEntries{
-			getFakeLogEntry(),
-			getFakeLogEntry(),
-			getFakeLogEntry(),
+		original := source.LazyLogEntries{
+			getFakeLazyLogEntry(),
+			getFakeLazyLogEntry(),
+			getFakeLazyLogEntry(),
 		}
 
-		entries := make(source.LogEntries, len(original))
+		entries := make(source.LazyLogEntries, len(original))
 		copy(entries, original)
 		actual := entries.Reverse()
 
@@ -252,8 +235,8 @@ func TestLogEntriesReverse(t *testing.T) {
 	t.Run("single", func(t *testing.T) {
 		t.Parallel()
 
-		entries := source.LogEntries{
-			getFakeLogEntry(),
+		entries := source.LazyLogEntries{
+			getFakeLazyLogEntry(),
 		}
 
 		assert.Len(t, entries, 1)
@@ -262,10 +245,16 @@ func TestLogEntriesReverse(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		t.Parallel()
 
-		entries := source.LogEntries{}
+		entries := source.LazyLogEntries{}
 
 		assert.Empty(t, entries)
 	})
+}
+
+func getFakeLazyLogEntry() source.LazyLogEntry {
+	return source.LazyLogEntry{
+		Line: getFakeLogEntry().Line,
+	}
 }
 
 func getFakeLogEntry() source.LogEntry {
@@ -279,19 +268,18 @@ func getFakeLogEntry() source.LogEntry {
 	}
 }
 
-func TestLogEntriesFilter(t *testing.T) {
+func TestLazyLogEntriesFilter(t *testing.T) {
 	t.Parallel()
 
 	term := "special MESSAGE to search by in the test: " + t.Name()
 
-	logEntry := getFakeLogEntry()
-	logEntry.Fields = append(logEntry.Fields, term)
+	logEntry := getFakeLazyLogEntry()
 	logEntry.Line = json.RawMessage(`{"message": "` + term + `"}`)
 
-	logEntries := source.LogEntries{
-		getFakeLogEntry(),
+	logEntries := source.LazyLogEntries{
+		getFakeLazyLogEntry(),
 		logEntry,
-		getFakeLogEntry(),
+		getFakeLazyLogEntry(),
 	}
 
 	t.Run("all", func(t *testing.T) {
