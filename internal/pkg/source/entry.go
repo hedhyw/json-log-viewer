@@ -15,10 +15,12 @@ import (
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 )
 
+// LazyLogEntry holds unredenred LogEntry. Use `LogEntry` getter.
 type LazyLogEntry struct {
 	Line json.RawMessage
 }
 
+// LogEntry parses and returns `LogEntry`.
 func (e LazyLogEntry) LogEntry(cfg *config.Config) LogEntry {
 	return ParseLogEntry(e.Line, cfg)
 }

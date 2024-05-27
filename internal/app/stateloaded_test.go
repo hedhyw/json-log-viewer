@@ -180,7 +180,7 @@ goos: linux
 goarch: amd64
 pkg: github.com/hedhyw/json-log-viewer/internal/app
 cpu: 12th Gen Intel(R) Core(TM) i7-1255U
-BenchmarkStateLoadedBig-12    	16499398	        78.08 ns/op	     199 B/op	       0 allocs/op
+BenchmarkStateLoadedBig-12    	16499398	        78.08 ns/op	     199 B/op	       0 allocs/op.
 */
 func BenchmarkStateLoadedBig(b *testing.B) {
 	content := strings.Repeat(`{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "test2"}`+"\n", b.N)
