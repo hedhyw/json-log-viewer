@@ -1,6 +1,8 @@
 package app
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 
@@ -8,11 +10,11 @@ import (
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 )
 
-// StateFiltered is a state that shows filtered records.
-type StateFiltered struct {
+// StateFilteredModel is a state that shows filtered records.
+type StateFilteredModel struct {
 	helper
 
-	previousState StateLoaded
+	previousState StateLoadedModel
 	table         logsTableModel
 	logEntries    source.LazyLogEntries
 
@@ -22,10 +24,10 @@ type StateFiltered struct {
 
 func newStateFiltered(
 	application Application,
-	previousState StateLoaded,
+	previousState StateLoadedModel,
 	filterText string,
-) StateFiltered {
-	return StateFiltered{
+) StateFilteredModel {
+	return StateFilteredModel{
 		helper: helper{Application: application},
 
 		previousState: previousState,
@@ -37,7 +39,7 @@ func newStateFiltered(
 }
 
 // Init initializes component. It implements tea.Model.
-func (s StateFiltered) Init() tea.Cmd {
+func (s StateFilteredModel) Init() tea.Cmd {
 	return func() tea.Msg {
 		return events.LogEntriesLoadedMsg(
 			s.previousState.logEntries.Filter(s.filterText),
@@ -46,14 +48,16 @@ func (s StateFiltered) Init() tea.Cmd {
 }
 
 // View renders component. It implements tea.Model.
-func (s StateFiltered) View() string {
-	footer := s.Application.FooterStyle.Render(" filtered by: " + s.filterText)
+func (s StateFilteredModel) View() string {
+	footer := s.Application.FooterStyle.Render(
+		fmt.Sprintf("filtered %d by: %s", len(s.logEntries), s.filterText),
+	)
 
 	return s.BaseStyle.Render(s.table.View()) + "\n" + footer
 }
 
 // Update handles events. It implements tea.Model.
-func (s StateFiltered) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s StateFilteredModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmdBatch []tea.Cmd
 
 	s.helper = s.helper.Update(msg)
@@ -86,7 +90,7 @@ func (s StateFiltered) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return s, tea.Batch(cmdBatch...)
 }
 
-func (s StateFiltered) handleLogEntriesLoadedMsg(
+func (s StateFilteredModel) handleLogEntriesLoadedMsg(
 	msg events.LogEntriesLoadedMsg,
 ) (tea.Model, tea.Cmd) {
 	s.logEntries = source.LazyLogEntries(msg)
@@ -95,7 +99,7 @@ func (s StateFiltered) handleLogEntriesLoadedMsg(
 	return s, s.table.Init()
 }
 
-func (s StateFiltered) handleFilterKeyClickedMsg() (tea.Model, tea.Cmd) {
+func (s StateFilteredModel) handleFilterKeyClickedMsg() (tea.Model, tea.Cmd) {
 	state := newStateFiltering(
 		s.Application,
 		s.previousState,
@@ -104,7 +108,7 @@ func (s StateFiltered) handleFilterKeyClickedMsg() (tea.Model, tea.Cmd) {
 	return initializeModel(state)
 }
 
-func (s StateFiltered) handleRequestOpenJSON() (tea.Model, tea.Cmd) {
+func (s StateFilteredModel) handleRequestOpenJSON() (tea.Model, tea.Cmd) {
 	if len(s.logEntries) == 0 {
 		return s, events.BackKeyClicked
 	}
@@ -112,7 +116,7 @@ func (s StateFiltered) handleRequestOpenJSON() (tea.Model, tea.Cmd) {
 	return s, events.OpenJSONRowRequested(s.logEntries, s.table.Cursor())
 }
 
-func (s StateFiltered) withApplication(application Application) (state, tea.Cmd) {
+func (s StateFilteredModel) withApplication(application Application) (stateModel, tea.Cmd) {
 	s.Application = application
 
 	var cmd tea.Cmd
@@ -122,6 +126,6 @@ func (s StateFiltered) withApplication(application Application) (state, tea.Cmd)
 }
 
 // String implements fmt.Stringer.
-func (s StateFiltered) String() string {
+func (s StateFilteredModel) String() string {
 	return modelValue(s)
 }

@@ -18,7 +18,7 @@ func TestStateInitial(t *testing.T) {
 
 	model := app.NewModel("", config.GetDefaultConfig())
 
-	_, ok := model.(app.StateInitial)
+	_, ok := model.(app.StateInitialModel)
 	require.Truef(t, ok, "%s", model)
 
 	t.Run("stringer", func(t *testing.T) {
@@ -35,7 +35,7 @@ func TestStateInitial(t *testing.T) {
 
 		model := handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
 
-		_, ok := model.(app.StateError)
+		_, ok := model.(app.StateErrorModel)
 		assert.Truef(t, ok, "%s", model)
 	})
 
@@ -54,7 +54,7 @@ func TestStateInitial(t *testing.T) {
 
 		model := handleUpdate(model, events.ViewRowsReloadRequestedMsg{})
 
-		_, ok := model.(app.StateInitial)
+		_, ok := model.(app.StateInitialModel)
 		require.Truef(t, ok, "%s", model)
 	})
 }

@@ -8,29 +8,29 @@ import (
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
 )
 
-// StateInitial is an initial loading state.
-type StateInitial struct {
+// StateInitialModel is an initial loading state.
+type StateInitialModel struct {
 	helper
 }
 
-func newStateInitial(application Application) StateInitial {
-	return StateInitial{
+func newStateInitial(application Application) StateInitialModel {
+	return StateInitialModel{
 		helper: helper{Application: application},
 	}
 }
 
 // Init initializes component. It implements tea.Model.
-func (s StateInitial) Init() tea.Cmd {
+func (s StateInitialModel) Init() tea.Cmd {
 	return s.helper.LoadEntries
 }
 
 // View renders component. It implements tea.Model.
-func (s StateInitial) View() string {
+func (s StateInitialModel) View() string {
 	return "Loading..."
 }
 
 // Update handles events. It implements tea.Model.
-func (s StateInitial) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s StateInitialModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	s.helper = s.helper.Update(msg)
 
 	switch msg := msg.(type) {
@@ -46,6 +46,6 @@ func (s StateInitial) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // String implements fmt.Stringer.
-func (s StateInitial) String() string {
+func (s StateInitialModel) String() string {
 	return modelValue(s)
 }

@@ -23,7 +23,7 @@ func TestStateFiltering(t *testing.T) {
 		Type:  tea.KeyRunes,
 		Runes: []rune{'f'},
 	})
-	_, ok := model.(app.StateFiltering)
+	_, ok := model.(app.StateFilteringModel)
 	assert.Truef(t, ok, "%s", model)
 
 	t.Run("input_hotkeys", func(t *testing.T) {
@@ -39,7 +39,7 @@ func TestStateFiltering(t *testing.T) {
 			Runes: []rune{'f'},
 		})
 
-		_, ok := model.(app.StateFiltering)
+		_, ok := model.(app.StateFilteringModel)
 		assert.Truef(t, ok, "%s", model)
 	})
 
@@ -50,7 +50,7 @@ func TestStateFiltering(t *testing.T) {
 			Type: tea.KeyEsc,
 		})
 
-		_, ok := model.(app.StateLoaded)
+		_, ok := model.(app.StateLoadedModel)
 		assert.Truef(t, ok, "%s", model)
 	})
 
@@ -61,7 +61,7 @@ func TestStateFiltering(t *testing.T) {
 			Type: tea.KeyEnter,
 		})
 
-		_, ok := model.(app.StateLoaded)
+		_, ok := model.(app.StateLoadedModel)
 		require.Truef(t, ok, "%s", model)
 	})
 
@@ -79,7 +79,7 @@ func TestStateFiltering(t *testing.T) {
 
 		model := handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
 
-		_, ok := model.(app.StateError)
+		_, ok := model.(app.StateErrorModel)
 		assert.Truef(t, ok, "%s", model)
 	})
 
@@ -90,7 +90,7 @@ func TestStateFiltering(t *testing.T) {
 			Type: tea.KeyUp,
 		})
 
-		_, ok := model.(app.StateFiltering)
+		_, ok := model.(app.StateFilteringModel)
 		assert.Truef(t, ok, "%s", model)
 	})
 }
@@ -115,7 +115,7 @@ func TestStateFilteringReset(t *testing.T) {
 		Runes: []rune{'f'},
 	})
 
-	_, ok := model.(app.StateFiltering)
+	_, ok := model.(app.StateFilteringModel)
 	assert.Truef(t, ok, "%s", model)
 
 	// Filter to exclude everything.
@@ -127,7 +127,7 @@ func TestStateFilteringReset(t *testing.T) {
 		Type: tea.KeyEnter,
 	})
 
-	_, ok = model.(app.StateFiltered)
+	_, ok = model.(app.StateFilteredModel)
 	assert.Truef(t, ok, "%s", model)
 
 	t.Run("record_not_included", func(t *testing.T) {
@@ -135,7 +135,7 @@ func TestStateFilteringReset(t *testing.T) {
 
 		rendered := model.View()
 
-		index := strings.Index(rendered, "filtered by:")
+		index := strings.Index(rendered, "filtered 0 by:")
 		if assert.Greater(t, index, 0) {
 			rendered = rendered[:index]
 		}
@@ -147,7 +147,7 @@ func TestStateFilteringReset(t *testing.T) {
 			Type: tea.KeyEsc,
 		})
 
-		_, ok = model.(app.StateLoaded)
+		_, ok = model.(app.StateLoadedModel)
 		assert.Truef(t, ok, "%s", model)
 
 		// Assert.
@@ -165,7 +165,7 @@ func TestStateFilteringReset(t *testing.T) {
 
 		assert.NotNil(t, model)
 
-		_, ok := model.(app.StateLoaded)
+		_, ok := model.(app.StateLoadedModel)
 		assert.Truef(t, ok, "%s", model)
 	})
 }

@@ -40,7 +40,7 @@ func TestStateFiltered(t *testing.T) {
 	lines := strings.Split(model.View(), "\n")
 	assert.Contains(t, lines[len(lines)-1], ">")
 
-	_, ok := model.(app.StateFiltering)
+	_, ok := model.(app.StateFilteringModel)
 	assert.Truef(t, ok, "%s", model)
 
 	// Write term to search by.
@@ -54,10 +54,11 @@ func TestStateFiltered(t *testing.T) {
 		Type: tea.KeyEnter,
 	})
 
-	_, ok = model.(app.StateFiltered)
+	_, ok = model.(app.StateFilteredModel)
 	if assert.Truef(t, ok, "%s", model) {
 		rendered = model.View()
 		assert.Contains(t, rendered, termIncluded)
+		assert.Contains(t, rendered, "filtered 1 by: "+termIncluded)
 		assert.NotContains(t, rendered, termExcluded)
 	}
 
@@ -69,7 +70,7 @@ func TestStateFiltered(t *testing.T) {
 			Runes: []rune{'f'},
 		})
 
-		_, ok := model.(app.StateFiltering)
+		_, ok := model.(app.StateFilteringModel)
 		assert.Truef(t, ok, "%s", model)
 	})
 
@@ -80,14 +81,14 @@ func TestStateFiltered(t *testing.T) {
 			Type: tea.KeyEnter,
 		})
 
-		_, ok := model.(app.StateViewRow)
+		_, ok := model.(app.StateViewRowModel)
 		assert.Truef(t, ok, "%s", model)
 
 		model = handleUpdate(model, tea.KeyMsg{
 			Type: tea.KeyEsc,
 		})
 
-		_, ok = model.(app.StateFiltered)
+		_, ok = model.(app.StateFilteredModel)
 		assert.Truef(t, ok, "%s", model)
 	})
 
@@ -96,7 +97,7 @@ func TestStateFiltered(t *testing.T) {
 
 		model := handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
 
-		_, ok := model.(app.StateError)
+		_, ok := model.(app.StateErrorModel)
 		assert.Truef(t, ok, "%s", model)
 	})
 
@@ -107,7 +108,7 @@ func TestStateFiltered(t *testing.T) {
 			Type: tea.KeyUp,
 		})
 
-		_, ok = model.(app.StateFiltered)
+		_, ok = model.(app.StateFilteredModel)
 		assert.Truef(t, ok, "%s", model)
 	})
 
@@ -118,7 +119,7 @@ func TestStateFiltered(t *testing.T) {
 			Type: tea.KeyEsc,
 		})
 
-		_, ok := model.(app.StateLoaded)
+		_, ok := model.(app.StateLoadedModel)
 		assert.Truef(t, ok, "%s", model)
 	})
 

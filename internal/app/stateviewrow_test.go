@@ -20,14 +20,14 @@ func TestStateViewRow(t *testing.T) {
 
 	model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyEnter})
 
-	_, ok := model.(app.StateViewRow)
+	_, ok := model.(app.StateViewRowModel)
 	require.Truef(t, ok, "%s", model)
 
 	t.Run("close", func(t *testing.T) {
 		t.Parallel()
 
 		model := handleUpdate(model, tea.KeyMsg{Type: tea.KeyEnter})
-		_, ok := model.(app.StateLoaded)
+		_, ok := model.(app.StateLoadedModel)
 		require.Truef(t, ok, "%s", model)
 	})
 
@@ -45,7 +45,7 @@ func TestStateViewRow(t *testing.T) {
 
 		model := handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
 
-		_, ok := model.(app.StateError)
+		_, ok := model.(app.StateErrorModel)
 		assert.Truef(t, ok, "%s", model)
 	})
 
@@ -55,7 +55,7 @@ func TestStateViewRow(t *testing.T) {
 			Type: tea.KeyRight,
 		})
 
-		_, ok := model.(app.StateViewRow)
+		_, ok := model.(app.StateViewRowModel)
 		assert.Truef(t, ok, "%s", model)
 	})
 }

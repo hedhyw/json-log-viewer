@@ -102,7 +102,7 @@ func (h helper) handleLogEntriesLoadedMsg(
 
 func (h helper) handleOpenJSONRowRequestedMsg(
 	msg events.OpenJSONRowRequestedMsg,
-	previousState state,
+	previousState stateModel,
 ) (tea.Model, tea.Cmd) {
 	if msg.Index < 0 || msg.Index >= len(msg.LogEntries) {
 		return previousState, nil

@@ -11,8 +11,8 @@ import (
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 )
 
-// StateLoaded is a state that shows all loaded records.
-type StateLoaded struct {
+// StateLoadedModel is a state that shows all loaded records.
+type StateLoadedModel struct {
 	helper
 
 	initCmd tea.Cmd
@@ -30,10 +30,10 @@ func newStateViewLogs(
 	application Application,
 	logEntries source.LazyLogEntries,
 	lastReloadAt time.Time,
-) StateLoaded {
+) StateLoadedModel {
 	table := newLogsTableModel(application, logEntries)
 
-	return StateLoaded{
+	return StateLoadedModel{
 		helper: helper{Application: application},
 
 		initCmd: table.Init(),
@@ -49,12 +49,12 @@ func newStateViewLogs(
 }
 
 // Init initializes component. It implements tea.Model.
-func (s StateLoaded) Init() tea.Cmd {
+func (s StateLoadedModel) Init() tea.Cmd {
 	return s.initCmd
 }
 
 // View renders component. It implements tea.Model.
-func (s StateLoaded) View() string {
+func (s StateLoadedModel) View() string {
 	if s.reloading {
 		return s.viewTable() + "\nreloading..."
 	}
@@ -62,18 +62,18 @@ func (s StateLoaded) View() string {
 	return s.viewTable() + s.viewHelp()
 }
 
-func (s StateLoaded) viewTable() string {
+func (s StateLoadedModel) viewTable() string {
 	return s.BaseStyle.Render(s.table.View())
 }
 
-func (s StateLoaded) viewHelp() string {
+func (s StateLoadedModel) viewHelp() string {
 	return "\n" + s.help.View(s.keys)
 }
 
 // Update handles events. It implements tea.Model.
 //
 // nolint: cyclop // Many events in switch case.
-func (s StateLoaded) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s StateLoadedModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmdBatch []tea.Cmd
 
 	s.helper = s.helper.Update(msg)
@@ -108,7 +108,7 @@ func (s StateLoaded) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return s, tea.Batch(cmdBatch...)
 }
 
-func (s StateLoaded) handleKeyMsg(msg tea.KeyMsg) []tea.Cmd {
+func (s StateLoadedModel) handleKeyMsg(msg tea.KeyMsg) []tea.Cmd {
 	var cmdBatch []tea.Cmd
 
 	cmdBatch = appendCmd(cmdBatch, s.helper.handleKeyMsg(msg))
@@ -120,7 +120,7 @@ func (s StateLoaded) handleKeyMsg(msg tea.KeyMsg) []tea.Cmd {
 	return cmdBatch
 }
 
-func (s StateLoaded) handleArrowUpKeyClicked() tea.Cmd {
+func (s StateLoadedModel) handleArrowUpKeyClicked() tea.Cmd {
 	if s.table.Cursor() == 0 {
 		return events.ViewRowsReloadRequested
 	}
@@ -128,7 +128,7 @@ func (s StateLoaded) handleArrowUpKeyClicked() tea.Cmd {
 	return nil
 }
 
-func (s StateLoaded) handleRequestOpenJSON() (tea.Model, tea.Cmd) {
+func (s StateLoadedModel) handleRequestOpenJSON() (tea.Model, tea.Cmd) {
 	if len(s.logEntries) == 0 {
 		return s, tea.Quit
 	}
@@ -136,7 +136,7 @@ func (s StateLoaded) handleRequestOpenJSON() (tea.Model, tea.Cmd) {
 	return s, events.OpenJSONRowRequested(s.logEntries, s.table.Cursor())
 }
 
-func (s StateLoaded) handleViewRowsReloadRequestedMsg() (tea.Model, tea.Cmd) {
+func (s StateLoadedModel) handleViewRowsReloadRequestedMsg() (tea.Model, tea.Cmd) {
 	if time.Since(s.lastReloadAt) < s.Config.ReloadThreshold {
 		return s, nil
 	}
@@ -147,11 +147,11 @@ func (s StateLoaded) handleViewRowsReloadRequestedMsg() (tea.Model, tea.Cmd) {
 	return s, s.helper.LoadEntries
 }
 
-func (s StateLoaded) handleFilterKeyClickedMsg() (tea.Model, tea.Cmd) {
+func (s StateLoadedModel) handleFilterKeyClickedMsg() (tea.Model, tea.Cmd) {
 	return initializeModel(newStateFiltering(s.helper.Application, s))
 }
 
-func (s StateLoaded) withApplication(application Application) (state, tea.Cmd) {
+func (s StateLoadedModel) withApplication(application Application) (stateModel, tea.Cmd) {
 	s.helper.Application = application
 
 	var cmd tea.Cmd
@@ -161,10 +161,10 @@ func (s StateLoaded) withApplication(application Application) (state, tea.Cmd) {
 }
 
 // String implements fmt.Stringer.
-func (s StateLoaded) String() string {
+func (s StateLoadedModel) String() string {
 	return modelValue(s)
 }
 
-func (s StateLoaded) Application() Application {
+func (s StateLoadedModel) Application() Application {
 	return s.helper.Application
 }
