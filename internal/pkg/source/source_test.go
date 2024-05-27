@@ -53,3 +53,21 @@ func TestLoadLogsFromFile(t *testing.T) {
 		assert.NotEmpty(t, logEntries)
 	})
 }
+
+func TestLoadLogsFromFileLimited(t *testing.T) {
+	t.Parallel()
+
+	content := `{}`
+
+	testFile := tests.RequireCreateFile(t, []byte(content))
+
+	cfg := config.GetDefaultConfig()
+	cfg.MaxFileSizeBytes = 1
+
+	logEntries, err := source.LoadLogsFromFile(testFile, cfg)
+	require.NoError(t, err)
+
+	if assert.Len(t, logEntries, 1) {
+		assert.Equal(t, content[:cfg.MaxFileSizeBytes], string(logEntries[0].Line))
+	}
+}

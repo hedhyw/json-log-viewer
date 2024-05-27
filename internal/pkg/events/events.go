@@ -8,7 +8,7 @@ import (
 
 type (
 	// LogEntriesLoadedMsg is an event about successfully loaded log entries.
-	LogEntriesLoadedMsg source.LogEntries
+	LogEntriesLoadedMsg source.LazyLogEntries
 
 	// ErrorOccuredMsg is a generic error event.
 	ErrorOccuredMsg struct{ Err error }
@@ -17,7 +17,7 @@ type (
 	// for the given row.
 	OpenJSONRowRequestedMsg struct {
 		// LogEntries include all log entities.
-		LogEntries source.LogEntries
+		LogEntries source.LazyLogEntries
 
 		// Index of the row.
 		Index int
@@ -28,7 +28,7 @@ type (
 )
 
 // OpenJSONRowRequested implements tea.Cmd. It creates OpenJSONRowRequestedMsg.
-func OpenJSONRowRequested(logEntries source.LogEntries, index int) func() tea.Msg {
+func OpenJSONRowRequested(logEntries source.LazyLogEntries, index int) func() tea.Msg {
 	return func() tea.Msg {
 		return OpenJSONRowRequestedMsg{
 			LogEntries: logEntries,

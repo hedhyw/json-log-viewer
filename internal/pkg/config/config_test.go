@@ -141,7 +141,10 @@ func ExampleGetDefaultConfig() {
 	// 		"40": "warn",
 	// 		"50": "error",
 	// 		"60": "fatal"
-	// 	}
+	// 	},
+	// 	"prerenderRows": 100,
+	// 	"reloadThreshold": 1000000000,
+	// 	"maxFileSizeBytes": 1073741824
 	// }
 }
 

@@ -10,13 +10,13 @@ import (
 type logsTableModel struct {
 	helper
 
-	table          table.Model
+	lazyTable      lazyTableModel[source.LazyLogEntry]
 	lastWindowSize tea.WindowSizeMsg
 
-	logEntries source.LogEntries
+	logEntries source.LazyLogEntries
 }
 
-func newLogsTableModel(application Application, logEntries source.LogEntries) logsTableModel {
+func newLogsTableModel(application Application, logEntries source.LazyLogEntries) logsTableModel {
 	helper := helper{Application: application}
 
 	const cellIDLogLevel = 1
@@ -28,7 +28,6 @@ func newLogsTableModel(application Application, logEntries source.LogEntries) lo
 	)
 
 	tableLogs.SetStyles(getTableStyles())
-	tableLogs.SetRows(logEntries.Rows())
 
 	tableStyles := getTableStyles()
 	tableStyles.RenderCell = func(_ table.Model, value string, position table.CellPosition) string {
@@ -49,21 +48,30 @@ func newLogsTableModel(application Application, logEntries source.LogEntries) lo
 
 	tableLogs.SetStyles(tableStyles)
 
+	lazyTable := lazyTableModel[source.LazyLogEntry]{
+		helper:          helper,
+		table:           tableLogs,
+		minRenderedRows: application.Config.PrerenderRows,
+		allEntries:      logEntries,
+		lastCursor:      0,
+		renderedRows:    make([]table.Row, 0, application.Config.PrerenderRows*2),
+	}.withRenderedRows()
+
 	return logsTableModel{
 		helper:     helper,
-		table:      tableLogs,
+		lazyTable:  lazyTable,
 		logEntries: logEntries,
 	}.handleWindowSizeMsg(application.LastWindowSize)
 }
 
 // Init initializes component. It implements tea.Model.
 func (m logsTableModel) Init() tea.Cmd {
-	return nil
+	return m.lazyTable.Init()
 }
 
 // View renders component. It implements tea.Model.
 func (m logsTableModel) View() string {
-	return m.table.View()
+	return m.lazyTable.View()
 }
 
 // Update handles events. It implements tea.Model.
@@ -76,7 +84,7 @@ func (m logsTableModel) Update(msg tea.Msg) (logsTableModel, tea.Cmd) {
 		m = m.handleWindowSizeMsg(msg)
 	}
 
-	m.table, cmdBatch = batched(m.table.Update(msg))(cmdBatch)
+	m.lazyTable, cmdBatch = batched(m.lazyTable.Update(msg))(cmdBatch)
 
 	return m, tea.Batch(cmdBatch...)
 }
@@ -85,9 +93,9 @@ func (m logsTableModel) handleWindowSizeMsg(msg tea.WindowSizeMsg) logsTableMode
 	const heightOffset = 4
 
 	x, y := m.BaseStyle.GetFrameSize()
-	m.table.SetWidth(msg.Width - x*2)
-	m.table.SetHeight(msg.Height - y*2 - footerSize - heightOffset)
-	m.table.SetColumns(getColumns(m.table.Width()-10, m.Config))
+	m.lazyTable.table.SetWidth(msg.Width - x*2)
+	m.lazyTable.table.SetHeight(msg.Height - y*2 - footerSize - heightOffset)
+	m.lazyTable.table.SetColumns(getColumns(m.lazyTable.table.Width()-10, m.Config))
 	m.lastWindowSize = msg
 
 	return m
@@ -95,5 +103,5 @@ func (m logsTableModel) handleWindowSizeMsg(msg tea.WindowSizeMsg) logsTableMode
 
 // Cursor returns the index of the selected row.
 func (m logsTableModel) Cursor() int {
-	return m.table.Cursor()
+	return m.lazyTable.table.Cursor()
 }
