@@ -14,12 +14,14 @@ import (
 	"github.com/hedhyw/json-log-viewer/internal/pkg/tests"
 )
 
+const testVersion = "v0.0.1"
+
 func newTestModel(tb testing.TB, content []byte) tea.Model {
 	tb.Helper()
 
 	testFile := tests.RequireCreateFile(tb, content)
 
-	model := app.NewModel(fileinput.New(testFile), config.GetDefaultConfig())
+	model := app.NewModel(fileinput.New(testFile), config.GetDefaultConfig(), testVersion)
 	model = handleUpdate(model, model.Init()())
 
 	return model

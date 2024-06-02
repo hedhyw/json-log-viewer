@@ -67,7 +67,7 @@ func (s StateLoadedModel) viewTable() string {
 }
 
 func (s StateLoadedModel) viewHelp() string {
-	return "\n" + s.help.View(s.keys)
+	return "\n" + s.Version + " " + s.help.View(s.keys)
 }
 
 // Update handles events. It implements tea.Model.

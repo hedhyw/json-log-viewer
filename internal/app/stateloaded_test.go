@@ -57,6 +57,12 @@ func TestStateLoaded(t *testing.T) {
 		_, ok = model.(app.StateErrorModel)
 		assert.Truef(t, ok, "%s", model)
 	})
+
+	t.Run("version_printed", func(t *testing.T) {
+		t.Parallel()
+
+		assert.Contains(t, model.View(), testVersion)
+	})
 }
 
 func TestStateLoadedQuit(t *testing.T) {
