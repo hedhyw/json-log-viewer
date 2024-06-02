@@ -71,6 +71,7 @@ func TestGetStdinSource(t *testing.T) {
 	t.Run("Stat_error", func(t *testing.T) {
 		t.Parallel()
 
+		// nolint: err113 // Test.
 		errStat := errors.New(t.Name())
 
 		file := fakeFile{ErrStat: errStat}
@@ -99,7 +100,7 @@ type fakeFileInfo struct {
 	FileMode fs.FileMode
 }
 
-// Mode implements fs.FileInfo
+// Mode implements fs.FileInfo.
 func (f fakeFileInfo) Mode() fs.FileMode {
 	return f.FileMode
 }
