@@ -70,7 +70,7 @@ jlv << EOF
 EOF
 
 kubectl logs pod/POD_NAME -f | jlv
-docker logs 000000000000 | jlv
+docker logs -f 000000000000 2>&1 | jlv
 ```
 
 ### Hotkeys
