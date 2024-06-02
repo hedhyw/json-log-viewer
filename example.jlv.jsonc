@@ -69,5 +69,7 @@
     "reloadThreshold": 1000000000,
     // The maximum size of the file in bytes.
     // The rest of the file will be ignored.
-    "maxFileSizeBytes": 1073741824
+    "maxFileSizeBytes": 1073741824,
+    // StdinReadTimeout is the timeout (in nanoseconds) of reading from the standart input.
+	"stdinReadTimeout": 1000000000
 }

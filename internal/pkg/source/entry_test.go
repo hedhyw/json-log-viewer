@@ -188,8 +188,6 @@ func TestParseLogEntryDefault(t *testing.T) {
 	}}
 
 	for _, testCase := range testCases {
-		testCase := testCase
-
 		t.Run(testCase.Name, func(t *testing.T) {
 			t.Parallel()
 
@@ -368,7 +366,6 @@ func TestSecondTimeFormatting(t *testing.T) {
 	}}
 
 	for _, testCase := range secondsTestCases {
-		testCase := testCase
 		t.Run(testCase.TestName, func(t *testing.T) {
 			t.Parallel()
 			actual := source.ParseLogEntry(json.RawMessage(testCase.JSON), cfg)
@@ -403,7 +400,6 @@ func TestMillisecondTimeFormatting(t *testing.T) {
 	}}
 
 	for _, testCase := range millisecondTestCases {
-		testCase := testCase
 		t.Run(testCase.TestName, func(t *testing.T) {
 			t.Parallel()
 			actual := source.ParseLogEntry(json.RawMessage(testCase.JSON), cfg)
@@ -438,7 +434,6 @@ func TestMicrosecondTimeFormatting(t *testing.T) {
 	}}
 
 	for _, testCase := range microsecondTestCases {
-		testCase := testCase
 		t.Run(testCase.TestName, func(t *testing.T) {
 			t.Parallel()
 			actual := source.ParseLogEntry(json.RawMessage(testCase.JSON), cfg)
@@ -495,7 +490,6 @@ func TestNumericKindTimeFormatting(t *testing.T) {
 	}}
 
 	for _, testCase := range numericKindCases {
-		testCase := testCase
 		t.Run(testCase.TestName, func(t *testing.T) {
 			t.Parallel()
 			actual := source.ParseLogEntry(json.RawMessage(testCase.JSON), cfg)

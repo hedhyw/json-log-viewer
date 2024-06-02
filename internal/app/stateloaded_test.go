@@ -211,8 +211,9 @@ func overwriteFileInStateLoaded(tb testing.TB, model tea.Model, content []byte) 
 	stateLoaded, ok := model.(app.StateLoadedModel)
 	require.True(tb, ok)
 
+	// nolint: gosec // Test.
 	err := os.WriteFile(
-		stateLoaded.Application().Path,
+		stateLoaded.Application().SourceInput.String(),
 		content,
 		os.ModePerm,
 	)

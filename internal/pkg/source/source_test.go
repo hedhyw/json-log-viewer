@@ -1,6 +1,7 @@
 package source_test
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/hedhyw/json-log-viewer/assets"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
-	"github.com/hedhyw/json-log-viewer/internal/pkg/tests"
 )
 
 func TestLoadLogsFromFile(t *testing.T) {
@@ -19,34 +19,21 @@ func TestLoadLogsFromFile(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		t.Parallel()
 
-		testFile := tests.RequireCreateFile(t, assets.ExampleJSONLog())
-
-		logEntries, err := source.LoadLogsFromFile(
-			testFile,
+		logEntries, err := source.ParseLogEntriesFromReader(
+			bytes.NewReader(assets.ExampleJSONLog()),
 			config.GetDefaultConfig(),
 		)
 		require.NoError(t, err)
 		assert.NotEmpty(t, logEntries)
 	})
 
-	t.Run("not_found", func(t *testing.T) {
-		t.Parallel()
-
-		_, err := source.LoadLogsFromFile(
-			"not_found_for_"+t.Name(),
-			config.GetDefaultConfig(),
-		)
-		assert.Error(t, err)
-	})
-
 	t.Run("large_line", func(t *testing.T) {
 		t.Parallel()
 
 		longLine := strings.Repeat("1", 2*1024*1024)
-		testFile := tests.RequireCreateFile(t, []byte(longLine))
 
-		logEntries, err := source.LoadLogsFromFile(
-			testFile,
+		logEntries, err := source.ParseLogEntriesFromReader(
+			strings.NewReader(longLine),
 			config.GetDefaultConfig(),
 		)
 		require.NoError(t, err)
@@ -54,17 +41,15 @@ func TestLoadLogsFromFile(t *testing.T) {
 	})
 }
 
-func TestLoadLogsFromFileLimited(t *testing.T) {
+func TestParseLogEntriesFromReaderLimited(t *testing.T) {
 	t.Parallel()
 
 	content := `{}`
 
-	testFile := tests.RequireCreateFile(t, []byte(content))
-
 	cfg := config.GetDefaultConfig()
 	cfg.MaxFileSizeBytes = 1
 
-	logEntries, err := source.LoadLogsFromFile(testFile, cfg)
+	logEntries, err := source.ParseLogEntriesFromReader(strings.NewReader(content), cfg)
 	require.NoError(t, err)
 
 	if assert.Len(t, logEntries, 1) {

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 )
@@ -17,26 +16,7 @@ const (
 	logEntriesEstimateNumber = 256
 )
 
-// LoadLogsFromFile loads json log entries from file.
-func LoadLogsFromFile(
-	path string,
-	cfg *config.Config,
-) (_ LazyLogEntries, err error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("os: %w", err)
-	}
-
-	defer func() { err = errors.Join(err, file.Close()) }()
-
-	logEntries, err := ParseLogEntriesFromReader(file, cfg)
-	if err != nil {
-		return nil, fmt.Errorf("parsing from reader: %w", err)
-	}
-
-	return logEntries.Reverse(), nil
-}
-
+// ParseLogEntriesFromReader reads the input and parses all logs.
 func ParseLogEntriesFromReader(
 	reader io.Reader,
 	cfg *config.Config,
@@ -66,5 +46,5 @@ func ParseLogEntriesFromReader(
 		}
 	}
 
-	return logEntries, nil
+	return logEntries.Reverse(), nil
 }

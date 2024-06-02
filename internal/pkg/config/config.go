@@ -26,9 +26,12 @@ type Config struct {
 	// The number of rows to prerender.
 	PrerenderRows int `json:"prerenderRows"`
 	// ReloadThreshold is the minimum duration between reloading rows.
-	ReloadThreshold time.Duration `json:"reloadThreshold"`
+	ReloadThreshold time.Duration `json:"reloadThreshold" validate:"min=100ms"`
 	// MaxFileSizeBytes is the maximum size of the file to load.
-	MaxFileSizeBytes int64 `json:"maxFileSizeBytes"`
+	MaxFileSizeBytes int64 `json:"maxFileSizeBytes" validate:"min=1"`
+
+	// StdinReadTimeout is the timeout of reading from the standart input.
+	StdinReadTimeout time.Duration `json:"stdinReadTimeout" validate:"min=100ms"`
 }
 
 // FieldKind describes the type of the log field.
@@ -56,12 +59,14 @@ type Field struct {
 
 // GetDefaultConfig returns the configuration with default values.
 func GetDefaultConfig() *Config {
+	// nolint: mnd // Default config.
 	return &Config{
 		Path:               "default",
 		CustomLevelMapping: GetDefaultCustomLevelMapping(),
 		PrerenderRows:      100,
 		ReloadThreshold:    time.Second,
 		MaxFileSizeBytes:   1024 * 1024 * 1024,
+		StdinReadTimeout:   time.Second,
 		Fields: []Field{{
 			Title:      "Time",
 			Kind:       FieldKindNumericTime,
@@ -128,6 +133,8 @@ func readConfigFromFile(path string) (cfg *Config, err error) {
 	}
 
 	defer func() { err = errors.Join(err, file.Close()) }()
+
+	cfg = GetDefaultConfig()
 
 	err = json.NewDecoder(
 		jsoncjson.NewReader(file),

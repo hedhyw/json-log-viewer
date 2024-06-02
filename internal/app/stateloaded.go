@@ -137,7 +137,7 @@ func (s StateLoadedModel) handleRequestOpenJSON() (tea.Model, tea.Cmd) {
 }
 
 func (s StateLoadedModel) handleViewRowsReloadRequestedMsg() (tea.Model, tea.Cmd) {
-	if time.Since(s.lastReloadAt) < s.Config.ReloadThreshold {
+	if time.Since(s.lastReloadAt) < s.Config.ReloadThreshold || s.reloading {
 		return s, nil
 	}
 

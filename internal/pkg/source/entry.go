@@ -209,12 +209,18 @@ func guessTimeFieldKind(timeStr string) config.FieldKind {
 
 	intLength := len(strconv.FormatInt(intValue, 10))
 
+	const (
+		unixSecondsLength = 10
+		unixMilliLength   = 13
+		unixMicroLength   = 16
+	)
+
 	switch {
-	case intLength <= 10:
+	case intLength <= unixSecondsLength:
 		return config.FieldKindSecondTime
-	case intLength > 10 && intLength <= 13:
+	case intLength > unixSecondsLength && intLength <= unixMilliLength:
 		return config.FieldKindMilliTime
-	case intLength > 13 && intLength <= 16:
+	case intLength > unixMilliLength && intLength <= unixMicroLength:
 		return config.FieldKindMicroTime
 	default:
 		return config.FieldKindTime

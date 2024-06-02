@@ -5,12 +5,13 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 )
 
 // Application global state.
 type Application struct {
-	Path   string
-	Config *config.Config
+	SourceInput source.Input
+	Config      *config.Config
 
 	BaseStyle   lipgloss.Style
 	FooterStyle lipgloss.Style
@@ -18,15 +19,15 @@ type Application struct {
 	LastWindowSize tea.WindowSizeMsg
 }
 
-func newApplication(path string, config *config.Config) Application {
+func newApplication(sourceInput source.Input, config *config.Config) Application {
 	const (
 		initialWidth  = 70
 		initialHeight = 20
 	)
 
 	return Application{
-		Path:   path,
-		Config: config,
+		SourceInput: sourceInput,
+		Config:      config,
 
 		BaseStyle:   getBaseStyle(),
 		FooterStyle: getFooterStyle(),
@@ -40,6 +41,6 @@ func newApplication(path string, config *config.Config) Application {
 
 // NewModel initializes a new application model. It accept the path
 // to the file with logs.
-func NewModel(path string, config *config.Config) tea.Model {
-	return newStateInitial(newApplication(path, config))
+func NewModel(sourceInput source.Input, config *config.Config) tea.Model {
+	return newStateInitial(newApplication(sourceInput, config))
 }

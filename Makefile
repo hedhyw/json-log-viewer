@@ -1,4 +1,4 @@
-GOLANG_CI_LINT_VER:=v1.55.2
+GOLANG_CI_LINT_VER:=v1.59.0
 OUT_BIN?=${PWD}/bin/jlv
 COVER_PACKAGES=./...
 VERSION?=${shell git describe --tags}
@@ -8,6 +8,11 @@ all: lint test build
 run:
 	@echo "building ${VERSION}"
 	go run ./cmd/jlv assets/example.log
+.PHONY: build
+
+run.stdin:
+	@echo "building ${VERSION}"
+	go run ./cmd/jlv < assets/example.log
 .PHONY: build
 
 build:
