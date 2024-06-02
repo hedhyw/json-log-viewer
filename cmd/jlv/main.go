@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"io/fs"
 	"os"
 	"path"
 
@@ -42,7 +43,7 @@ func main() {
 
 	switch flag.NArg() {
 	case 0:
-		sourceInput, err = getStdinSource(cfg)
+		sourceInput, err = getStdinSource(cfg, os.Stdin)
 		if err != nil {
 			fatalf("Stdin: %s\n", err)
 		}
@@ -60,17 +61,17 @@ func main() {
 	}
 }
 
-func getStdinSource(cfg *config.Config) (source.Input, error) {
-	stat, err := os.Stdin.Stat()
+func getStdinSource(cfg *config.Config, defaultInput fs.File) (source.Input, error) {
+	stat, err := defaultInput.Stat()
 	if err != nil {
 		return nil, fmt.Errorf("stat: %w", err)
 	}
 
-	if stat.Mode()&os.ModeNamedPipe == 0 {
+	if stat.Mode()&os.ModeCharDevice != 0 {
 		return readerinput.New(bytes.NewReader(nil), cfg.StdinReadTimeout), nil
 	}
 
-	return readerinput.New(os.Stdin, cfg.StdinReadTimeout), nil
+	return readerinput.New(defaultInput, cfg.StdinReadTimeout), nil
 }
 
 func fatalf(message string, args ...any) {
