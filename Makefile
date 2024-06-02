@@ -7,15 +7,15 @@ all: lint test build
 
 run: build
 	./bin/jlv assets/example.log
-.PHONY: build
+.PHONY: run
 
 run.version: build
 	./bin/jlv --version
-.PHONY: build
+.PHONY: run.version
 
 run.stdin: build
 	./bin/jlv < assets/example.log
-.PHONY: build
+.PHONY: run.stdin
 
 build:
 	@echo "building ${VERSION}"
