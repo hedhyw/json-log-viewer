@@ -17,9 +17,15 @@ type Application struct {
 	FooterStyle lipgloss.Style
 
 	LastWindowSize tea.WindowSizeMsg
+
+	Version string
 }
 
-func newApplication(sourceInput source.Input, config *config.Config) Application {
+func newApplication(
+	sourceInput source.Input,
+	config *config.Config,
+	version string,
+) Application {
 	const (
 		initialWidth  = 70
 		initialHeight = 20
@@ -36,11 +42,17 @@ func newApplication(sourceInput source.Input, config *config.Config) Application
 			Width:  initialWidth,
 			Height: initialHeight,
 		},
+
+		Version: version,
 	}
 }
 
 // NewModel initializes a new application model. It accept the path
 // to the file with logs.
-func NewModel(sourceInput source.Input, config *config.Config) tea.Model {
-	return newStateInitial(newApplication(sourceInput, config))
+func NewModel(
+	sourceInput source.Input,
+	config *config.Config,
+	version string,
+) tea.Model {
+	return newStateInitial(newApplication(sourceInput, config, version))
 }

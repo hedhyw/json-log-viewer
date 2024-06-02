@@ -22,6 +22,7 @@ func TestStateInitial(t *testing.T) {
 	model := app.NewModel(
 		readerinput.New(bytes.NewReader([]byte{}), time.Millisecond),
 		config.GetDefaultConfig(),
+		testVersion,
 	)
 
 	_, ok := model.(app.StateInitialModel)

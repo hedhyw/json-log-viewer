@@ -5,14 +5,16 @@ VERSION?=${shell git describe --tags}
 
 all: lint test build
 
-run:
-	@echo "building ${VERSION}"
-	go run ./cmd/jlv assets/example.log
+run: build
+	./bin/jlv assets/example.log
 .PHONY: build
 
-run.stdin:
-	@echo "building ${VERSION}"
-	go run ./cmd/jlv < assets/example.log
+run.version: build
+	./bin/jlv --version
+.PHONY: build
+
+run.stdin: build
+	./bin/jlv < assets/example.log
 .PHONY: build
 
 build:

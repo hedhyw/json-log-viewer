@@ -15,11 +15,22 @@ import (
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source/readerinput"
 )
 
+// version will be set on build.
+var version = "development"
+
 const configFileName = ".jlv.jsonc"
 
 func main() {
 	configPath := flag.String("config", "", "Path to the config")
+	printVersion := flag.Bool("version", false, "Print version")
 	flag.Parse()
+
+	if *printVersion {
+		// nolint: forbidigo // Version command.
+		print("github.com/hedhyw/json-log-viewer@" + version + "\n")
+
+		return
+	}
 
 	cfg, err := readConfig(*configPath)
 	if err != nil {
@@ -37,7 +48,7 @@ func main() {
 		fatalf("Invalid arguments, usage: %s file.log\n", os.Args[0])
 	}
 
-	appModel := app.NewModel(sourceInput, cfg)
+	appModel := app.NewModel(sourceInput, cfg, version)
 	program := tea.NewProgram(appModel, tea.WithAltScreen())
 
 	if _, err := program.Run(); err != nil {
