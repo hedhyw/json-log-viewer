@@ -30,6 +30,26 @@ func TestReadDefault(t *testing.T) {
 	}
 }
 
+func TestReadPartlyDefault(t *testing.T) {
+	t.Parallel()
+
+	const reloadThreshold = time.Minute + time.Second
+
+	configDefault := config.GetDefaultConfig()
+	configJSON := tests.RequireEncodeJSON(t, map[string]any{
+		"reloadThreshold": reloadThreshold,
+	})
+	configFile := tests.RequireCreateFile(t, configJSON)
+
+	assert.NotEqual(t, reloadThreshold, configDefault.ReloadThreshold)
+
+	cfg, err := config.Read(configFile)
+	if assert.NoError(t, err) {
+		assert.Equal(t, reloadThreshold, cfg.ReloadThreshold)
+		assert.Equal(t, configDefault.StdinReadTimeout, cfg.StdinReadTimeout)
+	}
+}
+
 func TestReadNotFound(t *testing.T) {
 	t.Parallel()
 
@@ -144,7 +164,8 @@ func ExampleGetDefaultConfig() {
 	// 	},
 	// 	"prerenderRows": 100,
 	// 	"reloadThreshold": 1000000000,
-	// 	"maxFileSizeBytes": 1073741824
+	// 	"maxFileSizeBytes": 1073741824,
+	// 	"stdinReadTimeout": 1000000000
 	// }
 }
 

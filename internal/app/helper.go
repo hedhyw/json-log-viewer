@@ -1,6 +1,8 @@
 package app
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"runtime"
 	"strings"
@@ -20,11 +22,9 @@ type helper struct {
 	Application
 }
 
+// LoadEntries reads and parses entries from the input source.
 func (h helper) LoadEntries() tea.Msg {
-	logEntries, err := source.LoadLogsFromFile(
-		h.Path,
-		h.Config,
-	)
+	logEntries, err := h.loadEntriesFromSourceInput()
 	if err != nil {
 		return events.ErrorOccuredMsg{Err: err}
 	}
@@ -32,6 +32,27 @@ func (h helper) LoadEntries() tea.Msg {
 	runtime.GC()
 
 	return events.LogEntriesLoadedMsg(logEntries)
+}
+
+func (h helper) loadEntriesFromSourceInput() (logEntries source.LazyLogEntries, err error) {
+	ctx := context.Background()
+
+	readCloser, err := h.SourceInput.ReadCloser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("readcloser: %w", err)
+	}
+
+	defer func() { err = errors.Join(err, readCloser.Close()) }()
+
+	logEntries, err = source.ParseLogEntriesFromReader(
+		readCloser,
+		h.Config,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("reading logs: %w", err)
+	}
+
+	return logEntries, nil
 }
 
 func (h helper) getLogLevelStyle(

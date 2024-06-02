@@ -7,7 +7,8 @@ import (
 
 // Component sizes.
 const (
-	footerSize = 1
+	footerSize        = 1
+	footerPaddingLeft = 2
 )
 
 // Possible colors.
@@ -41,5 +42,5 @@ func getBaseStyle() lipgloss.Style {
 }
 
 func getFooterStyle() lipgloss.Style {
-	return lipgloss.NewStyle().Height(footerSize).PaddingLeft(2)
+	return lipgloss.NewStyle().Height(footerSize).PaddingLeft(footerPaddingLeft)
 }

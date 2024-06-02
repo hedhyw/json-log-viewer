@@ -1,12 +1,15 @@
 package app_test
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hedhyw/json-log-viewer/internal/app"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/source/readerinput"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/stretchr/testify/assert"
@@ -16,7 +19,10 @@ import (
 func TestStateInitial(t *testing.T) {
 	t.Parallel()
 
-	model := app.NewModel("", config.GetDefaultConfig())
+	model := app.NewModel(
+		readerinput.New(bytes.NewReader([]byte{}), time.Millisecond),
+		config.GetDefaultConfig(),
+	)
 
 	_, ok := model.(app.StateInitialModel)
 	require.Truef(t, ok, "%s", model)

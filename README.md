@@ -47,10 +47,33 @@ The application is designed to help in visualization, navigation, and analyzing 
 
 ## Usage
 
-```sh
-jlv file.json
-jlv -config .jlv.jsonc file.json
+### Reading from file
+```shell
+jlv assets/example.log
+jlv -config example.jlv.jsonc assets/example.log
 ```
+
+### Reading from Stdin
+
+```shell
+jlv < assets/example.log
+```
+
+Common applications:
+
+```shell
+curl https://raw.githubusercontent.com/hedhyw/json-log-viewer/main/assets/example.log | jlv
+
+jlv << EOF
+{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "day 1"}
+{"time":"1970-01-02T00:00:00.00","level":"INFO","message": "day 2"}
+EOF
+
+kubectl logs pod/POD_NAME -f | jlv
+docker logs 000000000000 | jlv
+```
+
+### Hotkeys
 
 | Key    | Action         |
 | ------ | -------------- |

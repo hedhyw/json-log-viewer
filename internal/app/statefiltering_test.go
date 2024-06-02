@@ -136,7 +136,7 @@ func TestStateFilteringReset(t *testing.T) {
 		rendered := model.View()
 
 		index := strings.Index(rendered, "filtered 0 by:")
-		if assert.Greater(t, index, 0) {
+		if assert.Positive(t, index) {
 			rendered = rendered[:index]
 		}
 

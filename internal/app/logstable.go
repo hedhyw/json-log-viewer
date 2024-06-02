@@ -54,7 +54,7 @@ func newLogsTableModel(application Application, logEntries source.LazyLogEntries
 		minRenderedRows: application.Config.PrerenderRows,
 		allEntries:      logEntries,
 		lastCursor:      0,
-		renderedRows:    make([]table.Row, 0, application.Config.PrerenderRows*2),
+		renderedRows:    make([]table.Row, 0, application.Config.PrerenderRows),
 	}.withRenderedRows()
 
 	return logsTableModel{
@@ -90,12 +90,15 @@ func (m logsTableModel) Update(msg tea.Msg) (logsTableModel, tea.Cmd) {
 }
 
 func (m logsTableModel) handleWindowSizeMsg(msg tea.WindowSizeMsg) logsTableModel {
-	const heightOffset = 4
+	const (
+		heightOffset = 4
+		widthOffset  = -10
+	)
 
 	x, y := m.BaseStyle.GetFrameSize()
 	m.lazyTable.table.SetWidth(msg.Width - x*2)
 	m.lazyTable.table.SetHeight(msg.Height - y*2 - footerSize - heightOffset)
-	m.lazyTable.table.SetColumns(getColumns(m.lazyTable.table.Width()-10, m.Config))
+	m.lazyTable.table.SetColumns(getColumns(m.lazyTable.table.Width()+widthOffset, m.Config))
 	m.lastWindowSize = msg
 
 	return m

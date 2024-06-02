@@ -10,6 +10,7 @@ import (
 
 	"github.com/hedhyw/json-log-viewer/internal/app"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/source/fileinput"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/tests"
 )
 
@@ -18,7 +19,7 @@ func newTestModel(tb testing.TB, content []byte) tea.Model {
 
 	testFile := tests.RequireCreateFile(tb, content)
 
-	model := app.NewModel(testFile, config.GetDefaultConfig())
+	model := app.NewModel(fileinput.New(testFile), config.GetDefaultConfig())
 	model = handleUpdate(model, model.Init()())
 
 	return model

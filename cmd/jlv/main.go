@@ -10,6 +10,9 @@ import (
 
 	"github.com/hedhyw/json-log-viewer/internal/app"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/source/fileinput"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/source/readerinput"
 )
 
 const configFileName = ".jlv.jsonc"
@@ -18,16 +21,23 @@ func main() {
 	configPath := flag.String("config", "", "Path to the config")
 	flag.Parse()
 
-	if flag.NArg() != 1 {
-		fatalf("Invalid arguments, usage: %s file.log\n", os.Args[0])
-	}
-
 	cfg, err := readConfig(*configPath)
 	if err != nil {
 		fatalf("Error reading config: %s\n", err)
 	}
 
-	appModel := app.NewModel(flag.Args()[0], cfg)
+	var sourceInput source.Input
+
+	switch flag.NArg() {
+	case 0:
+		sourceInput = readerinput.New(os.Stdin, cfg.StdinReadTimeout)
+	case 1:
+		sourceInput = fileinput.New(flag.Arg(0))
+	default:
+		fatalf("Invalid arguments, usage: %s file.log\n", os.Args[0])
+	}
+
+	appModel := app.NewModel(sourceInput, cfg)
 	program := tea.NewProgram(appModel, tea.WithAltScreen())
 
 	if _, err := program.Run(); err != nil {
