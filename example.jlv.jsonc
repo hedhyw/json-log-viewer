@@ -71,5 +71,5 @@
     // The rest of the file will be ignored.
     "maxFileSizeBytes": 1073741824,
     // StdinReadTimeout is the timeout (in nanoseconds) of reading from the standart input.
-	"stdinReadTimeout": 1000000000
+    "stdinReadTimeout": 1000000000
 }
