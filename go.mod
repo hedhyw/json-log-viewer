@@ -2,12 +2,12 @@ module github.com/hedhyw/json-log-viewer
 
 go 1.22
 
-replace github.com/antonmedv/fx => github.com/hedhyw/fx v0.0.2
+replace github.com/antonmedv/fx => github.com/chirino/fx v0.0.0-20240818132837-248e67b184d9
 
 replace github.com/charmbracelet/bubbles => github.com/hedhyw/bubbles v0.0.4
 
 require (
-	github.com/antonmedv/fx v0.0.0-20240428214715-6793ff4a0e59
+	github.com/antonmedv/fx v0.0.0-20240807042048-dd653cf7bf83
 	github.com/charmbracelet/bubbles v0.18.0
 	github.com/charmbracelet/bubbletea v0.25.0
 	github.com/charmbracelet/lipgloss v0.11.0
