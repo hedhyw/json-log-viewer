@@ -62,26 +62,14 @@ func (s StateViewRowModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case events.ErrorOccuredMsg:
 		return s.handleErrorOccuredMsg(msg)
 	case tea.KeyMsg:
-		if key.Matches(msg, s.keys.Back) || key.Matches(msg, s.keys.ToggleView) {
+		if key.Matches(msg, s.keys.Back) {
 			return s.previousState.withApplication(s.Application)
-		}
-
-		if cmd = s.handleKeyMsg(msg); cmd != nil {
-			return s, cmd
 		}
 	}
 
 	s.jsonView, cmd = s.jsonView.Update(msg)
 
 	return s, cmd
-}
-
-func (s StateViewRowModel) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
-	if key.Matches(msg, s.keys.ToggleViewArrow) {
-		return nil
-	}
-
-	return s.helper.handleKeyMsg(msg)
 }
 
 // String implements fmt.Stringer.
