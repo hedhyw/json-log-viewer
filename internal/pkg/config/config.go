@@ -4,11 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
-	"time"
-
 	"github.com/go-playground/validator/v10"
 	"github.com/hedhyw/jsoncjson"
+	"os"
 )
 
 // PathDefault is a fake path to the default config.
@@ -23,15 +21,8 @@ type Config struct {
 
 	CustomLevelMapping map[string]string `json:"customLevelMapping"`
 
-	// The number of rows to prerender.
-	PrerenderRows int `json:"prerenderRows"`
-	// ReloadThreshold is the minimum duration between reloading rows.
-	ReloadThreshold time.Duration `json:"reloadThreshold" validate:"min=100ms"`
 	// MaxFileSizeBytes is the maximum size of the file to load.
 	MaxFileSizeBytes int64 `json:"maxFileSizeBytes" validate:"min=1"`
-
-	// StdinReadTimeout is the timeout of reading from the standart input.
-	StdinReadTimeout time.Duration `json:"stdinReadTimeout" validate:"min=100ms"`
 }
 
 // FieldKind describes the type of the log field.
@@ -63,10 +54,7 @@ func GetDefaultConfig() *Config {
 	return &Config{
 		Path:               "default",
 		CustomLevelMapping: GetDefaultCustomLevelMapping(),
-		PrerenderRows:      100,
-		ReloadThreshold:    time.Second,
 		MaxFileSizeBytes:   1024 * 1024 * 1024,
-		StdinReadTimeout:   time.Second,
 		Fields: []Field{{
 			Title:      "Time",
 			Kind:       FieldKindNumericTime,

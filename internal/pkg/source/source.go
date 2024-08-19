@@ -3,48 +3,104 @@ package source
 import (
 	"bufio"
 	"bytes"
-	"errors"
-	"fmt"
-	"io"
-
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
+	"io"
+	"os"
 )
 
 const (
 	maxLineSize = 8 * 1024 * 1024
-
-	logEntriesEstimateNumber = 256
 )
 
-// ParseLogEntriesFromReader reads the input and parses all logs.
-func ParseLogEntriesFromReader(
-	reader io.Reader,
-	cfg *config.Config,
-) (LazyLogEntries, error) {
-	reader = io.LimitReader(reader, cfg.MaxFileSizeBytes)
+type Source struct {
+	Seeker   *os.File
+	reader   *bufio.Reader
+	tempFile *os.File
+	offset   int64
+}
 
-	bufReader := bufio.NewReaderSize(reader, maxLineSize)
-	logEntries := make(LazyLogEntries, 0, logEntriesEstimateNumber)
+func (is *Source) Close() (err error) {
+	if is.tempFile != nil {
+		err = is.tempFile.Close()
+	}
+	e := is.Seeker.Close()
+	if e != nil {
+		err = e
+	}
+	return err
+}
 
-	for {
-		line, _, err := bufReader.ReadLine()
-		if err != nil {
-			if errors.Is(err, io.EOF) {
-				break
-			}
+func File(input *os.File, cfg *config.Config) (*Source, error) {
+	var err error
+	var result = &Source{}
 
-			return nil, fmt.Errorf("reading line: %w", err)
-		}
-
-		line = bytes.TrimSpace(line)
-
-		if len(line) > 0 {
-			lineClone := make([]byte, len(line))
-			copy(lineClone, line)
-
-			logEntries = append(logEntries, LazyLogEntry{Line: lineClone})
-		}
+	// If it's file we can open it again for seeking.
+	result.Seeker, err = os.Open(input.Name())
+	if err != nil {
+		return nil, err
 	}
 
-	return logEntries.Reverse(), nil
+	reader := io.LimitReader(input, cfg.MaxFileSizeBytes)
+	result.reader = bufio.NewReaderSize(reader, maxLineSize)
+	return result, nil
+}
+
+func Reader(input io.Reader, cfg *config.Config) (*Source, error) {
+	var err error
+	var result = &Source{}
+
+	// We will write the as read to a temp file.  Seek against the temp file.
+	result.tempFile, err = os.CreateTemp("", "jvl-*.log")
+	if err != nil {
+		return nil, err
+	}
+	reader := io.TeeReader(input, result.tempFile)
+
+	result.Seeker, err = os.Open(result.tempFile.Name())
+	if err != nil {
+		result.tempFile.Close()
+		return nil, err
+	}
+
+	reader = io.LimitReader(reader, cfg.MaxFileSizeBytes)
+	result.reader = bufio.NewReaderSize(reader, maxLineSize)
+	return result, nil
+}
+
+func (is *Source) ParseLogEntries() (LazyLogEntries, error) {
+
+	logEntries := make([]LazyLogEntry, 0, 256)
+	for {
+		entry, err := is.ReadLogEntry()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return LazyLogEntries{}, err
+		}
+		logEntries = append(logEntries, entry)
+	}
+	return LazyLogEntries{
+		Seeker:  is.Seeker,
+		Entries: logEntries,
+	}, nil
+}
+
+// ReadLogEntry reads the next ReadLogEntry from the file.
+func (is *Source) ReadLogEntry() (LazyLogEntry, error) {
+	for {
+		line, err := is.reader.ReadSlice(byte('\n'))
+		if err != nil {
+			return LazyLogEntry{}, err
+		}
+		length := len(line)
+		offset := is.offset
+		is.offset += int64(length)
+		if len(bytes.TrimSpace(line)) != 0 {
+			return LazyLogEntry{
+				offset: offset,
+				length: length,
+			}, nil
+		}
+	}
 }

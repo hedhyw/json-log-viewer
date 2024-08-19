@@ -10,7 +10,6 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestStateError(t *testing.T) {
@@ -18,7 +17,8 @@ func TestStateError(t *testing.T) {
 
 	errTest := getTestError()
 
-	model := newTestModel(t, assets.ExampleJSONLog())
+	model, source := newTestModel(t, assets.ExampleJSONLog())
+	defer source.Close()
 	model = handleUpdate(model, events.ErrorOccuredMsg{Err: errTest})
 
 	_, ok := model.(app.StateErrorModel)
@@ -47,12 +47,4 @@ func TestStateError(t *testing.T) {
 		}
 	})
 
-	t.Run("unknown_update", func(t *testing.T) {
-		t.Parallel()
-
-		model := handleUpdate(model, events.ViewRowsReloadRequestedMsg{})
-
-		_, ok := model.(app.StateErrorModel)
-		require.Truef(t, ok, "%s", model)
-	})
 }

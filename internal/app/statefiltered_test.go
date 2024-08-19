@@ -25,7 +25,8 @@ func TestStateFiltered(t *testing.T) {
 	{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "` + termExcluded + `"}
 	`
 
-	model := newTestModel(t, []byte(jsonFile))
+	model, source := newTestModel(t, []byte(jsonFile))
+	defer source.Close()
 
 	rendered := model.View()
 	assert.Contains(t, rendered, termIncluded)

@@ -10,7 +10,7 @@ import (
 
 // StateFilteringModel is a state to prompt for filter term.
 type StateFilteringModel struct {
-	helper
+	*Application
 
 	previousState StateLoadedModel
 	table         logsTableModel
@@ -20,14 +20,13 @@ type StateFilteringModel struct {
 }
 
 func newStateFiltering(
-	application Application,
 	previousState StateLoadedModel,
 ) StateFilteringModel {
 	textInput := textinput.New()
 	textInput.Focus()
 
 	return StateFilteringModel{
-		helper: helper{Application: application},
+		Application: previousState.Application,
 
 		previousState: previousState,
 		table:         previousState.table,
@@ -51,7 +50,7 @@ func (s StateFilteringModel) View() string {
 func (s StateFilteringModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmdBatch []tea.Cmd
 
-	s.helper = s.helper.Update(msg)
+	s.Application.Update(msg)
 
 	switch msg := msg.(type) {
 	case events.ErrorOccuredMsg:
@@ -59,8 +58,8 @@ func (s StateFilteringModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, s.keys.Back):
-			return s.previousState.withApplication(s.Application)
-		case key.Matches(msg, s.keys.ToggleView):
+			return s.previousState.refresh()
+		case key.Matches(msg, s.keys.Open):
 			return s.handleEnterKeyClickedMsg()
 		}
 		if cmd := s.handleKeyMsg(msg); cmd != nil {
@@ -81,7 +80,7 @@ func (s StateFilteringModel) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		return nil
 	}
 
-	return s.helper.handleKeyMsg(msg)
+	return s.Application.handleKeyMsg(msg)
 }
 
 func (s StateFilteringModel) handleEnterKeyClickedMsg() (tea.Model, tea.Cmd) {
@@ -90,7 +89,6 @@ func (s StateFilteringModel) handleEnterKeyClickedMsg() (tea.Model, tea.Cmd) {
 	}
 
 	return initializeModel(newStateFiltered(
-		s.Application,
 		s.previousState,
 		s.textInput.Value(),
 	))

@@ -19,10 +19,12 @@ func TestLoadLogsFromFile(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		t.Parallel()
 
-		logEntries, err := source.ParseLogEntriesFromReader(
-			bytes.NewReader(assets.ExampleJSONLog()),
-			config.GetDefaultConfig(),
-		)
+		reader := bytes.NewReader(assets.ExampleJSONLog())
+		is, err := source.Reader(reader, config.GetDefaultConfig())
+		require.NoError(t, err)
+		defer is.Close()
+		logEntries, err := is.ParseLogEntries()
+
 		require.NoError(t, err)
 		assert.NotEmpty(t, logEntries)
 	})
@@ -32,10 +34,12 @@ func TestLoadLogsFromFile(t *testing.T) {
 
 		longLine := strings.Repeat("1", 2*1024*1024)
 
-		logEntries, err := source.ParseLogEntriesFromReader(
-			strings.NewReader(longLine),
-			config.GetDefaultConfig(),
-		)
+		reader := strings.NewReader(longLine)
+		is, err := source.Reader(reader, config.GetDefaultConfig())
+		require.NoError(t, err)
+		defer is.Close()
+		logEntries, err := is.ParseLogEntries()
+
 		require.NoError(t, err)
 		assert.NotEmpty(t, logEntries)
 	})
@@ -49,10 +53,11 @@ func TestParseLogEntriesFromReaderLimited(t *testing.T) {
 	cfg := config.GetDefaultConfig()
 	cfg.MaxFileSizeBytes = 1
 
-	logEntries, err := source.ParseLogEntriesFromReader(strings.NewReader(content), cfg)
+	reader := strings.NewReader(content)
+	is, err := source.Reader(reader, cfg)
 	require.NoError(t, err)
+	defer is.Close()
+	logEntries, err := is.ParseLogEntries()
 
-	if assert.Len(t, logEntries, 1) {
-		assert.Equal(t, content[:cfg.MaxFileSizeBytes], string(logEntries[0].Line))
-	}
+	require.Len(t, logEntries.Entries, 0)
 }

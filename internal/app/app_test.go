@@ -2,6 +2,10 @@ package app_test
 
 import (
 	"errors"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/tests"
+	"os"
 	"testing"
 
 	"github.com/charmbracelet/bubbles/cursor"
@@ -10,21 +14,27 @@ import (
 
 	"github.com/hedhyw/json-log-viewer/internal/app"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
-	"github.com/hedhyw/json-log-viewer/internal/pkg/source/fileinput"
-	"github.com/hedhyw/json-log-viewer/internal/pkg/tests"
 )
 
 const testVersion = "v0.0.1"
 
-func newTestModel(tb testing.TB, content []byte) tea.Model {
+func newTestModel(tb testing.TB, content []byte) (tea.Model, *source.Source) {
 	tb.Helper()
 
 	testFile := tests.RequireCreateFile(tb, content)
+	file, err := os.Open(testFile)
+	require.NoError(tb, err)
+	defer file.Close()
 
-	model := app.NewModel(fileinput.New(testFile), config.GetDefaultConfig(), testVersion)
-	model = handleUpdate(model, model.Init()())
+	is, err := source.File(file, config.GetDefaultConfig())
+	require.NoError(tb, err)
+	model := app.NewModel(testFile, config.GetDefaultConfig(), testVersion)
 
-	return model
+	entries, err := is.ParseLogEntries()
+	require.NoError(tb, err)
+	model = handleUpdate(model, events.LogEntriesUpdateMsg(entries))
+
+	return model, is
 }
 
 func handleUpdate(model tea.Model, msg tea.Msg) tea.Model {

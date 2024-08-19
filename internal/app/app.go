@@ -1,28 +1,32 @@
 package app
 
 import (
+	"github.com/charmbracelet/bubbles/help"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
-	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 )
 
 // Application global state.
 type Application struct {
-	SourceInput source.Input
-	Config      *config.Config
+	FileName string
+	Config   *config.Config
 
 	BaseStyle   lipgloss.Style
 	FooterStyle lipgloss.Style
 
 	LastWindowSize tea.WindowSizeMsg
+	Entries        source.LazyLogEntries
+	Version        string
 
-	Version string
+	keys KeyMap
+	help help.Model
 }
 
 func newApplication(
-	sourceInput source.Input,
+	fileName string,
 	config *config.Config,
 	version string,
 ) Application {
@@ -32,8 +36,8 @@ func newApplication(
 	)
 
 	return Application{
-		SourceInput: sourceInput,
-		Config:      config,
+		FileName: fileName,
+		Config:   config,
 
 		BaseStyle:   getBaseStyle(),
 		FooterStyle: getFooterStyle(),
@@ -44,15 +48,18 @@ func newApplication(
 		},
 
 		Version: version,
+		keys:    defaultKeys,
+		help:    help.New(),
 	}
 }
 
 // NewModel initializes a new application model. It accept the path
 // to the file with logs.
 func NewModel(
-	sourceInput source.Input,
+	fileName string,
 	config *config.Config,
 	version string,
 ) tea.Model {
-	return newStateInitial(newApplication(sourceInput, config, version))
+	application := newApplication(fileName, config, version)
+	return newStateInitial(&application)
 }

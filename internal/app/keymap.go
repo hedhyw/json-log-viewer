@@ -5,11 +5,13 @@ import "github.com/charmbracelet/bubbles/key"
 type KeyMap struct {
 	Exit            key.Binding
 	Back            key.Binding
-	ToggleView      key.Binding
+	Open            key.Binding
 	ToggleViewArrow key.Binding
 	Up              key.Binding
+	Reverse         key.Binding
 	Down            key.Binding
 	Filter          key.Binding
+	ToggleFullHelp  key.Binding
 }
 
 var defaultKeys = KeyMap{
@@ -19,11 +21,11 @@ var defaultKeys = KeyMap{
 	),
 	Back: key.NewBinding(
 		key.WithKeys("esc", "q"),
-		key.WithHelp("Esc", "Back"),
+		key.WithHelp("esc", "Back"),
 	),
-	ToggleView: key.NewBinding(
+	Open: key.NewBinding(
 		key.WithKeys("enter"),
-		key.WithHelp("Enter", "Open/Hide"),
+		key.WithHelp("enter", "Open"),
 	),
 	ToggleViewArrow: key.NewBinding(
 		key.WithKeys("right"),
@@ -32,23 +34,35 @@ var defaultKeys = KeyMap{
 		key.WithKeys("up"),
 		key.WithHelp("↑", "Up"),
 	),
+	Reverse: key.NewBinding(
+		key.WithKeys("r"),
+		key.WithHelp("r", "Reverse"),
+	),
 	Down: key.NewBinding(
 		key.WithKeys("down"),
 		key.WithHelp("↓", "Down"),
 	),
 	Filter: key.NewBinding(
 		key.WithKeys("f"),
-		key.WithHelp("F", "Filter"),
+		key.WithHelp("f", "Filter"),
+	),
+	ToggleFullHelp: key.NewBinding(
+		key.WithKeys("?"),
+		key.WithHelp("?", "Help"),
 	),
 }
 
 func (k KeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Exit, k.Back, k.ToggleView, k.Up, k.Down, k.Filter}
+	return []key.Binding{
+		k.Back, k.Open, k.Up, k.Down, k.ToggleFullHelp,
+	}
 }
 
 func (k KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Back, k.Up, k.Down},           // first column
-		{k.ToggleView, k.Exit, k.Filter}, // second column
+		{k.Up, k.Down}, // first column
+		{k.Back, k.Open},
+		{k.Filter, k.Reverse},
+		{k.ToggleFullHelp, k.Exit},
 	}
 }

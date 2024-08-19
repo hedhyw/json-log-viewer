@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -17,23 +18,39 @@ import (
 
 // LazyLogEntry holds unredenred LogEntry. Use `LogEntry` getter.
 type LazyLogEntry struct {
-	Line json.RawMessage
+	offset int64
+	length int
+}
+
+func (e LazyLogEntry) Length() int {
+	return e.length
+}
+
+func (e LazyLogEntry) Line(file *os.File) (json.RawMessage, error) {
+	data := make([]byte, e.length)
+	_, err := file.ReadAt(data, e.offset)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 // LogEntry parses and returns `LogEntry`.
-func (e LazyLogEntry) LogEntry(cfg *config.Config) LogEntry {
-	return ParseLogEntry(e.Line, cfg)
-}
-
-// Row returns table.Row representation of the log entry.
-func (e LazyLogEntry) Row(cfg *config.Config) table.Row {
-	return e.LogEntry(cfg).Fields
+func (e LazyLogEntry) LogEntry(file *os.File, cfg *config.Config) LogEntry {
+	line, err := e.Line(file)
+	if err != nil {
+		return LogEntry{
+			Error: err,
+		}
+	}
+	return ParseLogEntry(line, cfg)
 }
 
 // LogEntry is a single partly-parse record of the log.
 type LogEntry struct {
 	Fields []string
 	Line   json.RawMessage
+	Error  error
 }
 
 // Row returns table.Row representation of the log entry.
@@ -42,34 +59,44 @@ func (e LogEntry) Row() table.Row {
 }
 
 // LazyLogEntries is a helper type definition for the slice of lazy log entries.
-type LazyLogEntries []LazyLogEntry
+type LazyLogEntries struct {
+	Seeker  *os.File
+	Entries []LazyLogEntry
+}
+
+// Row returns table.Row representation of the log entry.
+func (entries LazyLogEntries) Row(cfg *config.Config, i int) table.Row {
+	return entries.Entries[i].LogEntry(entries.Seeker, cfg).Fields
+}
+
+func (entries LazyLogEntries) Len() int {
+	return len(entries.Entries)
+}
 
 // Filter filters entries by ignore case exact match.
-func (entries LazyLogEntries) Filter(term string) LazyLogEntries {
+func (entries LazyLogEntries) Filter(term string) (LazyLogEntries, error) {
 	if term == "" {
-		return entries
+		return entries, nil
 	}
 
 	termLower := bytes.ToLower([]byte(term))
 
-	filtered := make(LazyLogEntries, 0, len(entries))
+	filtered := make([]LazyLogEntry, 0, len(entries.Entries))
 
-	for _, f := range entries {
-		if bytes.Contains(bytes.ToLower(f.Line), termLower) {
+	for _, f := range entries.Entries {
+		line, err := f.Line(entries.Seeker)
+		if err != nil {
+			return LazyLogEntries{}, err
+		}
+		if bytes.Contains(bytes.ToLower(line), termLower) {
 			filtered = append(filtered, f)
 		}
 	}
 
-	return filtered
-}
-
-// Reverse all entries.
-func (entries LazyLogEntries) Reverse() LazyLogEntries {
-	for i, j := 0, len(entries)-1; i < j; i, j = i+1, j-1 {
-		entries[i], entries[j] = entries[j], entries[i]
-	}
-
-	return entries
+	return LazyLogEntries{
+		Seeker:  entries.Seeker,
+		Entries: filtered,
+	}, nil
 }
 
 func parseField(
