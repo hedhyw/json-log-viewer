@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
@@ -242,6 +243,7 @@ func TestLazyLogEntriesFilter(t *testing.T) {
 		require.NoError(t, err)
 
 		logEntry := logEntries.Entries[1]
+
 		return is, logEntries, logEntry
 	}
 

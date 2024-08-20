@@ -4,6 +4,7 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
@@ -61,5 +62,6 @@ func NewModel(
 	version string,
 ) tea.Model {
 	application := newApplication(fileName, config, version)
+
 	return newStateInitial(&application)
 }

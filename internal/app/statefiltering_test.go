@@ -2,7 +2,6 @@ package app_test
 
 import (
 	"fmt"
-	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 	"strings"
 	"testing"
 
@@ -18,20 +17,22 @@ import (
 func TestStateFiltering(t *testing.T) {
 	t.Parallel()
 
-	model, source := newTestModel(t, assets.ExampleJSONLog())
-	defer source.Close()
+	setup := func() tea.Model {
+		model := newTestModel(t, assets.ExampleJSONLog())
 
-	model = handleUpdate(model, tea.KeyMsg{
-		Type:  tea.KeyRunes,
-		Runes: []rune{'f'},
-	})
-	_, ok := model.(app.StateFilteringModel)
-	assert.Truef(t, ok, "%s", model)
+		model = handleUpdate(model, tea.KeyMsg{
+			Type:  tea.KeyRunes,
+			Runes: []rune{'f'},
+		})
+		_, ok := model.(app.StateFilteringModel)
+		assert.Truef(t, ok, "%s", model)
+		return model
+	}
 
 	t.Run("input_hotkeys", func(t *testing.T) {
 		t.Parallel()
-
-		model := handleUpdate(model, tea.KeyMsg{
+		model := setup()
+		model = handleUpdate(model, tea.KeyMsg{
 			Type:  tea.KeyRunes,
 			Runes: []rune{'q'},
 		})
@@ -47,8 +48,9 @@ func TestStateFiltering(t *testing.T) {
 
 	t.Run("returned", func(t *testing.T) {
 		t.Parallel()
+		model := setup()
 
-		model := handleUpdate(model, tea.KeyMsg{
+		model = handleUpdate(model, tea.KeyMsg{
 			Type: tea.KeyEsc,
 		})
 
@@ -58,8 +60,9 @@ func TestStateFiltering(t *testing.T) {
 
 	t.Run("empty_input", func(t *testing.T) {
 		t.Parallel()
+		model := setup()
 
-		model := handleUpdate(model, tea.KeyMsg{
+		model = handleUpdate(model, tea.KeyMsg{
 			Type: tea.KeyEnter,
 		})
 
@@ -69,6 +72,7 @@ func TestStateFiltering(t *testing.T) {
 
 	t.Run("stringer", func(t *testing.T) {
 		t.Parallel()
+		model := setup()
 
 		stringer, ok := model.(fmt.Stringer)
 		if assert.True(t, ok) {
@@ -77,18 +81,18 @@ func TestStateFiltering(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		t.Parallel()
+		model := setup()
 
-		model := handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
+		model = handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
 
 		_, ok := model.(app.StateErrorModel)
 		assert.Truef(t, ok, "%s", model)
 	})
 
 	t.Run("navigation", func(t *testing.T) {
-		t.Parallel()
+		model := setup()
 
-		model := handleUpdate(model, tea.KeyMsg{
+		model = handleUpdate(model, tea.KeyMsg{
 			Type: tea.KeyUp,
 		})
 
@@ -106,8 +110,8 @@ func TestStateFilteringReset(t *testing.T) {
 	{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "` + termIncluded + `"}
 	`
 
-	setup := func() (tea.Model, *source.Source) {
-		model, source := newTestModel(t, []byte(jsonFile))
+	setup := func() tea.Model {
+		model := newTestModel(t, []byte(jsonFile))
 
 		rendered := model.View()
 		assert.Contains(t, rendered, termIncluded)
@@ -132,15 +136,12 @@ func TestStateFilteringReset(t *testing.T) {
 
 		_, ok = model.(app.StateFilteredModel)
 		assert.Truef(t, ok, "%s", model)
-		return model, source
+		return model
 	}
 
 	t.Run("record_not_included", func(t *testing.T) {
 		t.Parallel()
-
-		model, source := setup()
-		defer source.Close()
-
+		model := setup()
 		rendered := model.View()
 
 		index := strings.Index(rendered, "filtered 0 by:")
@@ -165,9 +166,7 @@ func TestStateFilteringReset(t *testing.T) {
 
 	t.Run("record_not_included", func(t *testing.T) {
 		t.Parallel()
-
-		model, source := setup()
-		defer source.Close()
+		model := setup()
 
 		// Try to open a record where there are no records.
 		model = handleUpdate(model, tea.KeyMsg{

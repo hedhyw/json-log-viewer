@@ -2,11 +2,12 @@ package app_test
 
 import (
 	"errors"
+	"os"
+	"testing"
+
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/tests"
-	"os"
-	"testing"
 
 	"github.com/charmbracelet/bubbles/cursor"
 	tea "github.com/charmbracelet/bubbletea"
@@ -18,7 +19,7 @@ import (
 
 const testVersion = "v0.0.1"
 
-func newTestModel(tb testing.TB, content []byte) (tea.Model, *source.Source) {
+func newTestModel(tb testing.TB, content []byte) tea.Model {
 	tb.Helper()
 
 	testFile := tests.RequireCreateFile(tb, content)
@@ -34,7 +35,9 @@ func newTestModel(tb testing.TB, content []byte) (tea.Model, *source.Source) {
 	require.NoError(tb, err)
 	model = handleUpdate(model, events.LogEntriesUpdateMsg(entries))
 
-	return model, is
+	tb.Cleanup(func() { _ = is.Close() })
+
+	return model
 }
 
 func handleUpdate(model tea.Model, msg tea.Msg) tea.Model {

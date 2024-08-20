@@ -4,13 +4,15 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"os"
+	"path"
+
 	tea "github.com/charmbracelet/bubbletea"
+
 	"github.com/hedhyw/json-log-viewer/internal/app"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
-	"os"
-	"path"
 )
 
 // version will be set on build.
@@ -87,7 +89,6 @@ func main() {
 	if _, err := program.Run(); err != nil {
 		fatalf("Error running program: %s\n", err)
 	}
-
 }
 
 func fatalf(message string, args ...any) {

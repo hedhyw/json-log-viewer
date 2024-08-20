@@ -2,24 +2,24 @@ package app_test
 
 import (
 	"fmt"
+	"strings"
+	"testing"
+
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/hedhyw/json-log-viewer/assets"
 	"github.com/hedhyw/json-log-viewer/internal/app"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"os"
-	"strings"
-	"testing"
 )
 
 func TestStateLoadedEmpty(t *testing.T) {
 	t.Parallel()
 
-	model, source := newTestModel(t, []byte(""))
-	defer source.Close()
+	model := newTestModel(t, []byte(""))
 
 	_, ok := model.(app.StateLoadedModel)
 	require.Truef(t, ok, "%s", model)
@@ -32,22 +32,20 @@ func TestStateLoadedEmpty(t *testing.T) {
 func TestStateLoaded(t *testing.T) {
 	t.Parallel()
 
-	setup := func() (tea.Model, *source.Source) {
+	setup := func() tea.Model {
 		const jsonFile = `{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "test"}`
 
-		model, source := newTestModel(t, []byte(jsonFile))
+		model := newTestModel(t, []byte(jsonFile))
 
 		_, ok := model.(app.StateLoadedModel)
 		require.Truef(t, ok, "%s", model)
 
-		return model, source
+		return model
 	}
 
 	t.Run("stringer", func(t *testing.T) {
 		t.Parallel()
-
-		model, source := setup()
-		defer source.Close()
+		model := setup()
 
 		stringer, ok := model.(fmt.Stringer)
 		if assert.True(t, ok) {
@@ -57,9 +55,7 @@ func TestStateLoaded(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		t.Parallel()
-
-		model, source := setup()
-		defer source.Close()
+		model := setup()
 
 		model = handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
 
@@ -69,8 +65,7 @@ func TestStateLoaded(t *testing.T) {
 
 	t.Run("version_printed", func(t *testing.T) {
 		t.Parallel()
-		model, source := setup()
-		defer source.Close()
+		model := setup()
 
 		model = handleUpdate(model, events.HelpKeyClicked())
 		view := model.View()
@@ -81,11 +76,9 @@ func TestStateLoaded(t *testing.T) {
 func TestStateLoadedQuit(t *testing.T) {
 	t.Parallel()
 
-	model, source := newTestModel(t, assets.ExampleJSONLog())
-	defer source.Close()
-
 	t.Run("ctrl_and_c", func(t *testing.T) {
 		t.Parallel()
+		model := newTestModel(t, assets.ExampleJSONLog())
 
 		_, cmd := model.Update(tea.KeyMsg{Type: tea.KeyCtrlC})
 		requireCmdMsg(t, tea.Quit(), cmd)
@@ -93,6 +86,7 @@ func TestStateLoadedQuit(t *testing.T) {
 
 	t.Run("esc", func(t *testing.T) {
 		t.Parallel()
+		model := newTestModel(t, assets.ExampleJSONLog())
 
 		_, cmd := model.Update(tea.KeyMsg{Type: tea.KeyEsc})
 		requireCmdMsg(t, tea.Quit(), cmd)
@@ -100,6 +94,7 @@ func TestStateLoadedQuit(t *testing.T) {
 
 	t.Run("q", func(t *testing.T) {
 		t.Parallel()
+		model := newTestModel(t, assets.ExampleJSONLog())
 
 		_, cmd := model.Update(tea.KeyMsg{
 			Type:  tea.KeyRunes,
@@ -110,6 +105,7 @@ func TestStateLoadedQuit(t *testing.T) {
 
 	t.Run("f10", func(t *testing.T) {
 		t.Parallel()
+		model := newTestModel(t, assets.ExampleJSONLog())
 
 		_, cmd := model.Update(tea.KeyMsg{
 			Type: tea.KeyF10,
@@ -133,8 +129,7 @@ func BenchmarkStateLoadedBig(b *testing.B) {
 
 	cfg := config.GetDefaultConfig()
 
-	model, modelSource := newTestModel(b, []byte(`{}`))
-	defer modelSource.Close()
+	model := newTestModel(b, []byte(`{}`))
 
 	_, ok := model.(app.StateLoadedModel)
 	if !ok {
@@ -145,7 +140,7 @@ func BenchmarkStateLoadedBig(b *testing.B) {
 
 	is, err := source.Reader(contentReader, cfg)
 	require.NoError(b, err)
-	defer is.Close()
+	b.Cleanup(func() { _ = is.Close() })
 
 	logEntries, err := is.ParseLogEntries()
 	if err != nil {
@@ -153,19 +148,4 @@ func BenchmarkStateLoadedBig(b *testing.B) {
 	}
 
 	model.Update(events.LogEntriesUpdateMsg(logEntries))
-}
-
-func overwriteFileInStateLoaded(tb testing.TB, model tea.Model, content []byte) {
-	tb.Helper()
-
-	stateLoaded, ok := model.(app.StateLoadedModel)
-	require.True(tb, ok)
-
-	// nolint: gosec // Test.
-	err := os.WriteFile(
-		stateLoaded.Application.FileName,
-		content,
-		os.ModePerm,
-	)
-	require.NoError(tb, err)
 }

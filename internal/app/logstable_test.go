@@ -14,8 +14,7 @@ import (
 func TestAppViewResized(t *testing.T) {
 	t.Parallel()
 
-	model, source := newTestModel(t, assets.ExampleJSONLog())
-	defer source.Close()
+	model := newTestModel(t, assets.ExampleJSONLog())
 
 	windowSize := tea.WindowSizeMsg{
 		Width:  60,

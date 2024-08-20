@@ -1,11 +1,13 @@
 package app
 
 import (
+	"slices"
+
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
+
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
-	"slices"
 )
 
 // rowGetter renders the row.
@@ -21,12 +23,11 @@ type lazyTableModel struct {
 
 	table table.Model
 
-	minRenderedRows int
-	entries         rowGetter
-	lastCursor      int
-	offset          int
-	reverse         bool
-	follow          bool
+	entries    rowGetter
+	lastCursor int
+	offset     int
+	reverse    bool
+	follow     bool
 
 	renderedRows []table.Row
 }
@@ -47,64 +48,7 @@ func (m lazyTableModel) Update(msg tea.Msg) (lazyTableModel, tea.Cmd) {
 	render := false
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-
-		if key.Matches(msg, m.Application.keys.Reverse) {
-			m.reverse = !m.reverse
-			render = true
-		}
-
-		increaseOffset := func() {
-			maxO := max(m.entries.Len()-m.table.Height(), 0)
-			o := min(m.offset+1, maxO)
-			if o != m.offset {
-				m.offset = o
-				render = true
-			} else {
-				m.follow = true
-			}
-		}
-		decreaseOffset := func() {
-			o := max(m.offset-1, 0)
-			if o != m.offset {
-				m.offset = o
-				render = true
-			}
-		}
-		if m.reverse {
-			x := increaseOffset
-			increaseOffset = decreaseOffset
-			decreaseOffset = x
-		}
-		if key.Matches(msg, m.Application.keys.Down) {
-			m.follow = false
-			if m.table.Cursor()+1 == m.table.Height() {
-				increaseOffset()
-			}
-		}
-		if key.Matches(msg, m.Application.keys.Up) {
-			m.follow = false
-			if m.table.Cursor() == 0 {
-				decreaseOffset()
-			}
-		}
-		if key.Matches(msg, m.Application.keys.GotoTop) {
-			if m.reverse {
-				m.follow = true
-			} else {
-				m.follow = false
-				m.offset = 0
-			}
-			render = true
-		}
-		if key.Matches(msg, m.Application.keys.GotoBottom) {
-			if m.reverse {
-				m.follow = false
-				m.offset = 0
-			} else {
-				m.follow = true
-			}
-			render = true
-		}
+		render = m.handleKey(msg, render)
 
 	case EntriesUpdateMsg:
 		m.entries = msg.Entries
@@ -123,13 +67,74 @@ func (m lazyTableModel) Update(msg tea.Msg) (lazyTableModel, tea.Cmd) {
 	return m, cmd
 }
 
+func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) bool {
+	if key.Matches(msg, m.Application.keys.Reverse) {
+		m.reverse = !m.reverse
+		render = true
+	}
+
+	increaseOffset := func() {
+		maxO := max(m.entries.Len()-m.table.Height(), 0)
+		o := min(m.offset+1, maxO)
+		if o != m.offset {
+			m.offset = o
+			render = true
+		} else {
+			m.follow = true
+		}
+	}
+	decreaseOffset := func() {
+		o := max(m.offset-1, 0)
+		if o != m.offset {
+			m.offset = o
+			render = true
+		}
+	}
+	if m.reverse {
+		increaseOffset, decreaseOffset = decreaseOffset, increaseOffset
+	}
+	if key.Matches(msg, m.Application.keys.Down) {
+		m.follow = false
+		if m.table.Cursor()+1 == m.table.Height() {
+			increaseOffset()
+		}
+	}
+	if key.Matches(msg, m.Application.keys.Up) {
+		m.follow = false
+		if m.table.Cursor() == 0 {
+			decreaseOffset()
+		}
+	}
+	if key.Matches(msg, m.Application.keys.GotoTop) {
+		if m.reverse {
+			m.follow = true
+		} else {
+			m.follow = false
+			m.offset = 0
+		}
+		render = true
+	}
+	if key.Matches(msg, m.Application.keys.GotoBottom) {
+		if m.reverse {
+			m.follow = false
+			m.offset = 0
+		} else {
+			m.follow = true
+		}
+		render = true
+	}
+
+	return render
+}
+
 func (m lazyTableModel) ViewPortCursor() int {
 	if m.reverse {
 		viewSize := m.ViewPortEnd() - m.ViewPortStart()
+
 		return m.offset + (viewSize - 1 - m.table.Cursor())
-	} else {
-		return m.offset + m.table.Cursor()
 	}
+
+	return m.offset + m.table.Cursor()
 }
 
 func (m lazyTableModel) ViewPortStart() int {

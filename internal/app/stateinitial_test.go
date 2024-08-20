@@ -3,11 +3,12 @@ package app_test
 import (
 	"bytes"
 	"fmt"
+	"testing"
+
 	"github.com/hedhyw/json-log-viewer/internal/app"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
-	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/stretchr/testify/assert"
@@ -19,7 +20,7 @@ func TestStateInitial(t *testing.T) {
 
 	is, err := source.Reader(bytes.NewReader([]byte{}), config.GetDefaultConfig())
 	require.NoError(t, err)
-	defer is.Close()
+	t.Cleanup(func() { _ = is.Close() })
 
 	model := app.NewModel(
 		"-",
@@ -61,5 +62,4 @@ func TestStateInitial(t *testing.T) {
 
 		assert.Equal(t, tea.Quit(), cmd())
 	})
-
 }

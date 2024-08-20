@@ -32,6 +32,7 @@ func (e LazyLogEntry) Line(file *os.File) (json.RawMessage, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return data, nil
 }
 
@@ -43,6 +44,7 @@ func (e LazyLogEntry) LogEntry(file *os.File, cfg *config.Config) LogEntry {
 			Error: err,
 		}
 	}
+
 	return ParseLogEntry(line, cfg)
 }
 

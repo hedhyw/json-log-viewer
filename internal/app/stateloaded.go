@@ -2,12 +2,14 @@ package app
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
-	"strings"
 )
 
 // StateLoadedModel is a state that shows all loaded records.
@@ -60,7 +62,6 @@ func (s StateLoadedModel) viewHelp() string {
 	}
 
 	if s.help.ShowAll {
-
 		toggleText := lipgloss.NewStyle().
 			Background(lipgloss.Color("#353533")).
 			Padding(0, 1).
@@ -85,9 +86,8 @@ func (s StateLoadedModel) viewHelp() string {
 		)
 
 		return "\n" + s.help.View(s.keys) + "\n" + lipgloss.NewStyle().Width(width).Render(bar)
-	} else {
-		return "\n" + s.help.View(s.keys) + " " + toggles()
 	}
+	return "\n" + s.help.View(s.keys) + " " + toggles()
 }
 
 // Update handles events. It implements tea.Model.
@@ -134,10 +134,6 @@ func (s StateLoadedModel) handleKeyMsg(msg tea.KeyMsg) []tea.Cmd {
 	cmdBatch = appendCmd(cmdBatch, s.Application.handleKeyMsg(msg))
 
 	return cmdBatch
-}
-
-func (s StateLoadedModel) handleArrowUpKeyClicked() tea.Cmd {
-	return nil
 }
 
 func (s StateLoadedModel) handleRequestOpenJSON() (tea.Model, tea.Cmd) {

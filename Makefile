@@ -33,6 +33,11 @@ lint: bin/golangci-lint-${GOLANG_CI_LINT_VER}
 	./bin/golangci-lint-${GOLANG_CI_LINT_VER} run
 .PHONY: lint
 
+fix: bin/golangci-lint-${GOLANG_CI_LINT_VER}
+	 gofumpt -l -w .
+	./bin/golangci-lint-${GOLANG_CI_LINT_VER} run --fix
+.PHONY: lint-fix
+
 test:
 	go test \
 		-coverpkg=${COVER_PACKAGES} \

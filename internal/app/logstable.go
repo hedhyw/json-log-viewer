@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
+
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
@@ -19,7 +20,6 @@ type logsTableModel struct {
 }
 
 func newLogsTableModel(application *Application, logEntries source.LazyLogEntries) logsTableModel {
-
 	const cellIDLogLevel = 1
 
 	tableLogs := table.New(
@@ -69,6 +69,7 @@ func newLogsTableModel(application *Application, logEntries source.LazyLogEntrie
 		logEntries:  logEntries,
 		footerSize:  1,
 	}.handleWindowSizeMsg(application.LastWindowSize)
+
 	return msg
 }
 
@@ -109,6 +110,7 @@ func (m logsTableModel) handleWindowSizeMsg(msg tea.WindowSizeMsg) logsTableMode
 	m.lastWindowSize = msg
 
 	m.lazyTable = m.lazyTable.RenderedRows()
+
 	return m
 }
 

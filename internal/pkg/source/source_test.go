@@ -58,6 +58,7 @@ func TestParseLogEntriesFromReaderLimited(t *testing.T) {
 	require.NoError(t, err)
 	defer is.Close()
 	logEntries, err := is.ParseLogEntries()
+	require.NoError(t, err)
 
-	require.Len(t, logEntries.Entries, 0)
+	require.Empty(t, logEntries.Entries)
 }

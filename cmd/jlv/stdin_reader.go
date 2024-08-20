@@ -19,5 +19,6 @@ func getStdinReader(defaultInput fs.File) (io.Reader, error) {
 	if stat.Mode()&os.ModeCharDevice != 0 {
 		return bytes.NewReader(nil), nil
 	}
+
 	return defaultInput, nil
 }

@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/hedhyw/jsoncjson"
-	"os"
 )
 
 // PathDefault is a fake path to the default config.

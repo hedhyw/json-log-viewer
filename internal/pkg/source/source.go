@@ -3,9 +3,11 @@ package source
 import (
 	"bufio"
 	"bytes"
-	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
+	"errors"
 	"io"
 	"os"
+
+	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 )
 
 const (
@@ -27,12 +29,13 @@ func (is *Source) Close() (err error) {
 	if e != nil {
 		err = e
 	}
+
 	return err
 }
 
 func File(input *os.File, cfg *config.Config) (*Source, error) {
 	var err error
-	var result = &Source{}
+	result := &Source{}
 
 	// If it's file we can open it again for seeking.
 	result.Seeker, err = os.Open(input.Name())
@@ -42,12 +45,13 @@ func File(input *os.File, cfg *config.Config) (*Source, error) {
 
 	reader := io.LimitReader(input, cfg.MaxFileSizeBytes)
 	result.reader = bufio.NewReaderSize(reader, maxLineSize)
+
 	return result, nil
 }
 
 func Reader(input io.Reader, cfg *config.Config) (*Source, error) {
 	var err error
-	var result = &Source{}
+	result := &Source{}
 
 	// We will write the as read to a temp file.  Seek against the temp file.
 	result.tempFile, err = os.CreateTemp("", "jvl-*.log")
@@ -59,27 +63,30 @@ func Reader(input io.Reader, cfg *config.Config) (*Source, error) {
 	result.Seeker, err = os.Open(result.tempFile.Name())
 	if err != nil {
 		result.tempFile.Close()
+
 		return nil, err
 	}
 
 	reader = io.LimitReader(reader, cfg.MaxFileSizeBytes)
 	result.reader = bufio.NewReaderSize(reader, maxLineSize)
+
 	return result, nil
 }
 
 func (is *Source) ParseLogEntries() (LazyLogEntries, error) {
-
-	logEntries := make([]LazyLogEntry, 0, 256)
+	logEntries := make([]LazyLogEntry, 0, 1000)
 	for {
 		entry, err := is.ReadLogEntry()
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				break
 			}
+
 			return LazyLogEntries{}, err
 		}
 		logEntries = append(logEntries, entry)
 	}
+
 	return LazyLogEntries{
 		Seeker:  is.Seeker,
 		Entries: logEntries,

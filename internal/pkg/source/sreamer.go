@@ -2,25 +2,26 @@ package source
 
 import (
 	"context"
+	"errors"
 	"io"
 	"sync"
 	"time"
 )
 
 func (is *Source) StartStreaming(ctx context.Context, send func(msg LazyLogEntries, err error)) {
-
 	mu := sync.Mutex{}
-	logEntries := make([]LazyLogEntry, 0, 256)
+	logEntries := make([]LazyLogEntry, 0, 1000)
 	eofEvent := make(chan struct{}, 1)
 	// Load log entries async..
 	go func() {
 		for {
 			entry, err := is.ReadLogEntry()
 			if err != nil {
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					break
 				}
 				send(LazyLogEntries{}, err)
+
 				return
 			}
 			mu.Lock()
@@ -56,9 +57,11 @@ func (is *Source) StartStreaming(ctx context.Context, send func(msg LazyLogEntri
 		for {
 			select {
 			case <-ctx.Done():
+
 				return
 			case <-eofEvent:
 				sendUpdates()
+
 				return
 			case <-ticker.C:
 				sendUpdates()
