@@ -87,7 +87,7 @@ docker logs -f 000000000000 2>&1 | jlv
 | Home   | Navigate to Start |
 | End    | Navigate to End   |
 
-> \[↑\] Click Up on the first row to reload the file.
+> Attempting to navigate past the last line in the log will put you in follow mode.
 
 ## Install
 
