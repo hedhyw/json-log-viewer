@@ -27,6 +27,10 @@ func newLogsTableModel(application *Application, logEntries source.LazyLogEntrie
 		table.WithFocused(true),
 		table.WithHeight(application.LastWindowSize.Height),
 	)
+	tableLogs.KeyMap.LineUp = application.keys.Up
+	tableLogs.KeyMap.LineDown = application.keys.Down
+	tableLogs.KeyMap.GotoBottom = application.keys.GotoBottom
+	tableLogs.KeyMap.GotoTop = application.keys.GotoTop
 
 	tableLogs.SetStyles(getTableStyles())
 

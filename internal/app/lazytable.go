@@ -48,7 +48,7 @@ func (m lazyTableModel) Update(msg tea.Msg) (lazyTableModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 
-		if key.Matches(msg, defaultKeys.Reverse) {
+		if key.Matches(msg, m.Application.keys.Reverse) {
 			m.reverse = !m.reverse
 			render = true
 		}
@@ -75,17 +75,35 @@ func (m lazyTableModel) Update(msg tea.Msg) (lazyTableModel, tea.Cmd) {
 			increaseOffset = decreaseOffset
 			decreaseOffset = x
 		}
-		if key.Matches(msg, defaultKeys.Down) {
+		if key.Matches(msg, m.Application.keys.Down) {
 			m.follow = false
 			if m.table.Cursor()+1 == m.table.Height() {
 				increaseOffset()
 			}
 		}
-		if key.Matches(msg, defaultKeys.Up) {
+		if key.Matches(msg, m.Application.keys.Up) {
 			m.follow = false
 			if m.table.Cursor() == 0 {
 				decreaseOffset()
 			}
+		}
+		if key.Matches(msg, m.Application.keys.GotoTop) {
+			if m.reverse {
+				m.follow = true
+			} else {
+				m.follow = false
+				m.offset = 0
+			}
+			render = true
+		}
+		if key.Matches(msg, m.Application.keys.GotoBottom) {
+			if m.reverse {
+				m.follow = false
+				m.offset = 0
+			} else {
+				m.follow = true
+			}
+			render = true
 		}
 
 	case EntriesUpdateMsg:

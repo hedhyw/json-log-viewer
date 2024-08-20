@@ -12,6 +12,8 @@ type KeyMap struct {
 	Down            key.Binding
 	Filter          key.Binding
 	ToggleFullHelp  key.Binding
+	GotoTop         key.Binding
+	GotoBottom      key.Binding
 }
 
 var defaultKeys = KeyMap{
@@ -50,6 +52,14 @@ var defaultKeys = KeyMap{
 		key.WithKeys("?"),
 		key.WithHelp("?", "Help"),
 	),
+	GotoTop: key.NewBinding(
+		key.WithKeys("home"),
+		key.WithHelp("home", "go to start"),
+	),
+	GotoBottom: key.NewBinding(
+		key.WithKeys("end", "G"),
+		key.WithHelp("end", "go to end"),
+	),
 }
 
 func (k KeyMap) ShortHelp() []key.Binding {
@@ -63,6 +73,7 @@ func (k KeyMap) FullHelp() [][]key.Binding {
 		{k.Up, k.Down}, // first column
 		{k.Back, k.Open},
 		{k.Filter, k.Reverse},
+		{k.GotoTop, k.GotoBottom},
 		{k.ToggleFullHelp, k.Exit},
 	}
 }
