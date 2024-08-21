@@ -48,7 +48,7 @@ func (m lazyTableModel) Update(msg tea.Msg) (lazyTableModel, tea.Cmd) {
 	render := false
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		render = m.handleKey(msg, render)
+		m, render = m.handleKey(msg, render)
 
 	case EntriesUpdateMsg:
 		m.entries = msg.Entries
@@ -67,7 +67,7 @@ func (m lazyTableModel) Update(msg tea.Msg) (lazyTableModel, tea.Cmd) {
 	return m, cmd
 }
 
-func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) bool {
+func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) (lazyTableModel, bool) {
 	if key.Matches(msg, m.Application.keys.Reverse) {
 		m.reverse = !m.reverse
 		render = true
@@ -124,7 +124,7 @@ func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) bool {
 		render = true
 	}
 
-	return render
+	return m, render
 }
 
 func (m lazyTableModel) ViewPortCursor() int {
