@@ -2,7 +2,6 @@ package app_test
 
 import (
 	"errors"
-	"os"
 	"testing"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
@@ -23,11 +22,8 @@ func newTestModel(tb testing.TB, content []byte) tea.Model {
 	tb.Helper()
 
 	testFile := tests.RequireCreateFile(tb, content)
-	file, err := os.Open(testFile)
-	require.NoError(tb, err)
-	defer file.Close()
 
-	is, err := source.File(file, config.GetDefaultConfig())
+	is, err := source.File(testFile, config.GetDefaultConfig())
 	require.NoError(tb, err)
 	model := app.NewModel(testFile, config.GetDefaultConfig(), testVersion)
 

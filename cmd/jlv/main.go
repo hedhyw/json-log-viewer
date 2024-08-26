@@ -59,13 +59,7 @@ func main() {
 
 	case 1:
 		fileName = flag.Arg(0)
-		f, err := os.Open(fileName)
-		if err != nil {
-			fatalf("Open failed: %s\n", err)
-		}
-		defer f.Close()
-
-		inputSource, err = source.File(f, cfg)
+		inputSource, err = source.File(fileName, cfg)
 		if err != nil {
 			fatalf("Could not create temp flie: %s\n", err)
 		}
