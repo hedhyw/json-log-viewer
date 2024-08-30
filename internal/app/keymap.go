@@ -70,7 +70,7 @@ func (k KeyMap) ShortHelp() []key.Binding {
 
 func (k KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down}, // first column
+		{k.Up, k.Down},
 		{k.Back, k.Open},
 		{k.Filter, k.Reverse},
 		{k.GotoTop, k.GotoBottom},
