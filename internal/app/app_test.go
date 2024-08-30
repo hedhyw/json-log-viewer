@@ -23,11 +23,11 @@ func newTestModel(tb testing.TB, content []byte) tea.Model {
 
 	testFile := tests.RequireCreateFile(tb, content)
 
-	is, err := source.File(testFile, config.GetDefaultConfig())
+	inputSource, err := source.File(testFile, config.GetDefaultConfig())
 	require.NoError(tb, err)
 	model := app.NewModel(testFile, config.GetDefaultConfig(), testVersion)
 
-	entries, err := is.ParseLogEntries()
+	entries, err := inputSource.ParseLogEntries()
 	require.NoError(tb, err)
 	model = handleUpdate(model, events.LogEntriesUpdateMsg(entries))
 
