@@ -15,13 +15,20 @@ const (
 )
 
 type Source struct {
-	Seeker         *os.File
-	reader         *bufio.Reader
-	file           *os.File
-	offset         int64
+	// Seeker is used to do random access reads from the file.
+	Seeker *os.File
+	// Reader is used to read the file sequentially.
+	reader *bufio.Reader
+	// The log file we are reading from, or a temp file we are writing to (depending on if created with File or Reader func).
+	file *os.File
+	// offset is the next offset a long entry will be read from.
+	offset int64
+	// prevFollowSize is the size of the file the last time we checked
 	prevFollowSize int64
-	name           string
-	maxSize        int64
+	// name is the name of the file we are reading.
+	name string
+	// maxSize is the maximum size of the file we will read.
+	maxSize int64
 }
 
 func (is *Source) Close() (err error) {
@@ -33,6 +40,7 @@ func (is *Source) Close() (err error) {
 	return err
 }
 
+// File creates a new Source for reading log entries from a file.
 func File(name string, cfg *config.Config) (*Source, error) {
 	var err error
 	is := &Source{
@@ -55,6 +63,8 @@ func File(name string, cfg *config.Config) (*Source, error) {
 	return is, nil
 }
 
+// Reader creates a new Source for reading log entries from an io.Reader.  This will write the input to a temp file.
+// which will be used to seek against.
 func Reader(input io.Reader, cfg *config.Config) (*Source, error) {
 	var err error
 	is := &Source{
@@ -67,8 +77,10 @@ func Reader(input io.Reader, cfg *config.Config) (*Source, error) {
 		return nil, err
 	}
 
+	// The io.TeeReader will write the input to the is.file as it is read.
 	reader := io.TeeReader(input, is.file)
 
+	// We can now seek against the data that is read in the input io.Reader.
 	is.Seeker, err = os.Open(is.file.Name())
 	if err != nil {
 		_ = is.file.Close()

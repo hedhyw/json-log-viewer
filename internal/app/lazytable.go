@@ -68,45 +68,59 @@ func (m lazyTableModel) Update(msg tea.Msg) (lazyTableModel, tea.Cmd) {
 }
 
 func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) (lazyTableModel, bool) {
+
+	// toggle the reverse display of items.
 	if key.Matches(msg, m.Application.keys.Reverse) {
 		m.reverse = !m.reverse
 		render = true
 	}
 
+	// this function increases the viewport offset by 1 if possible.  (scrolls down)
 	increaseOffset := func() {
-		maxO := max(m.entries.Len()-m.table.Height(), 0)
-		o := min(m.offset+1, maxO)
+		maxOffset := max(m.entries.Len()-m.table.Height(), 0)
+		o := min(m.offset+1, maxOffset)
 		if o != m.offset {
 			m.offset = o
 			render = true
 		} else {
+			// we were at the last item, so we should follow the log
 			m.follow = true
 		}
 	}
+
+	// this function decreases the viewport offset by 1 if possible.  (scrolls up)
 	decreaseOffset := func() {
-		o := max(m.offset-1, 0)
-		if o != m.offset {
-			m.offset = o
+		offset := max(m.offset-1, 0)
+		if offset != m.offset {
+			m.offset = offset
 			render = true
+		} else {
+			// we were at the first item, so we should follow the log
+			m.follow = true
 		}
 	}
+
+	// if the table is being displayed in reverse order, we need to swap the increase and decrease functions
+	// since the last item is at the top of the table instead of the bottom.
 	if m.reverse {
 		increaseOffset, decreaseOffset = decreaseOffset, increaseOffset
 	}
+
 	if key.Matches(msg, m.Application.keys.Down) {
 		m.follow = false
 		if m.table.Cursor()+1 == m.table.Height() {
-			increaseOffset()
+			increaseOffset() // move the viewport
 		}
 	}
 	if key.Matches(msg, m.Application.keys.Up) {
 		m.follow = false
 		if m.table.Cursor() == 0 {
-			decreaseOffset()
+			decreaseOffset() // move the viewport
 		}
 	}
 	if key.Matches(msg, m.Application.keys.GotoTop) {
 		if m.reverse {
+			// when follow is enabled, rendering will handle setting the offset to the correct value
 			m.follow = true
 		} else {
 			m.follow = false
@@ -119,6 +133,7 @@ func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) (lazyTableModel, 
 			m.follow = false
 			m.offset = 0
 		} else {
+			// when follow is enabled, rendering will handle setting the offset to the correct value
 			m.follow = true
 		}
 		render = true
