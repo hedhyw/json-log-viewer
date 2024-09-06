@@ -31,7 +31,7 @@ func newTestModel(tb testing.TB, content []byte) tea.Model {
 	require.NoError(tb, err)
 	model = handleUpdate(model, events.LogEntriesUpdateMsg(entries))
 
-	tb.Cleanup(func() { _ = is.Close() })
+	tb.Cleanup(func() { _ = inputSource.Close() })
 
 	return model
 }

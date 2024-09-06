@@ -116,7 +116,7 @@ func (is *Source) CanFollow() bool {
 	return len(is.name) != 0
 }
 
-var FileTruncated = errors.New("file truncated")
+var ErrFileTruncated = errors.New("file truncated")
 
 // ReadLogEntry reads the next ReadLogEntry from the file.
 func (is *Source) ReadLogEntry() (LazyLogEntry, error) {
@@ -129,19 +129,19 @@ func (is *Source) ReadLogEntry() (LazyLogEntry, error) {
 
 			// has the file size changed since we last looked?
 			info, err := os.Stat(is.name)
-			if err == nil && is.prevFollowSize != info.Size() {
-				if info.Size() < is.offset {
-					// the file has been truncated or rolled over, all previous line offsets are invalid.
-					// we can't recover from this.
-					return LazyLogEntry{}, FileTruncated
-				}
-				is.prevFollowSize = info.Size()
-				// reset the reader and try to read the file again.
-				_, _ = is.file.Seek(is.offset, io.SeekStart)
-				is.reader = bufio.NewReaderSize(io.LimitReader(is.file, is.maxSize-is.offset), maxLineSize)
-			} else {
+			if err != nil || is.prevFollowSize == info.Size() {
 				return LazyLogEntry{}, io.EOF
 			}
+
+			if info.Size() < is.offset {
+				// the file has been truncated or rolled over, all previous line offsets are invalid.
+				// we can't recover from this.
+				return LazyLogEntry{}, ErrFileTruncated
+			}
+			is.prevFollowSize = info.Size()
+			// reset the reader and try to read the file again.
+			_, _ = is.file.Seek(is.offset, io.SeekStart)
+			is.reader = bufio.NewReaderSize(io.LimitReader(is.file, is.maxSize-is.offset), maxLineSize)
 		}
 
 		line, err := is.reader.ReadSlice(byte('\n'))

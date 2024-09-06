@@ -68,7 +68,6 @@ func (m lazyTableModel) Update(msg tea.Msg) (lazyTableModel, tea.Cmd) {
 }
 
 func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) (lazyTableModel, bool) {
-
 	// toggle the reverse display of items.
 	if key.Matches(msg, m.Application.keys.Reverse) {
 		m.reverse = !m.reverse

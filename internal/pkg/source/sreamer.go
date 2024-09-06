@@ -72,7 +72,6 @@ func (is *Source) readLogEntries(ctx context.Context, send func(msg LazyLogEntri
 		entry, err := is.ReadLogEntry()
 		if err != nil {
 			if errors.Is(err, io.EOF) {
-
 				if !is.CanFollow() {
 					return
 				}
