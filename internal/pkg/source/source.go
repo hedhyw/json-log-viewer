@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"github.com/hedhyw/semerr/pkg/v1/semerr"
 	"io"
 	"os"
 
@@ -116,7 +117,7 @@ func (is *Source) CanFollow() bool {
 	return len(is.name) != 0
 }
 
-var ErrFileTruncated = errors.New("file truncated")
+const ErrFileTruncated semerr.Error = "file truncated"
 
 // ReadLogEntry reads the next ReadLogEntry from the file.
 func (is *Source) ReadLogEntry() (LazyLogEntry, error) {
