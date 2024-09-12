@@ -4,9 +4,10 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"github.com/hedhyw/semerr/pkg/v1/semerr"
 	"io"
 	"os"
+
+	"github.com/hedhyw/semerr/pkg/v1/semerr"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 )

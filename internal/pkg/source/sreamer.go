@@ -16,7 +16,7 @@ func (is *Source) StartStreaming(ctx context.Context, send func(msg LazyLogEntri
 	eofEvent := make(chan struct{}, 1)
 
 	// Load log entries async..
-	go is.readLogEntries(ctx, send, &logEntriesLock, logEntries, eofEvent)
+	go is.readLogEntries(ctx, send, &logEntriesLock, &logEntries, eofEvent)
 
 	// periodically send new log entries to the program.
 	go func() {
@@ -57,7 +57,7 @@ func (is *Source) StartStreaming(ctx context.Context, send func(msg LazyLogEntri
 	}()
 }
 
-func (is *Source) readLogEntries(ctx context.Context, send func(msg LazyLogEntries, err error), logEntriesLock *sync.Mutex, logEntries []LazyLogEntry, eofEvent chan struct{}) {
+func (is *Source) readLogEntries(ctx context.Context, send func(msg LazyLogEntries, err error), logEntriesLock *sync.Mutex, logEntries *[]LazyLogEntry, eofEvent chan struct{}) {
 	defer func() {
 		eofEvent <- struct{}{}
 	}()
@@ -93,7 +93,7 @@ func (is *Source) readLogEntries(ctx context.Context, send func(msg LazyLogEntri
 			return
 		}
 		logEntriesLock.Lock()
-		logEntries = append(logEntries, entry)
+		*logEntries = append(*logEntries, entry)
 		logEntriesLock.Unlock()
 	}
 }
