@@ -10,9 +10,10 @@ require (
 	github.com/antonmedv/fx v0.0.0-20240807042048-dd653cf7bf83
 	github.com/charmbracelet/bubbles v0.18.0
 	github.com/charmbracelet/bubbletea v0.25.0
-	github.com/charmbracelet/lipgloss v0.12.1
+	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/hedhyw/jsoncjson v1.1.0
+	github.com/hedhyw/semerr v0.6.7
 	github.com/muesli/reflow v0.3.0
 	github.com/stretchr/testify v1.9.0
 	github.com/yalp/jsonpath v0.0.0-20180802001716-5cc68e5049a0
@@ -27,8 +28,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.4 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/hedhyw/semerr v0.6.7 // indirect
-	github.com/kr/pretty v0.3.0 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -46,6 +46,5 @@ require (
 	golang.org/x/sys v0.21.0 // indirect
 	golang.org/x/term v0.21.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
