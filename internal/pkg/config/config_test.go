@@ -30,26 +30,6 @@ func TestReadDefault(t *testing.T) {
 	}
 }
 
-func TestReadPartlyDefault(t *testing.T) {
-	t.Parallel()
-
-	const reloadThreshold = time.Minute + time.Second
-
-	configDefault := config.GetDefaultConfig()
-	configJSON := tests.RequireEncodeJSON(t, map[string]any{
-		"reloadThreshold": reloadThreshold,
-	})
-	configFile := tests.RequireCreateFile(t, configJSON)
-
-	assert.NotEqual(t, reloadThreshold, configDefault.ReloadThreshold)
-
-	cfg, err := config.Read(configFile)
-	if assert.NoError(t, err) {
-		assert.Equal(t, reloadThreshold, cfg.ReloadThreshold)
-		assert.Equal(t, configDefault.StdinReadTimeout, cfg.StdinReadTimeout)
-	}
-}
-
 func TestReadNotFound(t *testing.T) {
 	t.Parallel()
 
@@ -111,7 +91,7 @@ func ExampleGetDefaultConfig() {
 	var buf bytes.Buffer
 
 	jsonEncoder := json.NewEncoder(&buf)
-	jsonEncoder.SetIndent("", "\t")
+	jsonEncoder.SetIndent("", "  ")
 
 	if err := jsonEncoder.Encode(&cfg); err != nil {
 		log.Fatal(err)
@@ -120,52 +100,49 @@ func ExampleGetDefaultConfig() {
 	fmt.Println(buf.String())
 	// Output:
 	// {
-	// 	"fields": [
-	// 		{
-	// 			"title": "Time",
-	// 			"kind": "numerictime",
-	// 			"ref": [
-	// 				"$.timestamp",
-	// 				"$.time",
-	// 				"$.t",
-	// 				"$.ts"
-	// 			],
-	// 			"width": 30
-	// 		},
-	// 		{
-	// 			"title": "Level",
-	// 			"kind": "level",
-	// 			"ref": [
-	// 				"$.level",
-	// 				"$.lvl",
-	// 				"$.l"
-	// 			],
-	// 			"width": 10
-	// 		},
-	// 		{
-	// 			"title": "Message",
-	// 			"kind": "message",
-	// 			"ref": [
-	// 				"$.message",
-	// 				"$.msg",
-	// 				"$.error",
-	// 				"$.err"
-	// 			],
-	// 			"width": 0
-	// 		}
-	// 	],
-	// 	"customLevelMapping": {
-	// 		"10": "trace",
-	// 		"20": "debug",
-	// 		"30": "info",
-	// 		"40": "warn",
-	// 		"50": "error",
-	// 		"60": "fatal"
-	// 	},
-	// 	"prerenderRows": 100,
-	// 	"reloadThreshold": 1000000000,
-	// 	"maxFileSizeBytes": 1073741824,
-	// 	"stdinReadTimeout": 1000000000
+	//   "fields": [
+	//     {
+	//       "title": "Time",
+	//       "kind": "numerictime",
+	//       "ref": [
+	//         "$.timestamp",
+	//         "$.time",
+	//         "$.t",
+	//         "$.ts"
+	//       ],
+	//       "width": 30
+	//     },
+	//     {
+	//       "title": "Level",
+	//       "kind": "level",
+	//       "ref": [
+	//         "$.level",
+	//         "$.lvl",
+	//         "$.l"
+	//       ],
+	//       "width": 10
+	//     },
+	//     {
+	//       "title": "Message",
+	//       "kind": "message",
+	//       "ref": [
+	//         "$.message",
+	//         "$.msg",
+	//         "$.error",
+	//         "$.err"
+	//       ],
+	//       "width": 0
+	//     }
+	//   ],
+	//   "customLevelMapping": {
+	//     "10": "trace",
+	//     "20": "debug",
+	//     "30": "info",
+	//     "40": "warn",
+	//     "50": "error",
+	//     "60": "fatal"
+	//   },
+	//   "maxFileSizeBytes": 1073741824
 	// }
 }
 

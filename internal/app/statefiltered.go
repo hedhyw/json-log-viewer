@@ -12,45 +12,39 @@ import (
 
 // StateFilteredModel is a state that shows filtered records.
 type StateFilteredModel struct {
-	helper
+	*Application
 
 	previousState StateLoadedModel
 	table         logsTableModel
 	logEntries    source.LazyLogEntries
 
 	filterText string
-	keys       KeyMap
 }
 
 func newStateFiltered(
-	application Application,
 	previousState StateLoadedModel,
 	filterText string,
 ) StateFilteredModel {
 	return StateFilteredModel{
-		helper: helper{Application: application},
+		Application: previousState.Application,
 
 		previousState: previousState,
-		table:         previousState.table,
 
 		filterText: filterText,
-		keys:       defaultKeys,
 	}
 }
 
 // Init initializes component. It implements tea.Model.
 func (s StateFilteredModel) Init() tea.Cmd {
 	return func() tea.Msg {
-		return events.LogEntriesLoadedMsg(
-			s.previousState.logEntries.Filter(s.filterText),
-		)
+		return &s
 	}
 }
 
 // View renders component. It implements tea.Model.
 func (s StateFilteredModel) View() string {
 	footer := s.Application.FooterStyle.Render(
-		fmt.Sprintf("filtered %d by: %s", len(s.logEntries), s.filterText),
+		fmt.Sprintf("filtered %d by: %s", s.logEntries.Len(), s.filterText),
 	)
 
 	return s.BaseStyle.Render(s.table.View()) + "\n" + footer
@@ -60,68 +54,69 @@ func (s StateFilteredModel) View() string {
 func (s StateFilteredModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmdBatch []tea.Cmd
 
-	s.helper = s.helper.Update(msg)
+	s.Application.Update(msg)
 
-	switch msg := msg.(type) {
+	switch typedMsg := msg.(type) {
+	case *StateFilteredModel:
+		entries, err := s.Application.Entries.Filter(s.filterText)
+		if err != nil {
+			return s, events.ShowError(err)
+		}
+		s.logEntries = entries
+		s.table = newLogsTableModel(s.Application, entries)
+		msg = events.LogEntriesUpdateMsg(entries)
+	case events.LogEntriesUpdateMsg:
+		entries, err := s.Application.Entries.Filter(s.filterText)
+		if err != nil {
+			return s, events.ShowError(err)
+		}
+		s.logEntries = entries
+		msg = events.LogEntriesUpdateMsg(entries)
+
 	case events.ErrorOccuredMsg:
-		return s.handleErrorOccuredMsg(msg)
-	case events.LogEntriesLoadedMsg:
-		return s.handleLogEntriesLoadedMsg(msg)
+		return s.handleErrorOccuredMsg(typedMsg)
 	case events.OpenJSONRowRequestedMsg:
-		return s.handleOpenJSONRowRequestedMsg(msg, s)
+		return s.handleOpenJSONRowRequestedMsg(typedMsg, s)
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, s.keys.Back):
-			return s.previousState.withApplication(s.Application)
-		case key.Matches(msg, s.keys.Filter):
+		case key.Matches(typedMsg, s.keys.Back):
+			return s.previousState.refresh()
+		case key.Matches(typedMsg, s.keys.Filter):
 			return s.handleFilterKeyClickedMsg()
-		case key.Matches(msg, s.keys.ToggleViewArrow), key.Matches(msg, s.keys.ToggleView):
+		case key.Matches(typedMsg, s.keys.ToggleViewArrow), key.Matches(typedMsg, s.keys.Open):
 			return s.handleRequestOpenJSON()
 		}
-		if cmd := s.handleKeyMsg(msg); cmd != nil {
+		if cmd := s.handleKeyMsg(typedMsg); cmd != nil {
 			return s, cmd
 		}
 	default:
-		s.table, cmdBatch = batched(s.table.Update(msg))(cmdBatch)
+		s.table, cmdBatch = batched(s.table.Update(typedMsg))(cmdBatch)
 	}
 
 	s.table, cmdBatch = batched(s.table.Update(msg))(cmdBatch)
-
 	return s, tea.Batch(cmdBatch...)
 }
 
-func (s StateFilteredModel) handleLogEntriesLoadedMsg(
-	msg events.LogEntriesLoadedMsg,
-) (tea.Model, tea.Cmd) {
-	s.logEntries = source.LazyLogEntries(msg)
-	s.table = newLogsTableModel(s.Application, s.logEntries)
-
-	return s, s.table.Init()
-}
-
 func (s StateFilteredModel) handleFilterKeyClickedMsg() (tea.Model, tea.Cmd) {
-	state := newStateFiltering(
-		s.Application,
-		s.previousState,
-	)
-
+	state := newStateFiltering(s.previousState)
 	return initializeModel(state)
 }
 
 func (s StateFilteredModel) handleRequestOpenJSON() (tea.Model, tea.Cmd) {
-	if len(s.logEntries) == 0 {
+	if s.logEntries.Len() == 0 {
 		return s, events.BackKeyClicked
 	}
 
 	return s, events.OpenJSONRowRequested(s.logEntries, s.table.Cursor())
 }
 
-func (s StateFilteredModel) withApplication(application Application) (stateModel, tea.Cmd) {
-	s.Application = application
+func (s StateFilteredModel) getApplication() *Application {
+	return s.Application
+}
 
+func (s StateFilteredModel) refresh() (stateModel, tea.Cmd) {
 	var cmd tea.Cmd
 	s.table, cmd = s.table.Update(s.Application.LastWindowSize)
-
 	return s, cmd
 }
 

@@ -2,14 +2,11 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"io"
 	"io/fs"
 	"os"
 	"testing"
-
-	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,8 +14,6 @@ import (
 
 func TestGetStdinSource(t *testing.T) {
 	t.Parallel()
-
-	ctx := context.Background()
 
 	t.Run("ModeNamedPipe", func(t *testing.T) {
 		t.Parallel()
@@ -32,15 +27,10 @@ func TestGetStdinSource(t *testing.T) {
 			},
 		}
 
-		input, err := getStdinSource(config.GetDefaultConfig(), file)
+		input, err := getStdinReader(file)
 		require.NoError(t, err)
 
-		readCloser, err := input.ReadCloser(ctx)
-		require.NoError(t, err)
-
-		t.Cleanup(func() { assert.NoError(t, readCloser.Close()) })
-
-		data, err := io.ReadAll(readCloser)
+		data, err := io.ReadAll(input)
 		require.NoError(t, err)
 		assert.Equal(t, content, string(data))
 	})
@@ -55,15 +45,10 @@ func TestGetStdinSource(t *testing.T) {
 			},
 		}
 
-		input, err := getStdinSource(config.GetDefaultConfig(), file)
+		input, err := getStdinReader(file)
 		require.NoError(t, err)
 
-		readCloser, err := input.ReadCloser(ctx)
-		require.NoError(t, err)
-
-		t.Cleanup(func() { assert.NoError(t, readCloser.Close()) })
-
-		data, err := io.ReadAll(readCloser)
+		data, err := io.ReadAll(input)
 		require.NoError(t, err)
 		assert.Empty(t, data)
 	})
@@ -76,7 +61,7 @@ func TestGetStdinSource(t *testing.T) {
 
 		file := fakeFile{ErrStat: errStat}
 
-		_, err := getStdinSource(config.GetDefaultConfig(), file)
+		_, err := getStdinReader(file)
 		require.Error(t, err)
 		require.ErrorIs(t, err, errStat)
 	})

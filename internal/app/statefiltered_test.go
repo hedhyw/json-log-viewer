@@ -25,47 +25,50 @@ func TestStateFiltered(t *testing.T) {
 	{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "` + termExcluded + `"}
 	`
 
-	model := newTestModel(t, []byte(jsonFile))
+	setup := func() tea.Model {
+		model := newTestModel(t, []byte(jsonFile))
 
-	rendered := model.View()
-	assert.Contains(t, rendered, termIncluded)
-	assert.Contains(t, rendered, termExcluded)
-
-	// Open filtering.
-	model = handleUpdate(model, tea.KeyMsg{
-		Type:  tea.KeyRunes,
-		Runes: []rune{'f'},
-	})
-
-	lines := strings.Split(model.View(), "\n")
-	assert.Contains(t, lines[len(lines)-1], ">")
-
-	_, ok := model.(app.StateFilteringModel)
-	assert.Truef(t, ok, "%s", model)
-
-	// Write term to search by.
-	model = handleUpdate(model, tea.KeyMsg{
-		Type:  tea.KeyRunes,
-		Runes: []rune(termIncluded),
-	})
-
-	// Filter.
-	model = handleUpdate(model, tea.KeyMsg{
-		Type: tea.KeyEnter,
-	})
-
-	_, ok = model.(app.StateFilteredModel)
-	if assert.Truef(t, ok, "%s", model) {
-		rendered = model.View()
+		rendered := model.View()
 		assert.Contains(t, rendered, termIncluded)
-		assert.Contains(t, rendered, "filtered 1 by: "+termIncluded)
-		assert.NotContains(t, rendered, termExcluded)
+		assert.Contains(t, rendered, termExcluded)
+
+		// Open filtering.
+		model = handleUpdate(model, tea.KeyMsg{
+			Type:  tea.KeyRunes,
+			Runes: []rune{'f'},
+		})
+
+		lines := strings.Split(model.View(), "\n")
+		assert.Contains(t, lines[len(lines)-1], ">")
+
+		_, ok := model.(app.StateFilteringModel)
+		assert.Truef(t, ok, "%s", model)
+
+		// Write term to search by.
+		model = handleUpdate(model, tea.KeyMsg{
+			Type:  tea.KeyRunes,
+			Runes: []rune(termIncluded),
+		})
+
+		// Filter.
+		model = handleUpdate(model, tea.KeyMsg{
+			Type: tea.KeyEnter,
+		})
+
+		_, ok = model.(app.StateFilteredModel)
+		if assert.Truef(t, ok, "%s", model) {
+			rendered = model.View()
+			assert.Contains(t, rendered, termIncluded)
+			assert.Contains(t, rendered, "filtered 1 by: "+termIncluded)
+			assert.NotContains(t, rendered, termExcluded)
+		}
+		return model
 	}
 
 	t.Run("reopen_filter", func(t *testing.T) {
 		t.Parallel()
-
-		model := handleUpdate(model, tea.KeyMsg{
+		model := setup()
+		model = handleUpdate(model, tea.KeyMsg{
 			Type:  tea.KeyRunes,
 			Runes: []rune{'f'},
 		})
@@ -76,8 +79,8 @@ func TestStateFiltered(t *testing.T) {
 
 	t.Run("open_hide_json_view", func(t *testing.T) {
 		t.Parallel()
-
-		model := handleUpdate(model, tea.KeyMsg{
+		model := setup()
+		model = handleUpdate(model, tea.KeyMsg{
 			Type: tea.KeyEnter,
 		})
 
@@ -94,8 +97,8 @@ func TestStateFiltered(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		t.Parallel()
-
-		model := handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
+		model := setup()
+		model = handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
 
 		_, ok := model.(app.StateErrorModel)
 		assert.Truef(t, ok, "%s", model)
@@ -103,19 +106,19 @@ func TestStateFiltered(t *testing.T) {
 
 	t.Run("navigation", func(t *testing.T) {
 		t.Parallel()
-
-		model := handleUpdate(model, tea.KeyMsg{
+		model := setup()
+		model = handleUpdate(model, tea.KeyMsg{
 			Type: tea.KeyUp,
 		})
 
-		_, ok = model.(app.StateFilteredModel)
+		_, ok := model.(app.StateFilteredModel)
 		assert.Truef(t, ok, "%s", model)
 	})
 
 	t.Run("returned", func(t *testing.T) {
 		t.Parallel()
-
-		model := handleUpdate(model, tea.KeyMsg{
+		model := setup()
+		model = handleUpdate(model, tea.KeyMsg{
 			Type: tea.KeyEsc,
 		})
 
@@ -125,7 +128,7 @@ func TestStateFiltered(t *testing.T) {
 
 	t.Run("stringer", func(t *testing.T) {
 		t.Parallel()
-
+		model := setup()
 		stringer, ok := model.(fmt.Stringer)
 		if assert.True(t, ok) {
 			assert.Contains(t, stringer.String(), "StateFiltered")

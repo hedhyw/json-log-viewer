@@ -11,7 +11,7 @@ import (
 
 // StateViewRowModel is a state that shows extended JSON view.
 type StateViewRowModel struct {
-	helper
+	*Application
 
 	previousState stateModel
 	initCmd       tea.Cmd
@@ -23,14 +23,13 @@ type StateViewRowModel struct {
 }
 
 func newStateViewRow(
-	application Application,
 	logEntry source.LogEntry,
 	previousState stateModel,
 ) StateViewRowModel {
-	jsonViewModel, cmd := widgets.NewJSONViewModel(logEntry.Line, application.LastWindowSize)
+	jsonViewModel, cmd := widgets.NewJSONViewModel(logEntry.Line, previousState.getApplication().LastWindowSize)
 
 	return StateViewRowModel{
-		helper: helper{Application: application},
+		Application: previousState.getApplication(),
 
 		previousState: previousState,
 		initCmd:       cmd,
@@ -56,32 +55,20 @@ func (s StateViewRowModel) View() string {
 func (s StateViewRowModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
-	s.helper = s.helper.Update(msg)
+	s.Application.Update(msg)
 
 	switch msg := msg.(type) {
 	case events.ErrorOccuredMsg:
 		return s.handleErrorOccuredMsg(msg)
 	case tea.KeyMsg:
-		if key.Matches(msg, s.keys.Back) || key.Matches(msg, s.keys.ToggleView) {
-			return s.previousState.withApplication(s.Application)
-		}
-
-		if cmd = s.handleKeyMsg(msg); cmd != nil {
-			return s, cmd
+		if key.Matches(msg, s.keys.Back) {
+			return s.previousState.refresh()
 		}
 	}
 
 	s.jsonView, cmd = s.jsonView.Update(msg)
 
 	return s, cmd
-}
-
-func (s StateViewRowModel) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
-	if key.Matches(msg, s.keys.ToggleViewArrow) {
-		return nil
-	}
-
-	return s.helper.handleKeyMsg(msg)
 }
 
 // String implements fmt.Stringer.

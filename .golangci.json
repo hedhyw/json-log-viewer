@@ -25,12 +25,17 @@
       "ireturn",
       "gomoddirectives",
       "execinquery",
-      "tagalign"
+      "tagalign",
+      "mnd",
+      "nlreturn"
     ]
   },
   "linters-settings": {
     "goimports": {
       "local-prefixes": "github.com/hedhyw/json-log-viewer/"
+    },
+    "cyclop": {
+      "max-complexity": 15
     },
     "revive": {}
   }

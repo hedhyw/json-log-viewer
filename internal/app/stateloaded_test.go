@@ -2,19 +2,18 @@ package app_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/hedhyw/json-log-viewer/assets"
 	"github.com/hedhyw/json-log-viewer/internal/app"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
-
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestStateLoadedEmpty(t *testing.T) {
@@ -25,7 +24,7 @@ func TestStateLoadedEmpty(t *testing.T) {
 	_, ok := model.(app.StateLoadedModel)
 	require.Truef(t, ok, "%s", model)
 
-	model, cmd := model.Update(events.EnterKeyClicked())
+	model, cmd := model.Update(events.EscKeyClicked())
 	require.NotNil(t, model)
 	requireCmdMsg(t, tea.Quit(), cmd)
 }
@@ -33,15 +32,20 @@ func TestStateLoadedEmpty(t *testing.T) {
 func TestStateLoaded(t *testing.T) {
 	t.Parallel()
 
-	const jsonFile = `{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "test"}`
+	setup := func() tea.Model {
+		const jsonFile = `{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "test"}`
 
-	model := newTestModel(t, []byte(jsonFile))
+		model := newTestModel(t, []byte(jsonFile))
 
-	_, ok := model.(app.StateLoadedModel)
-	require.Truef(t, ok, "%s", model)
+		_, ok := model.(app.StateLoadedModel)
+		require.Truef(t, ok, "%s", model)
+
+		return model
+	}
 
 	t.Run("stringer", func(t *testing.T) {
 		t.Parallel()
+		model := setup()
 
 		stringer, ok := model.(fmt.Stringer)
 		if assert.True(t, ok) {
@@ -51,27 +55,30 @@ func TestStateLoaded(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		t.Parallel()
+		model := setup()
 
-		model := handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
+		model = handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
 
-		_, ok = model.(app.StateErrorModel)
+		_, ok := model.(app.StateErrorModel)
 		assert.Truef(t, ok, "%s", model)
 	})
 
 	t.Run("version_printed", func(t *testing.T) {
 		t.Parallel()
+		model := setup()
 
-		assert.Contains(t, model.View(), testVersion)
+		model = handleUpdate(model, events.HelpKeyClicked())
+		view := model.View()
+		assert.Contains(t, view, testVersion)
 	})
 }
 
 func TestStateLoadedQuit(t *testing.T) {
 	t.Parallel()
 
-	model := newTestModel(t, assets.ExampleJSONLog())
-
 	t.Run("ctrl_and_c", func(t *testing.T) {
 		t.Parallel()
+		model := newTestModel(t, assets.ExampleJSONLog())
 
 		_, cmd := model.Update(tea.KeyMsg{Type: tea.KeyCtrlC})
 		requireCmdMsg(t, tea.Quit(), cmd)
@@ -79,6 +86,7 @@ func TestStateLoadedQuit(t *testing.T) {
 
 	t.Run("esc", func(t *testing.T) {
 		t.Parallel()
+		model := newTestModel(t, assets.ExampleJSONLog())
 
 		_, cmd := model.Update(tea.KeyMsg{Type: tea.KeyEsc})
 		requireCmdMsg(t, tea.Quit(), cmd)
@@ -86,6 +94,7 @@ func TestStateLoadedQuit(t *testing.T) {
 
 	t.Run("q", func(t *testing.T) {
 		t.Parallel()
+		model := newTestModel(t, assets.ExampleJSONLog())
 
 		_, cmd := model.Update(tea.KeyMsg{
 			Type:  tea.KeyRunes,
@@ -96,86 +105,12 @@ func TestStateLoadedQuit(t *testing.T) {
 
 	t.Run("f10", func(t *testing.T) {
 		t.Parallel()
+		model := newTestModel(t, assets.ExampleJSONLog())
 
 		_, cmd := model.Update(tea.KeyMsg{
 			Type: tea.KeyF10,
 		})
 		requireCmdMsg(t, tea.Quit(), cmd)
-	})
-}
-
-func TestStateLoadedReload(t *testing.T) {
-	t.Parallel()
-
-	const expected = "included"
-
-	const (
-		jsonFile = `
-		{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "test2"}
-		{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "test1"}
-		`
-
-		jsonFileUpdated = `
-		{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "` + expected + `"}
-		` + jsonFile
-	)
-
-	model := newTestModel(t, []byte(jsonFile))
-
-	rendered := model.View()
-	assert.NotContains(t, rendered, expected)
-
-	overwriteFileInStateLoaded(t, model, []byte(jsonFileUpdated))
-
-	t.Run("up", func(t *testing.T) {
-		t.Parallel()
-
-		model := handleUpdate(model, tea.KeyMsg{
-			Type: tea.KeyUp,
-		})
-
-		rendered := model.View()
-		assert.Contains(t, rendered, expected)
-	})
-
-	t.Run("up_down_up_up", func(t *testing.T) {
-		t.Parallel()
-
-		// Go from the first row to the second and back.
-		model := handleUpdate(model, tea.KeyMsg{
-			Type: tea.KeyDown,
-		})
-		model = handleUpdate(model, tea.KeyMsg{
-			Type: tea.KeyUp,
-		})
-		assert.NotContains(t, rendered, expected)
-
-		// Press Up, there are no rows.
-		model = handleUpdate(model, tea.KeyMsg{
-			Type: tea.KeyUp,
-		})
-
-		rendered := model.View()
-		assert.Contains(t, rendered, expected)
-	})
-
-	t.Run("threshold", func(t *testing.T) {
-		t.Parallel()
-
-		model := newTestModel(t, []byte(jsonFile))
-
-		model = handleUpdate(model, tea.KeyMsg{
-			Type: tea.KeyUp,
-		})
-
-		overwriteFileInStateLoaded(t, model, []byte(jsonFileUpdated))
-
-		model = handleUpdate(model, tea.KeyMsg{
-			Type: tea.KeyUp,
-		})
-
-		rendered := model.View()
-		assert.NotContains(t, rendered, expected)
 	})
 }
 
@@ -203,25 +138,14 @@ func BenchmarkStateLoadedBig(b *testing.B) {
 
 	b.ResetTimer()
 
-	logEntries, err := source.ParseLogEntriesFromReader(contentReader, cfg)
+	is, err := source.Reader(contentReader, cfg)
+	require.NoError(b, err)
+	b.Cleanup(func() { _ = is.Close() })
+
+	logEntries, err := is.ParseLogEntries()
 	if err != nil {
 		b.Fatal(model.View())
 	}
 
-	model.Update(events.LogEntriesLoadedMsg(logEntries))
-}
-
-func overwriteFileInStateLoaded(tb testing.TB, model tea.Model, content []byte) {
-	tb.Helper()
-
-	stateLoaded, ok := model.(app.StateLoadedModel)
-	require.True(tb, ok)
-
-	// nolint: gosec // Test.
-	err := os.WriteFile(
-		stateLoaded.Application().SourceInput.String(),
-		content,
-		os.ModePerm,
-	)
-	require.NoError(tb, err)
+	model.Update(events.LogEntriesUpdateMsg(logEntries))
 }

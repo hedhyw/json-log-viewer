@@ -8,15 +8,15 @@ import (
 
 // StateErrorModel is a failure message state.
 type StateErrorModel struct {
-	helper
+	*Application
 
 	err error
 }
 
-func newStateError(application Application, err error) StateErrorModel {
+func newStateError(application *Application, err error) StateErrorModel {
 	return StateErrorModel{
-		helper: helper{Application: application},
-		err:    err,
+		Application: application,
+		err:         err,
 	}
 }
 
@@ -32,7 +32,7 @@ func (s StateErrorModel) View() string {
 
 // Update handles events. It implements tea.Model.
 func (s StateErrorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	s.helper = s.helper.Update(msg)
+	s.Application.Update(msg)
 
 	switch msg.(type) {
 	case tea.KeyMsg:

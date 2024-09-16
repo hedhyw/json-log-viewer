@@ -4,14 +4,16 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/tests"
+
 	"github.com/charmbracelet/bubbles/cursor"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/stretchr/testify/require"
 
 	"github.com/hedhyw/json-log-viewer/internal/app"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
-	"github.com/hedhyw/json-log-viewer/internal/pkg/source/fileinput"
-	"github.com/hedhyw/json-log-viewer/internal/pkg/tests"
 )
 
 const testVersion = "v0.0.1"
@@ -21,8 +23,15 @@ func newTestModel(tb testing.TB, content []byte) tea.Model {
 
 	testFile := tests.RequireCreateFile(tb, content)
 
-	model := app.NewModel(fileinput.New(testFile), config.GetDefaultConfig(), testVersion)
-	model = handleUpdate(model, model.Init()())
+	inputSource, err := source.File(testFile, config.GetDefaultConfig())
+	require.NoError(tb, err)
+	model := app.NewModel(testFile, config.GetDefaultConfig(), testVersion)
+
+	entries, err := inputSource.ParseLogEntries()
+	require.NoError(tb, err)
+	model = handleUpdate(model, events.LogEntriesUpdateMsg(entries))
+
+	tb.Cleanup(func() { _ = inputSource.Close() })
 
 	return model
 }

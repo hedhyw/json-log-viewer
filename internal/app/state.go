@@ -10,5 +10,6 @@ type stateModel interface {
 	tea.Model
 	fmt.Stringer
 
-	withApplication(application Application) (stateModel, tea.Cmd)
+	getApplication() *Application
+	refresh() (stateModel, tea.Cmd)
 }

@@ -7,8 +7,9 @@ import (
 )
 
 type (
-	// LogEntriesLoadedMsg is an event about successfully loaded log entries.
-	LogEntriesLoadedMsg source.LazyLogEntries
+	// LogEntriesUpdateMsg is an event about successfully updated log entries.
+	LogEntriesUpdateMsg source.LazyLogEntries
+	LogEntriesEOF       struct{}
 
 	// ErrorOccuredMsg is a generic error event.
 	ErrorOccuredMsg struct{ Err error }
@@ -22,9 +23,6 @@ type (
 		// Index of the row.
 		Index int
 	}
-
-	// ViewRowsReloadRequestedMsg is an event to start reloading of logs.
-	ViewRowsReloadRequestedMsg struct{}
 )
 
 // OpenJSONRowRequested implements tea.Cmd. It creates OpenJSONRowRequestedMsg.
@@ -37,9 +35,21 @@ func OpenJSONRowRequested(logEntries source.LazyLogEntries, index int) func() te
 	}
 }
 
-// ViewRowsReloadRequested implements tea.Cmd. It creates ViewRowsReloadRequestedMsg.
-func ViewRowsReloadRequested() tea.Msg {
-	return ViewRowsReloadRequestedMsg{}
+func ShowError(err error) func() tea.Msg {
+	return func() tea.Msg {
+		return ErrorOccuredMsg{Err: err}
+	}
+}
+
+func HelpKeyClicked() tea.Msg {
+	return tea.KeyMsg{
+		Type:  tea.KeyRunes,
+		Runes: []rune{'?'},
+	}
+}
+
+func EscKeyClicked() tea.Msg {
+	return tea.KeyMsg{Type: tea.KeyEsc}
 }
 
 // EnterKeyClicked implements tea.Cmd. It creates a message indicating 'Enter' has been clicked.

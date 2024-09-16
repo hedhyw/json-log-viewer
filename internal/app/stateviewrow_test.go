@@ -14,25 +14,26 @@ import (
 )
 
 func TestStateViewRow(t *testing.T) {
-	t.Parallel()
+	setup := func(t *testing.T) tea.Model {
+		t.Parallel()
+		model := newTestModel(t, assets.ExampleJSONLog())
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyEnter})
+		_, ok := model.(app.StateViewRowModel)
 
-	model := newTestModel(t, assets.ExampleJSONLog())
-
-	model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyEnter})
-
-	_, ok := model.(app.StateViewRowModel)
-	require.Truef(t, ok, "%s", model)
+		require.Truef(t, ok, "%s", model)
+		return model
+	}
 
 	t.Run("close", func(t *testing.T) {
-		t.Parallel()
+		model := setup(t)
 
-		model := handleUpdate(model, tea.KeyMsg{Type: tea.KeyEnter})
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyEsc})
 		_, ok := model.(app.StateLoadedModel)
 		require.Truef(t, ok, "%s", model)
 	})
 
 	t.Run("stringer", func(t *testing.T) {
-		t.Parallel()
+		model := setup(t)
 
 		stringer, ok := model.(fmt.Stringer)
 		if assert.True(t, ok) {
@@ -41,9 +42,8 @@ func TestStateViewRow(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		t.Parallel()
-
-		model := handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
+		model := setup(t)
+		model = handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
 
 		_, ok := model.(app.StateErrorModel)
 		assert.Truef(t, ok, "%s", model)
@@ -51,6 +51,7 @@ func TestStateViewRow(t *testing.T) {
 
 	// nolint: tparallel // antonmedv/fx uses mutable model.
 	t.Run("navigation", func(t *testing.T) {
+		model := setup(t)
 		model = handleUpdate(model, tea.KeyMsg{
 			Type: tea.KeyRight,
 		})

@@ -75,16 +75,19 @@ docker logs -f 000000000000 2>&1 | jlv
 
 ### Hotkeys
 
-| Key    | Action         |
-| ------ | -------------- |
-| Enter  | Open/Close log |
-| F      | Filter         |
-| Ctrl+C | Exit           |
-| F10    | Exit           |
-| Esc    | Back           |
-| ↑↓     | Navigation     |
+| Key    | Action            |
+|--------|-------------------|
+| Enter  | Open log          |
+| Esc    | Back              |
+| F      | Filter            |
+| R      | Reverse           |
+| Ctrl+C | Exit              |
+| F10    | Exit              |
+| ↑↓     | Line Up / Down    |
+| Home   | Navigate to Start |
+| End    | Navigate to End   |
 
-> \[↑\] Click Up on the first row to reload the file.
+> Attempting to navigate past the last line in the log will put you in follow mode.
 
 ## Install
 

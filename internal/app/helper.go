@@ -1,12 +1,8 @@
 package app
 
 import (
-	"context"
-	"errors"
 	"fmt"
-	"runtime"
 	"strings"
-	"time"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
@@ -18,55 +14,18 @@ import (
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 )
 
-type helper struct {
-	Application
-}
-
-// LoadEntries reads and parses entries from the input source.
-func (h helper) LoadEntries() tea.Msg {
-	logEntries, err := h.loadEntriesFromSourceInput()
-	if err != nil {
-		return events.ErrorOccuredMsg{Err: err}
-	}
-
-	runtime.GC()
-
-	return events.LogEntriesLoadedMsg(logEntries)
-}
-
-func (h helper) loadEntriesFromSourceInput() (logEntries source.LazyLogEntries, err error) {
-	ctx := context.Background()
-
-	readCloser, err := h.SourceInput.ReadCloser(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("readcloser: %w", err)
-	}
-
-	defer func() { err = errors.Join(err, readCloser.Close()) }()
-
-	logEntries, err = source.ParseLogEntriesFromReader(
-		readCloser,
-		h.Config,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("reading logs: %w", err)
-	}
-
-	return logEntries, nil
-}
-
-func (h helper) getLogLevelStyle(
+func (app *Application) getLogLevelStyle(
 	logEntries source.LazyLogEntries,
 	baseStyle lipgloss.Style,
 	rowID int,
 ) lipgloss.Style {
-	if rowID < 0 || rowID >= len(logEntries) {
+	if rowID < 0 || rowID >= logEntries.Len() {
 		return baseStyle
 	}
 
-	entry := logEntries[rowID].LogEntry(h.Config)
+	entry := logEntries.Entries[rowID].LogEntry(logEntries.Seeker, app.Config)
 
-	color := getColorForLogLevel(h.getLogLevelFromLogEntry(entry))
+	color := getColorForLogLevel(app.getLogLevelFromLogEntry(entry))
 	if color == "" {
 		return baseStyle
 	}
@@ -75,12 +34,13 @@ func (h helper) getLogLevelStyle(
 }
 
 // Update application state.
-func (h helper) Update(msg tea.Msg) helper {
-	if msg, ok := msg.(tea.WindowSizeMsg); ok {
-		h.LastWindowSize = msg
+func (app *Application) Update(msg tea.Msg) {
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		app.LastWindowSize = msg
+	case events.LogEntriesUpdateMsg:
+		app.Entries = source.LazyLogEntries(msg)
 	}
-
-	return h
 }
 
 func getColorForLogLevel(level source.Level) lipgloss.Color {
@@ -102,49 +62,46 @@ func getColorForLogLevel(level source.Level) lipgloss.Color {
 	}
 }
 
-func (h helper) getLogLevelFromLogEntry(logEntry source.LogEntry) source.Level {
-	return source.Level(getFieldByKind(h.Config, config.FieldKindLevel, logEntry))
+func (app *Application) getLogLevelFromLogEntry(logEntry source.LogEntry) source.Level {
+	return source.Level(getFieldByKind(app.Config, config.FieldKindLevel, logEntry))
 }
 
-func (h helper) handleErrorOccuredMsg(msg events.ErrorOccuredMsg) (tea.Model, tea.Cmd) {
-	return initializeModel(newStateError(h.Application, msg.Err))
+func (app *Application) handleErrorOccuredMsg(msg events.ErrorOccuredMsg) (tea.Model, tea.Cmd) {
+	return initializeModel(newStateError(app, msg.Err))
 }
 
-func (h helper) handleLogEntriesLoadedMsg(
-	msg events.LogEntriesLoadedMsg,
-	lastReloadAt time.Time,
+func (app *Application) handleInitialLogEntriesLoadedMsg(
+	msg events.LogEntriesUpdateMsg,
 ) (tea.Model, tea.Cmd) {
 	return initializeModel(newStateViewLogs(
-		h.Application,
+		app,
 		source.LazyLogEntries(msg),
-		lastReloadAt,
 	))
 }
 
-func (h helper) handleOpenJSONRowRequestedMsg(
+func (app *Application) handleOpenJSONRowRequestedMsg(
 	msg events.OpenJSONRowRequestedMsg,
 	previousState stateModel,
 ) (tea.Model, tea.Cmd) {
-	if msg.Index < 0 || msg.Index >= len(msg.LogEntries) {
+	if msg.Index < 0 || msg.Index >= msg.LogEntries.Len() {
 		return previousState, nil
 	}
 
-	logEntry := msg.LogEntries[msg.Index]
+	logEntry := msg.LogEntries.Entries[msg.Index]
 
 	return initializeModel(newStateViewRow(
-		h.Application,
-		logEntry.LogEntry(h.Config),
+		logEntry.LogEntry(msg.LogEntries.Seeker, app.Config),
 		previousState,
 	))
 }
 
-func (h helper) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
+func (app *Application) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 	switch {
 	case key.Matches(msg, defaultKeys.Exit):
 		return tea.Quit
 	case key.Matches(msg, defaultKeys.Filter):
 		return events.FilterKeyClicked
-	case key.Matches(msg, defaultKeys.ToggleView):
+	case key.Matches(msg, defaultKeys.Open):
 		return events.EnterKeyClicked
 	case key.Matches(msg, defaultKeys.ToggleViewArrow):
 		return events.ArrowRightKeyClicked

@@ -10,7 +10,6 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestStateError(t *testing.T) {
@@ -18,21 +17,25 @@ func TestStateError(t *testing.T) {
 
 	errTest := getTestError()
 
-	model := newTestModel(t, assets.ExampleJSONLog())
-	model = handleUpdate(model, events.ErrorOccuredMsg{Err: errTest})
+	setup := func() tea.Model {
+		model := newTestModel(t, assets.ExampleJSONLog())
+		model = handleUpdate(model, events.ErrorOccuredMsg{Err: errTest})
 
-	_, ok := model.(app.StateErrorModel)
-	assert.Truef(t, ok, "%s", model)
+		_, ok := model.(app.StateErrorModel)
+		assert.Truef(t, ok, "%s", model)
+		return model
+	}
 
 	t.Run("rendered", func(t *testing.T) {
 		t.Parallel()
-
+		model := setup()
 		rendered := model.View()
 		assert.Contains(t, rendered, errTest.Error())
 	})
 
 	t.Run("any_key_msg", func(t *testing.T) {
 		t.Parallel()
+		model := setup()
 
 		_, cmd := model.Update(tea.KeyMsg{})
 		assert.Equal(t, tea.Quit(), cmd())
@@ -40,19 +43,11 @@ func TestStateError(t *testing.T) {
 
 	t.Run("stringer", func(t *testing.T) {
 		t.Parallel()
+		model := setup()
 
 		stringer, ok := model.(fmt.Stringer)
 		if assert.True(t, ok) {
 			assert.Contains(t, stringer.String(), "StateError")
 		}
-	})
-
-	t.Run("unknown_update", func(t *testing.T) {
-		t.Parallel()
-
-		model := handleUpdate(model, events.ViewRowsReloadRequestedMsg{})
-
-		_, ok := model.(app.StateErrorModel)
-		require.Truef(t, ok, "%s", model)
 	})
 }

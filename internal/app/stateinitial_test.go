@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/hedhyw/json-log-viewer/internal/app"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
-	"github.com/hedhyw/json-log-viewer/internal/pkg/source/readerinput"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/stretchr/testify/assert"
@@ -19,11 +18,19 @@ import (
 func TestStateInitial(t *testing.T) {
 	t.Parallel()
 
+	is, err := source.Reader(bytes.NewReader([]byte{}), config.GetDefaultConfig())
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = is.Close() })
+
 	model := app.NewModel(
-		readerinput.New(bytes.NewReader([]byte{}), time.Millisecond),
+		"-",
 		config.GetDefaultConfig(),
 		testVersion,
 	)
+
+	entries, err := is.ParseLogEntries()
+	require.NoError(t, err)
+	handleUpdate(model, events.LogEntriesUpdateMsg(entries))
 
 	_, ok := model.(app.StateInitialModel)
 	require.Truef(t, ok, "%s", model)
@@ -54,14 +61,5 @@ func TestStateInitial(t *testing.T) {
 		})
 
 		assert.Equal(t, tea.Quit(), cmd())
-	})
-
-	t.Run("unknown_update", func(t *testing.T) {
-		t.Parallel()
-
-		model := handleUpdate(model, events.ViewRowsReloadRequestedMsg{})
-
-		_, ok := model.(app.StateInitialModel)
-		require.Truef(t, ok, "%s", model)
 	})
 }

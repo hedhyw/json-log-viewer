@@ -1,10 +1,9 @@
 package main
 
 import (
-	"bytes"
+	"context"
 	"flag"
 	"fmt"
-	"io/fs"
 	"os"
 	"path"
 
@@ -12,9 +11,8 @@ import (
 
 	"github.com/hedhyw/json-log-viewer/internal/app"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
-	"github.com/hedhyw/json-log-viewer/internal/pkg/source/fileinput"
-	"github.com/hedhyw/json-log-viewer/internal/pkg/source/readerinput"
 )
 
 // version will be set on build.
@@ -39,39 +37,52 @@ func main() {
 		fatalf("Error reading config: %s\n", err)
 	}
 
-	var sourceInput source.Input
+	fileName := ""
+	var inputSource *source.Source
 
 	switch flag.NArg() {
 	case 0:
-		sourceInput, err = getStdinSource(cfg, os.Stdin)
+		// Tee stdin to a temp file, so that we can
+		// lazy load the log entries using random access.
+		fileName = "-"
+
+		stdIn, err := getStdinReader(os.Stdin)
 		if err != nil {
 			fatalf("Stdin: %s\n", err)
 		}
+
+		inputSource, err = source.Reader(stdIn, cfg)
+		if err != nil {
+			fatalf("Could not create temp flie: %s\n", err)
+		}
+		defer inputSource.Close()
+
 	case 1:
-		sourceInput = fileinput.New(flag.Arg(0))
+		fileName = flag.Arg(0)
+		inputSource, err = source.File(fileName, cfg)
+		if err != nil {
+			fatalf("Could not create temp flie: %s\n", err)
+		}
+		defer inputSource.Close()
+
 	default:
 		fatalf("Invalid arguments, usage: %s file.log\n", os.Args[0])
 	}
 
-	appModel := app.NewModel(sourceInput, cfg, version)
+	appModel := app.NewModel(fileName, cfg, version)
 	program := tea.NewProgram(appModel, tea.WithInputTTY(), tea.WithAltScreen())
+
+	inputSource.StartStreaming(context.Background(), func(entries source.LazyLogEntries, err error) {
+		if err != nil {
+			program.Send(events.ErrorOccuredMsg{Err: err})
+		} else {
+			program.Send(events.LogEntriesUpdateMsg(entries))
+		}
+	})
 
 	if _, err := program.Run(); err != nil {
 		fatalf("Error running program: %s\n", err)
 	}
-}
-
-func getStdinSource(cfg *config.Config, defaultInput fs.File) (source.Input, error) {
-	stat, err := defaultInput.Stat()
-	if err != nil {
-		return nil, fmt.Errorf("stat: %w", err)
-	}
-
-	if stat.Mode()&os.ModeCharDevice != 0 {
-		return readerinput.New(bytes.NewReader(nil), cfg.StdinReadTimeout), nil
-	}
-
-	return readerinput.New(defaultInput, cfg.StdinReadTimeout), nil
 }
 
 func fatalf(message string, args ...any) {

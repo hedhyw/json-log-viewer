@@ -1,10 +1,14 @@
 package source_test
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
@@ -209,52 +213,6 @@ func TestLogEntryRow(t *testing.T) {
 	assert.Equal(t, []string(row), entry.Fields)
 }
 
-func TestLazyLogEntriesReverse(t *testing.T) {
-	t.Parallel()
-
-	t.Run("simple", func(t *testing.T) {
-		t.Parallel()
-
-		original := source.LazyLogEntries{
-			getFakeLazyLogEntry(),
-			getFakeLazyLogEntry(),
-			getFakeLazyLogEntry(),
-		}
-
-		entries := make(source.LazyLogEntries, len(original))
-		copy(entries, original)
-		actual := entries.Reverse()
-
-		assert.Equal(t, actual[0], original[2])
-		assert.Equal(t, actual[1], original[1])
-		assert.Equal(t, actual[2], original[0])
-	})
-
-	t.Run("single", func(t *testing.T) {
-		t.Parallel()
-
-		entries := source.LazyLogEntries{
-			getFakeLazyLogEntry(),
-		}
-
-		assert.Len(t, entries, 1)
-	})
-
-	t.Run("empty", func(t *testing.T) {
-		t.Parallel()
-
-		entries := source.LazyLogEntries{}
-
-		assert.Empty(t, entries)
-	})
-}
-
-func getFakeLazyLogEntry() source.LazyLogEntry {
-	return source.LazyLogEntry{
-		Line: getFakeLogEntry().Line,
-	}
-}
-
 func getFakeLogEntry() source.LogEntry {
 	return source.LogEntry{
 		Fields: []string{
@@ -271,44 +229,68 @@ func TestLazyLogEntriesFilter(t *testing.T) {
 
 	term := "special MESSAGE to search by in the test: " + t.Name()
 
-	logEntry := getFakeLazyLogEntry()
-	logEntry.Line = json.RawMessage(`{"message": "` + term + `"}`)
+	logs := fmt.Sprintf(`
+{"hello":"world"}
+{"message", "%s"}
+{"hello":"world"}
+`, term)
 
-	logEntries := source.LazyLogEntries{
-		getFakeLazyLogEntry(),
-		logEntry,
-		getFakeLazyLogEntry(),
+	createEntries := func() (*source.Source, source.LazyLogEntries, source.LazyLogEntry) {
+		is, err := source.Reader(bytes.NewReader([]byte(logs)), config.GetDefaultConfig())
+		require.NoError(t, err)
+
+		logEntries, err := is.ParseLogEntries()
+		require.NoError(t, err)
+
+		logEntry := logEntries.Entries[1]
+
+		return is, logEntries, logEntry
 	}
 
 	t.Run("all", func(t *testing.T) {
 		t.Parallel()
+		is, logEntries, _ := createEntries()
+		defer is.Close()
 
-		assert.Len(t, logEntries.Filter(""), len(logEntries))
+		assert.Len(t, logEntries.Entries, logEntries.Len())
 	})
 
 	t.Run("found_exact", func(t *testing.T) {
 		t.Parallel()
 
-		filtered := logEntries.Filter(term)
-		if assert.Len(t, filtered, 1) {
-			assert.Equal(t, logEntry, filtered[0])
+		is, logEntries, logEntry := createEntries()
+		defer is.Close()
+
+		filtered, err := logEntries.Filter(term)
+		require.NoError(t, err)
+
+		if assert.Len(t, filtered.Entries, 1) {
+			assert.Equal(t, logEntry, filtered.Entries[0])
 		}
 	})
 
 	t.Run("found_ignore_case", func(t *testing.T) {
 		t.Parallel()
+		is, logEntries, logEntry := createEntries()
+		defer is.Close()
 
-		filtered := logEntries.Filter(strings.ToUpper(term))
-		if assert.Len(t, filtered, 1) {
-			assert.Equal(t, logEntry, filtered[0])
+		filtered, err := logEntries.Filter(strings.ToUpper(term))
+		require.NoError(t, err)
+
+		if assert.Len(t, filtered.Entries, 1) {
+			assert.Equal(t, logEntry, filtered.Entries[0])
 		}
 	})
 
 	t.Run("not_found", func(t *testing.T) {
 		t.Parallel()
+		is, logEntries, _ := createEntries()
+		defer is.Close()
 
-		filtered := logEntries.Filter(term + " - not found!")
-		assert.Empty(t, filtered)
+		filtered, err := logEntries.Filter(term + " - not found!")
+		require.NoError(t, err)
+
+		assert.Empty(t, filtered.Entries)
 	})
 }
 
