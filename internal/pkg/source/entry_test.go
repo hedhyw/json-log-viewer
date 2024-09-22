@@ -2,16 +2,20 @@ package source_test
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
+	"math"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/charmbracelet/bubbles/table"
 	"github.com/stretchr/testify/require"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/tests"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -29,7 +33,7 @@ func TestParseLogEntryDefault(t *testing.T) {
 		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
 			tb.Helper()
 
-			assert.Equal(t, "Hello World", fieldKindToValue[config.FieldKindMessage], fieldKindToValue)
+			assert.Equal(t, "Hello World\n", fieldKindToValue[config.FieldKindMessage], fieldKindToValue)
 			assert.Equal(t, "-", fieldKindToValue[config.FieldKindLevel], fieldKindToValue)
 			assert.Equal(t, "-", fieldKindToValue[config.FieldKindNumericTime], fieldKindToValue)
 		},
@@ -178,6 +182,17 @@ func TestParseLogEntryDefault(t *testing.T) {
 			)
 		},
 	}, {
+		Name: "special",
+		JSON: `{"msg":"\u0008"}`,
+		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
+			tb.Helper()
+
+			assert.Empty(t,
+				fieldKindToValue[config.FieldKindMessage],
+				fieldKindToValue,
+			)
+		},
+	}, {
 		Name: "level",
 		JSON: `{"level":"INFO"}`,
 		Assert: func(tb testing.TB, fieldKindToValue map[config.FieldKind]string) {
@@ -197,9 +212,8 @@ func TestParseLogEntryDefault(t *testing.T) {
 
 			cfg := config.GetDefaultConfig()
 
-			actual := source.ParseLogEntry(json.RawMessage(testCase.JSON), cfg)
-
-			testCase.Assert(t, getFieldKindToValue(cfg, actual.Fields))
+			actual := parseTableRow(t, testCase.JSON, cfg)
+			testCase.Assert(t, getFieldKindToValue(cfg, actual))
 		})
 	}
 }
@@ -236,21 +250,21 @@ func TestLazyLogEntriesFilter(t *testing.T) {
 `, term)
 
 	createEntries := func() (*source.Source, source.LazyLogEntries, source.LazyLogEntry) {
-		is, err := source.Reader(bytes.NewReader([]byte(logs)), config.GetDefaultConfig())
+		source, err := source.Reader(bytes.NewReader([]byte(logs)), config.GetDefaultConfig())
 		require.NoError(t, err)
 
-		logEntries, err := is.ParseLogEntries()
+		logEntries, err := source.ParseLogEntries()
 		require.NoError(t, err)
 
 		logEntry := logEntries.Entries[1]
 
-		return is, logEntries, logEntry
+		return source, logEntries, logEntry
 	}
 
 	t.Run("all", func(t *testing.T) {
 		t.Parallel()
-		is, logEntries, _ := createEntries()
-		defer is.Close()
+		source, logEntries, _ := createEntries()
+		defer source.Close()
 
 		assert.Len(t, logEntries.Entries, logEntries.Len())
 	})
@@ -258,8 +272,8 @@ func TestLazyLogEntriesFilter(t *testing.T) {
 	t.Run("found_exact", func(t *testing.T) {
 		t.Parallel()
 
-		is, logEntries, logEntry := createEntries()
-		defer is.Close()
+		source, logEntries, logEntry := createEntries()
+		defer source.Close()
 
 		filtered, err := logEntries.Filter(term)
 		require.NoError(t, err)
@@ -271,8 +285,9 @@ func TestLazyLogEntriesFilter(t *testing.T) {
 
 	t.Run("found_ignore_case", func(t *testing.T) {
 		t.Parallel()
-		is, logEntries, logEntry := createEntries()
-		defer is.Close()
+
+		source, logEntries, logEntry := createEntries()
+		defer source.Close()
 
 		filtered, err := logEntries.Filter(strings.ToUpper(term))
 		require.NoError(t, err)
@@ -282,44 +297,46 @@ func TestLazyLogEntriesFilter(t *testing.T) {
 		}
 	})
 
+	t.Run("empty", func(t *testing.T) {
+		t.Parallel()
+
+		source, logEntries, _ := createEntries()
+		defer source.Close()
+
+		filtered, err := logEntries.Filter("")
+		require.NoError(t, err)
+		assert.Len(t, filtered.Entries, logEntries.Len())
+	})
+
 	t.Run("not_found", func(t *testing.T) {
 		t.Parallel()
-		is, logEntries, _ := createEntries()
-		defer is.Close()
+
+		source, logEntries, _ := createEntries()
+		defer source.Close()
 
 		filtered, err := logEntries.Filter(term + " - not found!")
 		require.NoError(t, err)
 
 		assert.Empty(t, filtered.Entries)
 	})
-}
 
-func getFieldKindToValue(cfg *config.Config, entries []string) map[config.FieldKind]string {
-	fieldKindToValue := make(map[config.FieldKind]string, len(entries))
+	t.Run("seeker_failed", func(t *testing.T) {
+		t.Parallel()
 
-	for i, f := range cfg.Fields {
-		fieldKindToValue[f.Kind] = entries[i]
-	}
+		source, logEntries, _ := createEntries()
+		defer source.Close()
 
-	return fieldKindToValue
-}
+		fileName := tests.RequireCreateFile(t, []byte(""))
 
-type TimeFormattingTestCase struct {
-	TestName       string
-	JSON           string
-	ExpectedOutput string
-}
+		f, err := os.Open(fileName)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
 
-func getTimestampFormattingConfig(fieldKind config.FieldKind) *config.Config {
-	return &config.Config{
-		Path: config.PathDefault,
-		Fields: []config.Field{{
-			Title:      "Time",
-			Kind:       fieldKind,
-			References: []string{"$.timestamp", "$.time", "$.t", "$.ts"},
-			Width:      30,
-		}},
-	}
+		logEntries.Seeker = f
+
+		_, err = logEntries.Filter(term + " - not found!")
+		require.Error(t, err)
+	})
 }
 
 func TestSecondTimeFormatting(t *testing.T) {
@@ -345,13 +362,18 @@ func TestSecondTimeFormatting(t *testing.T) {
 		TestName:       "Seconds (int as string)",
 		JSON:           `{"timestamp":"1"}`,
 		ExpectedOutput: expectedOutput,
+	}, {
+		TestName:       "Seconds (int as string)",
+		JSON:           `{"timestamp":"x"}`,
+		ExpectedOutput: `x`,
 	}}
 
 	for _, testCase := range secondsTestCases {
 		t.Run(testCase.TestName, func(t *testing.T) {
 			t.Parallel()
-			actual := source.ParseLogEntry(json.RawMessage(testCase.JSON), cfg)
-			assert.Equal(t, testCase.ExpectedOutput, actual.Fields[0])
+
+			actual := parseTableRow(t, testCase.JSON, cfg)
+			assert.Equal(t, testCase.ExpectedOutput, actual[0])
 		})
 	}
 }
@@ -384,8 +406,9 @@ func TestMillisecondTimeFormatting(t *testing.T) {
 	for _, testCase := range millisecondTestCases {
 		t.Run(testCase.TestName, func(t *testing.T) {
 			t.Parallel()
-			actual := source.ParseLogEntry(json.RawMessage(testCase.JSON), cfg)
-			assert.Equal(t, testCase.ExpectedOutput, actual.Fields[0])
+
+			actual := parseTableRow(t, testCase.JSON, cfg)
+			assert.Equal(t, testCase.ExpectedOutput, actual[0])
 		})
 	}
 }
@@ -418,10 +441,29 @@ func TestMicrosecondTimeFormatting(t *testing.T) {
 	for _, testCase := range microsecondTestCases {
 		t.Run(testCase.TestName, func(t *testing.T) {
 			t.Parallel()
-			actual := source.ParseLogEntry(json.RawMessage(testCase.JSON), cfg)
-			assert.Equal(t, testCase.ExpectedOutput, actual.Fields[0])
+
+			actual := parseTableRow(t, testCase.JSON, cfg)
+			assert.Equal(t, testCase.ExpectedOutput, actual[0])
 		})
 	}
+}
+
+func TestFormattingUnknown(t *testing.T) {
+	t.Parallel()
+
+	cfg := getTimestampFormattingConfig(config.FieldKind("unknown"))
+
+	actual := parseTableRow(t, `{"timestamp": 1}`, cfg)
+	assert.Equal(t, "1", actual[0])
+}
+
+func TestFormattingAny(t *testing.T) {
+	t.Parallel()
+
+	cfg := getTimestampFormattingConfig(config.FieldKindAny)
+
+	actual := parseTableRow(t, `{"timestamp": 1}`, cfg)
+	assert.Equal(t, "1", actual[0])
 }
 
 func TestNumericKindTimeFormatting(t *testing.T) {
@@ -469,13 +511,162 @@ func TestNumericKindTimeFormatting(t *testing.T) {
 		TestName:       "float with 14 digits before the decimal is microseconds",
 		JSON:           `{"timestamp":12345678900000.222}`,
 		ExpectedOutput: time.Unix(12345678, 0).UTC().Format(time.RFC3339),
+	}, {
+		TestName:       "max_int64",
+		JSON:           fmt.Sprintf(`{"timestamp":"%d"}`, math.MaxInt64),
+		ExpectedOutput: strconv.Itoa(math.MaxInt64),
+	}, {
+		TestName:       "negative",
+		JSON:           `{"timestamp":"-1"}`,
+		ExpectedOutput: "-1",
 	}}
 
 	for _, testCase := range numericKindCases {
 		t.Run(testCase.TestName, func(t *testing.T) {
 			t.Parallel()
-			actual := source.ParseLogEntry(json.RawMessage(testCase.JSON), cfg)
-			assert.Equal(t, testCase.ExpectedOutput, actual.Fields[0])
+
+			actual := parseTableRow(t, testCase.JSON, cfg)
+			assert.Equal(t, testCase.ExpectedOutput, actual[0])
 		})
 	}
+}
+
+func TestLazyLogEntryLength(t *testing.T) {
+	t.Parallel()
+
+	entry := t.Name() + "\n"
+
+	logEntry := parseLazyLogEntry(t, entry, config.GetDefaultConfig())
+	assert.Equal(t, len(entry), logEntry.Length())
+}
+
+func TestLazyLogEntryLine(t *testing.T) {
+	t.Parallel()
+
+	entry := t.Name() + "\n"
+
+	logEntry := parseLazyLogEntry(t, entry, config.GetDefaultConfig())
+	assert.Equal(t, len(entry), logEntry.Length())
+
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
+		fileName := tests.RequireCreateFile(t, []byte(entry))
+
+		f, err := os.Open(fileName)
+		require.NoError(t, err)
+
+		t.Cleanup(func() { assert.NoError(t, f.Close()) })
+
+		actual, err := logEntry.Line(f)
+		require.NoError(t, err)
+
+		assert.Equal(t, entry, string(actual))
+	})
+
+	t.Run("failed", func(t *testing.T) {
+		t.Parallel()
+
+		fileName := tests.RequireCreateFile(t, []byte(entry))
+
+		f, err := os.Open(fileName)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+
+		_, err = logEntry.Line(f)
+		require.Error(t, err)
+	})
+}
+
+func TestLazyLogEntryLogEntry(t *testing.T) {
+	t.Parallel()
+
+	entry := t.Name() + "\n"
+	cfg := config.GetDefaultConfig()
+
+	logEntry := parseLazyLogEntry(t, entry, config.GetDefaultConfig())
+	assert.Equal(t, len(entry), logEntry.Length())
+
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
+		fileName := tests.RequireCreateFile(t, []byte(entry))
+
+		f, err := os.Open(fileName)
+		require.NoError(t, err)
+
+		t.Cleanup(func() { assert.NoError(t, f.Close()) })
+
+		actual := logEntry.LogEntry(f, cfg)
+		require.NoError(t, actual.Error)
+		assert.Equal(t, entry, string(actual.Line))
+	})
+
+	t.Run("failed", func(t *testing.T) {
+		t.Parallel()
+
+		fileName := tests.RequireCreateFile(t, []byte(entry))
+
+		f, err := os.Open(fileName)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+
+		actual := logEntry.LogEntry(f, cfg)
+		require.Error(t, actual.Error)
+	})
+}
+
+func parseLazyLogEntry(tb testing.TB, value string, cfg *config.Config) source.LazyLogEntry {
+	tb.Helper()
+
+	source, err := source.Reader(strings.NewReader(value), cfg)
+	require.NoError(tb, err)
+
+	logEntries, err := source.ParseLogEntries()
+	require.NoError(tb, err)
+	require.Equal(tb, 1, logEntries.Len())
+
+	return logEntries.Entries[0]
+}
+
+func parseTableRow(tb testing.TB, value string, cfg *config.Config) table.Row {
+	tb.Helper()
+
+	source, err := source.Reader(strings.NewReader(value+"\n"), cfg)
+	require.NoError(tb, err)
+
+	logEntries, err := source.ParseLogEntries()
+	require.NoError(tb, err)
+	require.Equal(tb, 1, logEntries.Len(), value)
+
+	return logEntries.Row(cfg, 0)
+}
+
+func getFieldKindToValue(cfg *config.Config, entries []string) map[config.FieldKind]string {
+	fieldKindToValue := make(map[config.FieldKind]string, len(entries))
+
+	for i, f := range cfg.Fields {
+		fieldKindToValue[f.Kind] = entries[i]
+	}
+
+	return fieldKindToValue
+}
+
+type TimeFormattingTestCase struct {
+	TestName       string
+	JSON           string
+	ExpectedOutput string
+}
+
+func getTimestampFormattingConfig(fieldKind config.FieldKind) *config.Config {
+	cfg := config.GetDefaultConfig()
+
+	cfg.Fields = []config.Field{{
+		Title:      "Time",
+		Kind:       fieldKind,
+		References: []string{"$.timestamp", "$.time", "$.t", "$.ts"},
+		Width:      30,
+	}}
+
+	return cfg
 }
