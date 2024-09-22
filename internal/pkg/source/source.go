@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 
@@ -14,6 +15,8 @@ import (
 
 const (
 	maxLineSize = 8 * 1024 * 1024
+
+	temporaryFilePattern = "jvl-*.log"
 )
 
 type Source struct {
@@ -33,71 +36,74 @@ type Source struct {
 	maxSize int64
 }
 
-func (is *Source) Close() (err error) {
-	err = is.file.Close()
-	e := is.Seeker.Close()
-	if e != nil {
-		err = e
-	}
-	return err
+func (s *Source) Close() error {
+	return errors.Join(s.file.Close(), s.Seeker.Close())
 }
 
 // File creates a new Source for reading log entries from a file.
 func File(name string, cfg *config.Config) (*Source, error) {
 	var err error
-	is := &Source{
+
+	source := &Source{
 		maxSize: cfg.MaxFileSizeBytes,
 		name:    name,
 	}
 
-	is.file, err = os.Open(name)
+	source.file, err = os.Open(name)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("opening: %w", err)
 	}
 
-	is.Seeker, err = os.Open(name)
+	source.Seeker, err = os.Open(name)
 	if err != nil {
-		_ = is.file.Close()
-		return nil, err
+		return nil, errors.Join(err, source.file.Close())
 	}
 
-	is.reader = bufio.NewReaderSize(io.LimitReader(is.file, is.maxSize), maxLineSize)
-	return is, nil
+	source.reader = bufio.NewReaderSize(
+		io.LimitReader(source.file, source.maxSize),
+		maxLineSize,
+	)
+
+	return source, nil
 }
 
-// Reader creates a new Source for reading log entries from an io.Reader.  This will write the input to a temp file.
-// which will be used to seek against.
+// Reader creates a new Source for reading log entries from an io.Reader.
+// This will write the input to a temp file, which will be used to seek against.
 func Reader(input io.Reader, cfg *config.Config) (*Source, error) {
 	var err error
-	is := &Source{
+
+	source := &Source{
 		maxSize: cfg.MaxFileSizeBytes,
 	}
 
 	// We will write the as read to a temp file.  Seek against the temp file.
-	is.file, err = os.CreateTemp("", "jvl-*.log")
+	source.file, err = os.CreateTemp(
+		"", // Default directory for temporary files.
+		temporaryFilePattern,
+	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("creating temporary file: %w", err)
 	}
 
 	// The io.TeeReader will write the input to the is.file as it is read.
-	reader := io.TeeReader(input, is.file)
+	reader := io.TeeReader(input, source.file)
 
 	// We can now seek against the data that is read in the input io.Reader.
-	is.Seeker, err = os.Open(is.file.Name())
+	source.Seeker, err = os.Open(source.file.Name())
 	if err != nil {
-		_ = is.file.Close()
-		return nil, err
+		return nil, errors.Join(err, source.file.Close())
 	}
 
-	reader = io.LimitReader(reader, is.maxSize)
-	is.reader = bufio.NewReaderSize(reader, maxLineSize)
-	return is, nil
+	reader = io.LimitReader(reader, source.maxSize)
+	source.reader = bufio.NewReaderSize(reader, maxLineSize)
+
+	return source, nil
 }
 
-func (is *Source) ParseLogEntries() (LazyLogEntries, error) {
-	logEntries := make([]LazyLogEntry, 0, 1000)
+func (s *Source) ParseLogEntries() (LazyLogEntries, error) {
+	logEntries := make([]LazyLogEntry, 0, initialLogSize)
 	for {
-		entry, err := is.ReadLogEntry()
+		entry, err := s.readLogEntry()
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				break
@@ -105,58 +111,63 @@ func (is *Source) ParseLogEntries() (LazyLogEntries, error) {
 
 			return LazyLogEntries{}, err
 		}
+
 		logEntries = append(logEntries, entry)
 	}
 
 	return LazyLogEntries{
-		Seeker:  is.Seeker,
+		Seeker:  s.Seeker,
 		Entries: logEntries,
 	}, nil
 }
 
-func (is *Source) CanFollow() bool {
-	return len(is.name) != 0
+func (s *Source) CanFollow() bool {
+	return len(s.name) != 0
 }
 
 const ErrFileTruncated semerr.Error = "file truncated"
 
 // ReadLogEntry reads the next ReadLogEntry from the file.
-func (is *Source) ReadLogEntry() (LazyLogEntry, error) {
+func (s *Source) readLogEntry() (LazyLogEntry, error) {
 	for {
-		if is.reader == nil {
+		if s.reader == nil {
 			// If we can't follow the file, or we have reached the max size, we are done.
-			if !is.CanFollow() || is.offset >= is.maxSize {
+			if !s.CanFollow() || s.offset >= s.maxSize {
 				return LazyLogEntry{}, io.EOF
 			}
 
-			// has the file size changed since we last looked?
-			info, err := os.Stat(is.name)
-			if err != nil || is.prevFollowSize == info.Size() {
+			// Has the file size changed since we last looked?
+			info, err := os.Stat(s.name)
+			if err != nil || s.prevFollowSize == info.Size() {
 				return LazyLogEntry{}, io.EOF
 			}
 
-			if info.Size() < is.offset {
-				// the file has been truncated or rolled over, all previous line offsets are invalid.
-				// we can't recover from this.
+			if info.Size() < s.offset {
+				// The file has been truncated or rolled over, all previous line
+				// offsets are invalid. We can't recover from this.
 				return LazyLogEntry{}, ErrFileTruncated
 			}
-			is.prevFollowSize = info.Size()
-			// reset the reader and try to read the file again.
-			_, _ = is.file.Seek(is.offset, io.SeekStart)
-			is.reader = bufio.NewReaderSize(io.LimitReader(is.file, is.maxSize-is.offset), maxLineSize)
+
+			s.prevFollowSize = info.Size()
+			// Reset the reader and try to read the file again.
+			_, _ = s.file.Seek(s.offset, io.SeekStart)
+			s.reader = bufio.NewReaderSize(io.LimitReader(s.file, s.maxSize-s.offset), maxLineSize)
 		}
 
-		line, err := is.reader.ReadSlice(byte('\n'))
+		line, err := s.reader.ReadBytes('\n')
 		if err != nil {
 			if errors.Is(err, io.EOF) {
-				// set the reader to nil so that we can recover from EOF.
-				is.reader = nil
+				// Set the reader to nil so that we can recover from EOF.
+				s.reader = nil
 			}
+
 			return LazyLogEntry{}, err
 		}
+
 		length := len(line)
-		offset := is.offset
-		is.offset += int64(length)
+		offset := s.offset
+		s.offset += int64(length)
+
 		if len(bytes.TrimSpace(line)) != 0 {
 			return LazyLogEntry{
 				offset: offset,

@@ -1,9 +1,11 @@
 package tests
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -40,4 +42,21 @@ func RequireEncodeJSON(tb testing.TB, value any) []byte {
 	require.NoError(tb, err)
 
 	return content
+}
+
+// Context returns a test context with timeout.
+func Context(t *testing.T) context.Context {
+	t.Helper()
+
+	const defaultTimeout = time.Minute
+
+	deadline, ok := t.Deadline()
+	if !ok {
+		deadline = time.Now().Add(defaultTimeout)
+	}
+
+	ctx, cancel := context.WithDeadline(context.Background(), deadline)
+	t.Cleanup(cancel)
+
+	return ctx
 }

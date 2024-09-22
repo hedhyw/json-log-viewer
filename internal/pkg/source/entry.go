@@ -22,12 +22,15 @@ type LazyLogEntry struct {
 	length int
 }
 
+// Length of the entry.
 func (e LazyLogEntry) Length() int {
 	return e.length
 }
 
+// Line re-reads the line.
 func (e LazyLogEntry) Line(file *os.File) (json.RawMessage, error) {
 	data := make([]byte, e.length)
+
 	_, err := file.ReadAt(data, e.offset)
 	if err != nil {
 		return nil, err
@@ -45,7 +48,7 @@ func (e LazyLogEntry) LogEntry(file *os.File, cfg *config.Config) LogEntry {
 		}
 	}
 
-	return ParseLogEntry(line, cfg)
+	return parseLogEntry(line, cfg)
 }
 
 // LogEntry is a single partly-parse record of the log.
@@ -90,6 +93,7 @@ func (entries LazyLogEntries) Filter(term string) (LazyLogEntries, error) {
 		if err != nil {
 			return LazyLogEntries{}, err
 		}
+
 		if bytes.Contains(bytes.ToLower(line), termLower) {
 			filtered = append(filtered, f)
 		}
@@ -151,8 +155,6 @@ func formatField(
 		return string(ParseLevel(formatMessage(value), cfg.CustomLevelMapping))
 	case config.FieldKindTime:
 		return formatMessage(value)
-	case config.FieldKindNumericTime:
-		return formatMessage(value)
 	case config.FieldKindSecondTime:
 		return formatMessage(formatTimeString(value, "s"))
 	case config.FieldKindMilliTime:
@@ -166,8 +168,8 @@ func formatField(
 	}
 }
 
-// ParseLogEntry parses a single log entry from the json line.
-func ParseLogEntry(
+// parseLogEntry parses a single log entry from the json line.
+func parseLogEntry(
 	line json.RawMessage,
 	cfg *config.Config,
 ) LogEntry {
