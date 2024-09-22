@@ -6,6 +6,7 @@ import (
 	"testing"
 	"testing/iotest"
 
+	"github.com/hedhyw/semerr/pkg/v1/semerr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -13,7 +14,6 @@ import (
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/tests"
-	"github.com/hedhyw/semerr/pkg/v1/semerr"
 )
 
 func TestParseLogEntries(t *testing.T) {
