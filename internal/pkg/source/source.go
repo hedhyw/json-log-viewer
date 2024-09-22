@@ -127,7 +127,7 @@ func (s *Source) CanFollow() bool {
 
 const ErrFileTruncated semerr.Error = "file truncated"
 
-// ReadLogEntry reads the next ReadLogEntry from the file.
+// readLogEntry reads the next LazyLogEntry from the file.
 func (s *Source) readLogEntry() (LazyLogEntry, error) {
 	for {
 		if s.reader == nil {

@@ -180,6 +180,10 @@ func parseLogEntry(
 		return getPlainLogEntry(line, cfg)
 	}
 
+	if _, ok := parsedLine.(map[string]any); !ok {
+		return getPlainLogEntry(line, cfg)
+	}
+
 	fields := make([]string, 0, len(cfg.Fields))
 
 	for _, f := range cfg.Fields {
