@@ -116,5 +116,5 @@ func (m logsTableModel) handleWindowSizeMsg(msg tea.WindowSizeMsg) logsTableMode
 
 // Cursor returns the index of the selected row.
 func (m logsTableModel) Cursor() int {
-	return m.lazyTable.ViewPortCursor()
+	return m.lazyTable.viewPortCursor()
 }

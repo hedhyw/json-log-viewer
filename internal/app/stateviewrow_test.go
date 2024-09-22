@@ -16,6 +16,7 @@ import (
 func TestStateViewRow(t *testing.T) {
 	setup := func(t *testing.T) tea.Model {
 		t.Parallel()
+
 		model := newTestModel(t, assets.ExampleJSONLog())
 		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyEnter})
 		_, ok := model.(app.StateViewRowModel)

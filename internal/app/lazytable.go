@@ -141,9 +141,9 @@ func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) (lazyTableModel, 
 	return m, render
 }
 
-func (m lazyTableModel) ViewPortCursor() int {
+func (m lazyTableModel) viewPortCursor() int {
 	if m.reverse {
-		viewSize := m.ViewPortEnd() - m.ViewPortStart()
+		viewSize := m.viewPortEnd() - m.viewPortStart()
 
 		return m.offset + (viewSize - 1 - m.table.Cursor())
 	}
@@ -151,14 +151,15 @@ func (m lazyTableModel) ViewPortCursor() int {
 	return m.offset + m.table.Cursor()
 }
 
-func (m lazyTableModel) ViewPortStart() int {
+func (m lazyTableModel) viewPortStart() int {
 	return m.offset
 }
 
-func (m lazyTableModel) ViewPortEnd() int {
+func (m lazyTableModel) viewPortEnd() int {
 	return min(m.offset+m.table.Height(), m.entries.Len())
 }
 
+// RenderedRows returns current visible rendered rows.
 func (m lazyTableModel) RenderedRows() lazyTableModel {
 	if m.follow {
 		m.offset = max(0, m.entries.Len()-m.table.Height())
