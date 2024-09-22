@@ -17,7 +17,7 @@ func TestLazyTableModelManyRows(t *testing.T) {
 		countLines = 2_000
 	)
 
-	var content []byte
+	content := make([]byte, 0, countLines)
 
 	for i := range countLines {
 		content = append(content, prefix+strconv.Itoa(i)...)
@@ -70,7 +70,7 @@ func TestLazyTableModelReverse(t *testing.T) {
 
 		// "END" should be at the first half of the screen.
 		assert.NotContains(t, view, keywordReverse)
-		assert.True(t, strings.Index(view, end) > (len(view)/2), view)
+		assert.Greater(t, strings.Index(view, end), (len(view) / 2), view)
 	})
 
 	t.Run("reverse", func(t *testing.T) {
@@ -84,7 +84,7 @@ func TestLazyTableModelReverse(t *testing.T) {
 		view := model.View()
 
 		// "END" should be at the second half of the screen.
-		assert.True(t, strings.Index(view, end) < (len(view)/2), view)
+		assert.Less(t, strings.Index(view, end), (len(view) / 2), view)
 		assert.Contains(t, view, keywordReverse)
 	})
 
@@ -108,7 +108,7 @@ func TestLazyTableModelReverse(t *testing.T) {
 		view = model.View()
 
 		// "START" should be at the second half of the screen.
-		assert.True(t, strings.Index(view, start) > (len(view)/2), view)
+		assert.Greater(t, strings.Index(view, start), (len(view) / 2), view)
 	})
 
 	t.Run("reverse_go_to_bottom_and_up", func(t *testing.T) {
@@ -154,6 +154,6 @@ func TestLazyTableModelReverse(t *testing.T) {
 		view = model.View()
 
 		// "START" should be at the second half of the screen.
-		assert.True(t, strings.Index(view, start) < (len(view)/2), view)
+		assert.Less(t, strings.Index(view, start), (len(view) / 2), view)
 	})
 }
