@@ -50,7 +50,7 @@ func TestStartStreamingEndOfFile(t *testing.T) {
 	case msg := <-entries:
 		cancel()
 
-		require.Equal(t, msg.Len(), 1)
+		require.Equal(t, 1, msg.Len())
 		assert.Contains(t, msg.Row(cfg, 0), entry)
 	case <-ctx.Done():
 		t.Fatal(ctx.Err())
@@ -80,7 +80,7 @@ func TestStartStreamingUpdates(t *testing.T) {
 
 	entries := make(chan source.LazyLogEntries)
 
-	inputSource.StartStreaming(ctx, func(msg source.LazyLogEntries, err error) {
+	inputSource.StartStreaming(ctx, func(msg source.LazyLogEntries, _ error) {
 		if msg.Len() == 0 {
 			return
 		}
@@ -156,7 +156,7 @@ func TestStartStreamingFromFile(t *testing.T) {
 
 	entries := make(chan source.LazyLogEntries)
 
-	inputSource.StartStreaming(ctx, func(msg source.LazyLogEntries, err error) {
+	inputSource.StartStreaming(ctx, func(msg source.LazyLogEntries, _ error) {
 		if msg.Len() == 0 {
 			return
 		}

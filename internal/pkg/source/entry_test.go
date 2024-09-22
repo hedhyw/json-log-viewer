@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -513,7 +514,7 @@ func TestNumericKindTimeFormatting(t *testing.T) {
 	}, {
 		TestName:       "max_int64",
 		JSON:           fmt.Sprintf(`{"timestamp":"%d"}`, math.MaxInt64),
-		ExpectedOutput: fmt.Sprintf("%d", math.MaxInt64),
+		ExpectedOutput: strconv.Itoa(math.MaxInt64),
 	}, {
 		TestName:       "negative",
 		JSON:           `{"timestamp":"-1"}`,
@@ -531,7 +532,7 @@ func TestNumericKindTimeFormatting(t *testing.T) {
 }
 
 func TestLazyLogEntryLength(t *testing.T) {
-	t.Name()
+	t.Parallel()
 
 	entry := t.Name() + "\n"
 
@@ -540,7 +541,7 @@ func TestLazyLogEntryLength(t *testing.T) {
 }
 
 func TestLazyLogEntryLine(t *testing.T) {
-	t.Name()
+	t.Parallel()
 
 	entry := t.Name() + "\n"
 
@@ -578,7 +579,7 @@ func TestLazyLogEntryLine(t *testing.T) {
 }
 
 func TestLazyLogEntryLogEntry(t *testing.T) {
-	t.Name()
+	t.Parallel()
 
 	entry := t.Name() + "\n"
 	cfg := config.GetDefaultConfig()
