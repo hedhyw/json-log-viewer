@@ -16,7 +16,9 @@ import (
 const (
 	maxLineSize = 8 * 1024 * 1024
 
-	temporaryFilePattern = "jvl-*.log"
+	temporaryFilePattern = "jlv-*.log"
+
+	ErrFileTruncated semerr.Error = "file truncated"
 )
 
 type Source struct {
@@ -34,10 +36,29 @@ type Source struct {
 	name string
 	// maxSize is the maximum size of the file we will read.
 	maxSize int64
+	// temporaryFiles to remove at the end.
+	temporaryFiles []string
 }
 
+// Close implements io.Closer.
+//
+// It closes and removes temporary files.
 func (s *Source) Close() error {
-	return errors.Join(s.file.Close(), s.Seeker.Close())
+	var errMulti []error
+
+	if s.file != nil {
+		errMulti = append(errMulti, s.file.Close())
+	}
+
+	if s.Seeker != nil {
+		errMulti = append(errMulti, s.Seeker.Close())
+	}
+
+	for _, f := range s.temporaryFiles {
+		errMulti = append(errMulti, os.Remove(f))
+	}
+
+	return errors.Join(errMulti...)
 }
 
 // File creates a new Source for reading log entries from a file.
@@ -56,7 +77,7 @@ func File(name string, cfg *config.Config) (*Source, error) {
 
 	source.Seeker, err = os.Open(name)
 	if err != nil {
-		return nil, errors.Join(err, source.file.Close())
+		return nil, errors.Join(err, source.Close())
 	}
 
 	source.reader = bufio.NewReaderSize(
@@ -85,13 +106,15 @@ func Reader(input io.Reader, cfg *config.Config) (*Source, error) {
 		return nil, fmt.Errorf("creating temporary file: %w", err)
 	}
 
+	source.temporaryFiles = append(source.temporaryFiles, source.file.Name())
+
 	// The io.TeeReader will write the input to the is.file as it is read.
 	reader := io.TeeReader(input, source.file)
 
 	// We can now seek against the data that is read in the input io.Reader.
 	source.Seeker, err = os.Open(source.file.Name())
 	if err != nil {
-		return nil, errors.Join(err, source.file.Close())
+		return nil, errors.Join(err, source.Close())
 	}
 
 	reader = io.LimitReader(reader, source.maxSize)
@@ -124,8 +147,6 @@ func (s *Source) ParseLogEntries() (LazyLogEntries, error) {
 func (s *Source) CanFollow() bool {
 	return len(s.name) != 0
 }
-
-const ErrFileTruncated semerr.Error = "file truncated"
 
 // readLogEntry reads the next LazyLogEntry from the file.
 func (s *Source) readLogEntry() (LazyLogEntry, error) {

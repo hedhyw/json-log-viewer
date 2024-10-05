@@ -10,6 +10,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/cursor"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/hedhyw/json-log-viewer/internal/app"
@@ -31,7 +32,7 @@ func newTestModel(tb testing.TB, content []byte) tea.Model {
 	require.NoError(tb, err)
 	model = handleUpdate(model, events.LogEntriesUpdateMsg(entries))
 
-	tb.Cleanup(func() { _ = inputSource.Close() })
+	tb.Cleanup(func() { assert.NoError(tb, inputSource.Close()) })
 
 	return model
 }

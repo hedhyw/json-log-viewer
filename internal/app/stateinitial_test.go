@@ -20,7 +20,8 @@ func TestStateInitial(t *testing.T) {
 
 	inputSource, err := source.Reader(bytes.NewReader([]byte{}), config.GetDefaultConfig())
 	require.NoError(t, err)
-	t.Cleanup(func() { _ = inputSource.Close() })
+
+	t.Cleanup(func() { assert.NoError(t, inputSource.Close()) })
 
 	model := app.NewModel(
 		"-",

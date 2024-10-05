@@ -249,22 +249,24 @@ func TestLazyLogEntriesFilter(t *testing.T) {
 {"hello":"world"}
 `, term)
 
-	createEntries := func() (*source.Source, source.LazyLogEntries, source.LazyLogEntry) {
+	createEntries := func(tb testing.TB) (source.LazyLogEntries, source.LazyLogEntry) {
 		source, err := source.Reader(bytes.NewReader([]byte(logs)), config.GetDefaultConfig())
 		require.NoError(t, err)
+
+		tb.Cleanup(func() { assert.NoError(tb, source.Close()) })
 
 		logEntries, err := source.ParseLogEntries()
 		require.NoError(t, err)
 
 		logEntry := logEntries.Entries[1]
 
-		return source, logEntries, logEntry
+		return logEntries, logEntry
 	}
 
 	t.Run("all", func(t *testing.T) {
 		t.Parallel()
-		source, logEntries, _ := createEntries()
-		defer source.Close()
+
+		logEntries, _ := createEntries(t)
 
 		assert.Len(t, logEntries.Entries, logEntries.Len())
 	})
@@ -272,8 +274,7 @@ func TestLazyLogEntriesFilter(t *testing.T) {
 	t.Run("found_exact", func(t *testing.T) {
 		t.Parallel()
 
-		source, logEntries, logEntry := createEntries()
-		defer source.Close()
+		logEntries, logEntry := createEntries(t)
 
 		filtered, err := logEntries.Filter(term)
 		require.NoError(t, err)
@@ -286,8 +287,7 @@ func TestLazyLogEntriesFilter(t *testing.T) {
 	t.Run("found_ignore_case", func(t *testing.T) {
 		t.Parallel()
 
-		source, logEntries, logEntry := createEntries()
-		defer source.Close()
+		logEntries, logEntry := createEntries(t)
 
 		filtered, err := logEntries.Filter(strings.ToUpper(term))
 		require.NoError(t, err)
@@ -300,8 +300,7 @@ func TestLazyLogEntriesFilter(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		t.Parallel()
 
-		source, logEntries, _ := createEntries()
-		defer source.Close()
+		logEntries, _ := createEntries(t)
 
 		filtered, err := logEntries.Filter("")
 		require.NoError(t, err)
@@ -311,8 +310,7 @@ func TestLazyLogEntriesFilter(t *testing.T) {
 	t.Run("not_found", func(t *testing.T) {
 		t.Parallel()
 
-		source, logEntries, _ := createEntries()
-		defer source.Close()
+		logEntries, _ := createEntries(t)
 
 		filtered, err := logEntries.Filter(term + " - not found!")
 		require.NoError(t, err)
@@ -323,8 +321,7 @@ func TestLazyLogEntriesFilter(t *testing.T) {
 	t.Run("seeker_failed", func(t *testing.T) {
 		t.Parallel()
 
-		source, logEntries, _ := createEntries()
-		defer source.Close()
+		logEntries, _ := createEntries(t)
 
 		fileName := tests.RequireCreateFile(t, []byte(""))
 
@@ -622,6 +619,8 @@ func parseLazyLogEntry(tb testing.TB, value string, cfg *config.Config) source.L
 	source, err := source.Reader(strings.NewReader(value), cfg)
 	require.NoError(tb, err)
 
+	tb.Cleanup(func() { assert.NoError(tb, source.Close()) })
+
 	logEntries, err := source.ParseLogEntries()
 	require.NoError(tb, err)
 	require.Equal(tb, 1, logEntries.Len())
@@ -634,6 +633,8 @@ func parseTableRow(tb testing.TB, value string, cfg *config.Config) table.Row {
 
 	source, err := source.Reader(strings.NewReader(value+"\n"), cfg)
 	require.NoError(tb, err)
+
+	tb.Cleanup(func() { assert.NoError(tb, source.Close()) })
 
 	logEntries, err := source.ParseLogEntries()
 	require.NoError(tb, err)

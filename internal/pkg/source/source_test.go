@@ -2,6 +2,7 @@ package source_test
 
 import (
 	"bytes"
+	"os"
 	"strings"
 	"testing"
 	"testing/iotest"
@@ -80,6 +81,7 @@ func TestParseLogEntriesFromReaderLimited(t *testing.T) {
 
 	inputSource, err := source.Reader(reader, cfg)
 	require.NoError(t, err)
+
 	defer func() { assert.NoError(t, inputSource.Close()) }()
 
 	logEntries, err := inputSource.ParseLogEntries()
@@ -124,6 +126,12 @@ func TestFile(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.True(t, source.CanFollow())
+
+		err = source.Close()
+		require.NoError(t, err)
+
+		_, err = os.Stat(fileName)
+		require.NoError(t, err, "The file should exist after closing")
 	})
 
 	t.Run("not_found", func(t *testing.T) {
@@ -132,4 +140,19 @@ func TestFile(t *testing.T) {
 		_, err := source.File(fileName+"-not-found", cfg)
 		require.Error(t, err)
 	})
+}
+
+func TestReaderTemporaryFilesDeleted(t *testing.T) {
+	t.Parallel()
+
+	source, err := source.Reader(
+		bytes.NewReader([]byte(t.Name())),
+		config.GetDefaultConfig(),
+	)
+	require.NoError(t, err)
+	require.NoError(t, source.Close())
+
+	_, err = os.Stat(source.Seeker.Name())
+	require.Error(t, err)
+	assert.True(t, os.IsNotExist(err), err)
 }
