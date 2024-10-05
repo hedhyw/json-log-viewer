@@ -199,11 +199,11 @@ func BenchmarkStateLoadedBig(b *testing.B) {
 
 	b.ResetTimer()
 
-	is, err := source.Reader(contentReader, cfg)
+	inputSource, err := source.Reader(contentReader, cfg)
 	require.NoError(b, err)
-	b.Cleanup(func() { _ = is.Close() })
+	b.Cleanup(func() { _ = inputSource.Close() })
 
-	logEntries, err := is.ParseLogEntries()
+	logEntries, err := inputSource.ParseLogEntries()
 	if err != nil {
 		b.Fatal(model.View())
 	}

@@ -99,6 +99,61 @@ func TestStateFiltering(t *testing.T) {
 		_, ok := model.(app.StateFilteringModel)
 		assert.Truef(t, ok, "%s", model)
 	})
+
+	t.Run("runes", func(t *testing.T) {
+		model := setup()
+
+		const content = "hello world"
+
+		for _, r := range content {
+			model = handleUpdate(model, tea.KeyMsg{
+				Type:  tea.KeyRunes,
+				Runes: []rune{r},
+			})
+		}
+
+		assert.Contains(t, model.View(), content)
+	})
+
+	t.Run("arrow_right", func(t *testing.T) {
+		model := setup()
+
+		model = handleUpdate(model, events.ArrowRightKeyClicked())
+
+		const content = "hello word"
+
+		// 1. Input "hello word".
+		// 2. Press "Left" 2 times: "hello wo|rd"
+		// 3. Press "Right" 1 time: "hello wor|d".
+		// 4. Input "r".
+		// 5. Expect to see "hello world".
+		for _, r := range content {
+			model = handleUpdate(model, tea.KeyMsg{
+				Type:  tea.KeyRunes,
+				Runes: []rune{r},
+			})
+		}
+
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyLeft})
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyLeft})
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyRight})
+
+		model = handleUpdate(model, tea.KeyMsg{
+			Type:  tea.KeyRunes,
+			Runes: []rune{'l'},
+		})
+
+		assert.Contains(t, model.View(), "hello world")
+	})
+
+	t.Run("unknown_message", func(t *testing.T) {
+		model := setup()
+
+		model = handleUpdate(model, nil)
+
+		_, ok := model.(app.StateFilteringModel)
+		assert.Truef(t, ok, "%s", model)
+	})
 }
 
 func TestStateFilteringReset(t *testing.T) {

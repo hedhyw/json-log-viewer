@@ -71,16 +71,18 @@ func TestParseLogEntries(t *testing.T) {
 func TestParseLogEntriesFromReaderLimited(t *testing.T) {
 	t.Parallel()
 
-	content := `{}`
+	const content = `{}`
 
 	cfg := config.GetDefaultConfig()
 	cfg.MaxFileSizeBytes = 1
 
 	reader := strings.NewReader(content)
-	is, err := source.Reader(reader, cfg)
+
+	inputSource, err := source.Reader(reader, cfg)
 	require.NoError(t, err)
-	defer is.Close()
-	logEntries, err := is.ParseLogEntries()
+	defer func() { assert.NoError(t, inputSource.Close()) }()
+
+	logEntries, err := inputSource.ParseLogEntries()
 	require.NoError(t, err)
 
 	require.Empty(t, logEntries.Entries)
