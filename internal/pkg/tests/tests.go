@@ -7,9 +7,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hedhyw/semerr/pkg/v1/semerr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// ErrTest is a fake constant error to use in tests.
+const ErrTest semerr.Error = "test error"
 
 // RequireCreateFile is a helper that create a temporary file and deletes
 // it at the end of the test.

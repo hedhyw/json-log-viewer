@@ -104,7 +104,7 @@ func (s StateFilteredModel) handleFilterKeyClickedMsg() (tea.Model, tea.Cmd) {
 
 func (s StateFilteredModel) handleRequestOpenJSON() (tea.Model, tea.Cmd) {
 	if s.logEntries.Len() == 0 {
-		return s, events.BackKeyClicked
+		return s, events.EscKeyClicked
 	}
 
 	return s, events.OpenJSONRowRequested(s.logEntries, s.table.Cursor())

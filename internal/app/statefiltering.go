@@ -85,7 +85,7 @@ func (s StateFilteringModel) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 
 func (s StateFilteringModel) handleEnterKeyClickedMsg() (tea.Model, tea.Cmd) {
 	if s.textInput.Value() == "" {
-		return s, events.BackKeyClicked
+		return s, events.EscKeyClicked
 	}
 
 	return initializeModel(newStateFiltered(
