@@ -152,9 +152,9 @@ func (s StateLoadedModel) getApplication() *Application {
 	return s.Application
 }
 
-func (s StateLoadedModel) refresh() (stateModel, tea.Cmd) {
-	var cmd tea.Cmd
+func (s StateLoadedModel) refresh() (_ stateModel, cmd tea.Cmd) {
 	s.table, cmd = s.table.Update(s.Application.LastWindowSize)
+
 	return s, cmd
 }
 

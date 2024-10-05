@@ -47,7 +47,7 @@ func TestStateFiltered(t *testing.T) {
 		// Write term to search by.
 		model = handleUpdate(model, tea.KeyMsg{
 			Type:  tea.KeyRunes,
-			Runes: []rune(termIncluded),
+			Runes: []rune(termIncluded[1:]),
 		})
 
 		// Filter.
@@ -59,14 +59,16 @@ func TestStateFiltered(t *testing.T) {
 		if assert.Truef(t, ok, "%s", model) {
 			rendered = model.View()
 			assert.Contains(t, rendered, termIncluded)
-			assert.Contains(t, rendered, "filtered 1 by: "+termIncluded)
+			assert.Contains(t, rendered, "filtered 1 by: "+termIncluded[1:])
 			assert.NotContains(t, rendered, termExcluded)
 		}
+
 		return model
 	}
 
 	t.Run("reopen_filter", func(t *testing.T) {
 		t.Parallel()
+
 		model := setup()
 		model = handleUpdate(model, tea.KeyMsg{
 			Type:  tea.KeyRunes,
@@ -79,6 +81,7 @@ func TestStateFiltered(t *testing.T) {
 
 	t.Run("open_hide_json_view", func(t *testing.T) {
 		t.Parallel()
+
 		model := setup()
 		model = handleUpdate(model, tea.KeyMsg{
 			Type: tea.KeyEnter,
@@ -97,6 +100,7 @@ func TestStateFiltered(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		t.Parallel()
+
 		model := setup()
 		model = handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
 
@@ -106,6 +110,7 @@ func TestStateFiltered(t *testing.T) {
 
 	t.Run("navigation", func(t *testing.T) {
 		t.Parallel()
+
 		model := setup()
 		model = handleUpdate(model, tea.KeyMsg{
 			Type: tea.KeyUp,
@@ -117,6 +122,7 @@ func TestStateFiltered(t *testing.T) {
 
 	t.Run("returned", func(t *testing.T) {
 		t.Parallel()
+
 		model := setup()
 		model = handleUpdate(model, tea.KeyMsg{
 			Type: tea.KeyEsc,
@@ -128,10 +134,21 @@ func TestStateFiltered(t *testing.T) {
 
 	t.Run("stringer", func(t *testing.T) {
 		t.Parallel()
+
 		model := setup()
 		stringer, ok := model.(fmt.Stringer)
 		if assert.True(t, ok) {
 			assert.Contains(t, stringer.String(), "StateFiltered")
 		}
+	})
+
+	t.Run("updated", func(t *testing.T) {
+		t.Parallel()
+
+		model := setup()
+		model = handleUpdate(model, &events.LogEntriesUpdateMsg{})
+
+		rendered := model.View()
+		assert.Contains(t, rendered, termIncluded)
 	})
 }
