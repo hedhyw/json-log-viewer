@@ -71,6 +71,67 @@ func TestStateLoaded(t *testing.T) {
 		view := model.View()
 		assert.Contains(t, view, testVersion)
 	})
+
+	t.Run("hide_help", func(t *testing.T) {
+		t.Parallel()
+		model := setup()
+
+		model = handleUpdate(model, events.HelpKeyClicked())
+		model = handleUpdate(model, events.HelpKeyClicked())
+
+		view := model.View()
+		assert.NotContains(t, view, testVersion)
+	})
+
+	t.Run("label_following_default", func(t *testing.T) {
+		t.Parallel()
+
+		model := setup()
+
+		view := model.View()
+		assert.Contains(t, view, "following")
+	})
+
+	t.Run("label_not_following", func(t *testing.T) {
+		t.Parallel()
+
+		model := setup()
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyDown})
+
+		view := model.View()
+		assert.NotContains(t, view, "following")
+	})
+
+	t.Run("label_reverse_default", func(t *testing.T) {
+		t.Parallel()
+
+		model := setup()
+
+		view := model.View()
+		assert.Contains(t, view, "reverse")
+	})
+
+	t.Run("label_not_reverse", func(t *testing.T) {
+		t.Parallel()
+
+		model := setup()
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'r'}})
+
+		view := model.View()
+		assert.NotContains(t, view, "reverse")
+	})
+
+	t.Run("label_not_reverse_not_following", func(t *testing.T) {
+		t.Parallel()
+
+		model := setup()
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'r'}})
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyDown})
+
+		view := model.View()
+		assert.NotContains(t, view, "reverse")
+		assert.NotContains(t, view, "following")
+	})
 }
 
 func TestStateLoadedQuit(t *testing.T) {
