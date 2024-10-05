@@ -15,17 +15,18 @@ import (
 
 func TestStateViewRow(t *testing.T) {
 	setup := func(t *testing.T) tea.Model {
-		t.Parallel()
-
 		model := newTestModel(t, assets.ExampleJSONLog())
 		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyEnter})
 		_, ok := model.(app.StateViewRowModel)
 
 		require.Truef(t, ok, "%s", model)
+
 		return model
 	}
 
 	t.Run("close", func(t *testing.T) {
+		t.Parallel()
+
 		model := setup(t)
 
 		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyEsc})
@@ -34,6 +35,8 @@ func TestStateViewRow(t *testing.T) {
 	})
 
 	t.Run("stringer", func(t *testing.T) {
+		t.Parallel()
+
 		model := setup(t)
 
 		stringer, ok := model.(fmt.Stringer)
@@ -43,6 +46,8 @@ func TestStateViewRow(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
+		t.Parallel()
+
 		model := setup(t)
 		model = handleUpdate(model, events.ErrorOccuredMsg{Err: getTestError()})
 
@@ -50,8 +55,9 @@ func TestStateViewRow(t *testing.T) {
 		assert.Truef(t, ok, "%s", model)
 	})
 
-	// nolint: tparallel // antonmedv/fx uses mutable model.
 	t.Run("navigation", func(t *testing.T) {
+		t.Parallel()
+
 		model := setup(t)
 		model = handleUpdate(model, tea.KeyMsg{
 			Type: tea.KeyRight,
@@ -59,5 +65,28 @@ func TestStateViewRow(t *testing.T) {
 
 		_, ok := model.(app.StateViewRowModel)
 		assert.Truef(t, ok, "%s", model)
+	})
+
+	t.Run("preview", func(t *testing.T) {
+		t.Parallel()
+
+		model := setup(t)
+		model = handleUpdate(model, tea.KeyMsg{
+			Type: tea.KeyDown,
+		})
+
+		// Open the preview mode.
+		model = handleUpdate(model, tea.KeyMsg{
+			Type:  tea.KeyRunes,
+			Runes: []rune{'p'},
+		})
+		assert.NotContains(t, model.View(), "message")
+
+		// Hide the preview mode.
+		model = handleUpdate(model, tea.KeyMsg{
+			Type:  tea.KeyEsc,
+			Runes: []rune{'p'},
+		})
+		assert.Contains(t, model.View(), "message")
 	})
 }

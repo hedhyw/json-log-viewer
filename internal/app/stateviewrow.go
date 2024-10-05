@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
@@ -57,16 +56,24 @@ func (s StateViewRowModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	s.Application.Update(msg)
 
-	switch msg := msg.(type) {
-	case events.ErrorOccuredMsg:
+	if msg, ok := msg.(events.ErrorOccuredMsg); ok {
 		return s.handleErrorOccuredMsg(msg)
-	case tea.KeyMsg:
-		if key.Matches(msg, s.keys.Back) {
-			return s.previousState.refresh()
-		}
 	}
 
 	s.jsonView, cmd = s.jsonView.Update(msg)
+
+	// Intercept the quit message, but keep the command.
+	if cmd != nil {
+		msg = cmd()
+
+		cmd = func() tea.Msg {
+			return msg
+		}
+
+		if msg == tea.Quit() {
+			return s.previousState.refresh()
+		}
+	}
 
 	return s, cmd
 }
