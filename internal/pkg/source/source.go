@@ -44,7 +44,7 @@ type Source struct {
 //
 // It closes and removes temporary files.
 func (s *Source) Close() error {
-	var errMulti []error
+	errMulti := make([]error, 0, 2+len(s.temporaryFiles))
 
 	if s.file != nil {
 		errMulti = append(errMulti, s.file.Close())
