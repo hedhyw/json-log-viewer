@@ -56,15 +56,8 @@ func (s StateFilteringModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case events.ErrorOccuredMsg:
 		return s.handleErrorOccuredMsg(msg)
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, s.keys.Back):
-			return s.previousState.refresh()
-		case key.Matches(msg, s.keys.Open):
-			return s.handleEnterKeyClickedMsg()
-		}
-		if cmd := s.handleKeyMsg(msg); cmd != nil {
-			// Intercept table update.
-			return s, cmd
+		if mdl, cmd := s.handleKeyMsg(msg); mdl != nil {
+			return mdl, cmd
 		}
 	default:
 		s.table, cmdBatch = batched(s.table.Update(msg))(cmdBatch)
@@ -75,17 +68,20 @@ func (s StateFilteringModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return s, tea.Batch(cmdBatch...)
 }
 
-func (s StateFilteringModel) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
-	if len(msg.Runes) == 1 {
-		return nil
+func (s StateFilteringModel) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch {
+	case key.Matches(msg, s.keys.Back):
+		return s.previousState.refresh()
+	case key.Matches(msg, s.keys.Open):
+		return s.handleEnterKeyClickedMsg()
+	default:
+		return nil, nil
 	}
-
-	return s.Application.handleKeyMsg(msg)
 }
 
 func (s StateFilteringModel) handleEnterKeyClickedMsg() (tea.Model, tea.Cmd) {
 	if s.textInput.Value() == "" {
-		return s, events.BackKeyClicked
+		return s, events.EscKeyClicked
 	}
 
 	return initializeModel(newStateFiltered(

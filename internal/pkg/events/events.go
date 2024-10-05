@@ -35,12 +35,14 @@ func OpenJSONRowRequested(logEntries source.LazyLogEntries, index int) func() te
 	}
 }
 
+// ShowError is an event about occurred error.
 func ShowError(err error) func() tea.Msg {
 	return func() tea.Msg {
 		return ErrorOccuredMsg{Err: err}
 	}
 }
 
+// HelpKeyClicked is a trigger to display detailed help.
 func HelpKeyClicked() tea.Msg {
 	return tea.KeyMsg{
 		Type:  tea.KeyRunes,
@@ -48,6 +50,7 @@ func HelpKeyClicked() tea.Msg {
 	}
 }
 
+// EscKeyClicked is an "Esc" key event.
 func EscKeyClicked() tea.Msg {
 	return tea.KeyMsg{Type: tea.KeyEsc}
 }
@@ -68,9 +71,4 @@ func FilterKeyClicked() tea.Msg {
 		Type:  tea.KeyRunes,
 		Runes: []rune{'f'},
 	}
-}
-
-// BackKeyClicked implements tea.Cmd. It creates a message indicating 'Esc' has been clicked.
-func BackKeyClicked() tea.Msg {
-	return tea.KeyMsg{Type: tea.KeyEscape}
 }

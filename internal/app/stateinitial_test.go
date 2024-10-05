@@ -18,9 +18,9 @@ import (
 func TestStateInitial(t *testing.T) {
 	t.Parallel()
 
-	is, err := source.Reader(bytes.NewReader([]byte{}), config.GetDefaultConfig())
+	inputSource, err := source.Reader(bytes.NewReader([]byte{}), config.GetDefaultConfig())
 	require.NoError(t, err)
-	t.Cleanup(func() { _ = is.Close() })
+	t.Cleanup(func() { _ = inputSource.Close() })
 
 	model := app.NewModel(
 		"-",
@@ -28,12 +28,30 @@ func TestStateInitial(t *testing.T) {
 		testVersion,
 	)
 
-	entries, err := is.ParseLogEntries()
+	entries, err := inputSource.ParseLogEntries()
 	require.NoError(t, err)
 	handleUpdate(model, events.LogEntriesUpdateMsg(entries))
 
 	_, ok := model.(app.StateInitialModel)
 	require.Truef(t, ok, "%s", model)
+
+	t.Run("Init", func(t *testing.T) {
+		t.Parallel()
+
+		model, ok := model.(app.StateInitialModel)
+		require.Truef(t, ok, "%s", model)
+
+		assert.Nil(t, model.Init())
+	})
+
+	t.Run("Unknown_Event", func(t *testing.T) {
+		t.Parallel()
+
+		model := handleUpdate(model, nil)
+
+		model, ok := model.(app.StateInitialModel)
+		require.Truef(t, ok, "%s", model)
+	})
 
 	t.Run("stringer", func(t *testing.T) {
 		t.Parallel()

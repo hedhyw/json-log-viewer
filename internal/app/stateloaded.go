@@ -46,26 +46,30 @@ func (s StateLoadedModel) viewTable() string {
 	return s.BaseStyle.Render(s.table.View())
 }
 
-func (s StateLoadedModel) viewHelp() string {
-	toggles := func() string {
-		toggles := []string{}
-		if s.table.lazyTable.reverse {
-			toggles = append(toggles, "reverse")
-		}
-		if s.table.lazyTable.follow {
-			toggles = append(toggles, "following")
-		}
-		if len(toggles) > 0 {
-			return fmt.Sprintf("( %s )", strings.Join(toggles, ", "))
-		}
-		return ""
+func (s StateLoadedModel) toggles() string {
+	toggles := make([]string, 0, 2)
+
+	if s.table.lazyTable.reverse {
+		toggles = append(toggles, "reverse")
 	}
 
+	if s.table.lazyTable.follow {
+		toggles = append(toggles, "following")
+	}
+
+	if len(toggles) > 0 {
+		return fmt.Sprintf("( %s )", strings.Join(toggles, ", "))
+	}
+
+	return ""
+}
+
+func (s StateLoadedModel) viewHelp() string {
 	if s.help.ShowAll {
 		toggleText := lipgloss.NewStyle().
 			Background(lipgloss.Color("#353533")).
 			Padding(0, 1).
-			Render(toggles())
+			Render(s.toggles())
 
 		versionText := lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#FFFDF5")).
@@ -87,7 +91,7 @@ func (s StateLoadedModel) viewHelp() string {
 
 		return "\n" + s.help.View(s.keys) + "\n" + lipgloss.NewStyle().Width(width).Render(bar)
 	}
-	return "\n" + s.help.View(s.keys) + " " + toggles()
+	return "\n" + s.help.View(s.keys) + " " + s.toggles()
 }
 
 // Update handles events. It implements tea.Model.
@@ -148,9 +152,9 @@ func (s StateLoadedModel) getApplication() *Application {
 	return s.Application
 }
 
-func (s StateLoadedModel) refresh() (stateModel, tea.Cmd) {
-	var cmd tea.Cmd
+func (s StateLoadedModel) refresh() (_ stateModel, cmd tea.Cmd) {
 	s.table, cmd = s.table.Update(s.Application.LastWindowSize)
+
 	return s, cmd
 }
 

@@ -71,6 +71,67 @@ func TestStateLoaded(t *testing.T) {
 		view := model.View()
 		assert.Contains(t, view, testVersion)
 	})
+
+	t.Run("hide_help", func(t *testing.T) {
+		t.Parallel()
+		model := setup()
+
+		model = handleUpdate(model, events.HelpKeyClicked())
+		model = handleUpdate(model, events.HelpKeyClicked())
+
+		view := model.View()
+		assert.NotContains(t, view, testVersion)
+	})
+
+	t.Run("label_following_default", func(t *testing.T) {
+		t.Parallel()
+
+		model := setup()
+
+		view := model.View()
+		assert.Contains(t, view, "following")
+	})
+
+	t.Run("label_not_following", func(t *testing.T) {
+		t.Parallel()
+
+		model := setup()
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyDown})
+
+		view := model.View()
+		assert.NotContains(t, view, "following")
+	})
+
+	t.Run("label_reverse_default", func(t *testing.T) {
+		t.Parallel()
+
+		model := setup()
+
+		view := model.View()
+		assert.Contains(t, view, "reverse")
+	})
+
+	t.Run("label_not_reverse", func(t *testing.T) {
+		t.Parallel()
+
+		model := setup()
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'r'}})
+
+		view := model.View()
+		assert.NotContains(t, view, "reverse")
+	})
+
+	t.Run("label_not_reverse_not_following", func(t *testing.T) {
+		t.Parallel()
+
+		model := setup()
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'r'}})
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyDown})
+
+		view := model.View()
+		assert.NotContains(t, view, "reverse")
+		assert.NotContains(t, view, "following")
+	})
 }
 
 func TestStateLoadedQuit(t *testing.T) {
@@ -138,11 +199,11 @@ func BenchmarkStateLoadedBig(b *testing.B) {
 
 	b.ResetTimer()
 
-	is, err := source.Reader(contentReader, cfg)
+	inputSource, err := source.Reader(contentReader, cfg)
 	require.NoError(b, err)
-	b.Cleanup(func() { _ = is.Close() })
+	b.Cleanup(func() { _ = inputSource.Close() })
 
-	logEntries, err := is.ParseLogEntries()
+	logEntries, err := inputSource.ParseLogEntries()
 	if err != nil {
 		b.Fatal(model.View())
 	}

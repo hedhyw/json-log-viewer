@@ -56,45 +56,66 @@ func (s StateFilteredModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	s.Application.Update(msg)
 
-	switch typedMsg := msg.(type) {
-	case *StateFilteredModel:
-		entries, err := s.Application.Entries.Filter(s.filterText)
-		if err != nil {
-			return s, events.ShowError(err)
-		}
-		s.logEntries = entries
-		s.table = newLogsTableModel(s.Application, entries)
-		msg = events.LogEntriesUpdateMsg(entries)
-	case events.LogEntriesUpdateMsg:
-		entries, err := s.Application.Entries.Filter(s.filterText)
-		if err != nil {
-			return s, events.ShowError(err)
-		}
-		s.logEntries = entries
-		msg = events.LogEntriesUpdateMsg(entries)
+	if _, ok := msg.(*StateFilteredModel); ok {
+		s, msg = s.handleStateFilteredModel()
+	}
 
+	if _, ok := msg.(*events.LogEntriesUpdateMsg); ok {
+		s, msg = s.handleLogEntriesUpdateMsg()
+	}
+
+	switch typedMsg := msg.(type) {
 	case events.ErrorOccuredMsg:
 		return s.handleErrorOccuredMsg(typedMsg)
 	case events.OpenJSONRowRequestedMsg:
 		return s.handleOpenJSONRowRequestedMsg(typedMsg, s)
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(typedMsg, s.keys.Back):
-			return s.previousState.refresh()
-		case key.Matches(typedMsg, s.keys.Filter):
-			return s.handleFilterKeyClickedMsg()
-		case key.Matches(typedMsg, s.keys.ToggleViewArrow), key.Matches(typedMsg, s.keys.Open):
-			return s.handleRequestOpenJSON()
-		}
-		if cmd := s.handleKeyMsg(typedMsg); cmd != nil {
-			return s, cmd
+		if mdl, cmd := s.handleKeyMsg(typedMsg); mdl != nil {
+			return mdl, cmd
 		}
 	default:
 		s.table, cmdBatch = batched(s.table.Update(typedMsg))(cmdBatch)
 	}
 
 	s.table, cmdBatch = batched(s.table.Update(msg))(cmdBatch)
+
 	return s, tea.Batch(cmdBatch...)
+}
+
+func (s StateFilteredModel) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch {
+	case key.Matches(msg, s.keys.Back):
+		return s.previousState.refresh()
+	case key.Matches(msg, s.keys.Filter):
+		return s.handleFilterKeyClickedMsg()
+	case key.Matches(msg, s.keys.ToggleViewArrow), key.Matches(msg, s.keys.Open):
+		return s.handleRequestOpenJSON()
+	default:
+		return nil, nil
+	}
+}
+
+func (s StateFilteredModel) handleLogEntriesUpdateMsg() (StateFilteredModel, tea.Msg) {
+	entries, err := s.Application.Entries.Filter(s.filterText)
+	if err != nil {
+		return s, events.ShowError(err)()
+	}
+
+	s.logEntries = entries
+
+	return s, events.LogEntriesUpdateMsg(entries)
+}
+
+func (s StateFilteredModel) handleStateFilteredModel() (StateFilteredModel, tea.Msg) {
+	entries, err := s.Application.Entries.Filter(s.filterText)
+	if err != nil {
+		return s, events.ShowError(err)()
+	}
+
+	s.logEntries = entries
+	s.table = newLogsTableModel(s.Application, entries)
+
+	return s, events.LogEntriesUpdateMsg(entries)
 }
 
 func (s StateFilteredModel) handleFilterKeyClickedMsg() (tea.Model, tea.Cmd) {
@@ -104,7 +125,7 @@ func (s StateFilteredModel) handleFilterKeyClickedMsg() (tea.Model, tea.Cmd) {
 
 func (s StateFilteredModel) handleRequestOpenJSON() (tea.Model, tea.Cmd) {
 	if s.logEntries.Len() == 0 {
-		return s, events.BackKeyClicked
+		return s, events.EscKeyClicked
 	}
 
 	return s, events.OpenJSONRowRequested(s.logEntries, s.table.Cursor())
@@ -114,9 +135,9 @@ func (s StateFilteredModel) getApplication() *Application {
 	return s.Application
 }
 
-func (s StateFilteredModel) refresh() (stateModel, tea.Cmd) {
-	var cmd tea.Cmd
+func (s StateFilteredModel) refresh() (_ stateModel, cmd tea.Cmd) {
 	s.table, cmd = s.table.Update(s.Application.LastWindowSize)
+
 	return s, cmd
 }
 

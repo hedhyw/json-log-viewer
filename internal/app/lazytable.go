@@ -77,9 +77,10 @@ func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) (lazyTableModel, 
 	// this function increases the viewport offset by 1 if possible.  (scrolls down)
 	increaseOffset := func() {
 		maxOffset := max(m.entries.Len()-m.table.Height(), 0)
-		o := min(m.offset+1, maxOffset)
-		if o != m.offset {
-			m.offset = o
+
+		offset := min(m.offset+1, maxOffset)
+		if offset != m.offset {
+			m.offset = offset
 			render = true
 		} else {
 			// we were at the last item, so we should follow the log
@@ -111,12 +112,14 @@ func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) (lazyTableModel, 
 			increaseOffset() // move the viewport
 		}
 	}
+
 	if key.Matches(msg, m.Application.keys.Up) {
 		m.follow = false
 		if m.table.Cursor() == 0 {
 			decreaseOffset() // move the viewport
 		}
 	}
+
 	if key.Matches(msg, m.Application.keys.GotoTop) {
 		if m.reverse {
 			// when follow is enabled, rendering will handle setting the offset to the correct value
@@ -127,6 +130,7 @@ func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) (lazyTableModel, 
 		}
 		render = true
 	}
+
 	if key.Matches(msg, m.Application.keys.GotoBottom) {
 		if m.reverse {
 			m.follow = false
