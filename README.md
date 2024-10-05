@@ -26,24 +26,26 @@ The application is designed to help in visualization, navigation, and analyzing 
 ## Table of content
 
 - [JSON Log Viewer](#json-log-viewer)
-    - [Table of content](#table-of-content)
-    - [Usage](#usage)
-    - [Install](#install)
-        - [MacOS/Linux HomeBrew](#macoslinux-homebrew)
-        - [Go](#go)
-        - [Package](#package)
-        - [Standalone Binary](#standalone-binary)
-        - [Source](#source)
-    - [Customization](#customization)
-        - [Time Formats](#time-formats)
-            - [`time`](#time)
-            - [`numerictime`](#numerictime)
-            - [`secondtime`](#secondtime)
-            - [`millitime`](#millitime)
-            - [`microtime`](#microtime)
-    - [Resources](#resources)
-    - [Contribution](#contribution)
-    - [License](#license)
+  - [Table of content](#table-of-content)
+  - [Usage](#usage)
+    - [Reading from file](#reading-from-file)
+    - [Reading from Stdin](#reading-from-stdin)
+    - [Hotkeys](#hotkeys)
+  - [Install](#install)
+    - [MacOS/Linux HomeBrew](#macoslinux-homebrew)
+    - [Package](#package)
+    - [Standalone Binary](#standalone-binary)
+    - [Source](#source)
+  - [Customization](#customization)
+    - [Time Formats](#time-formats)
+      - [`time`](#time)
+      - [`numerictime`](#numerictime)
+      - [`secondtime`](#secondtime)
+      - [`millitime`](#millitime)
+      - [`microtime`](#microtime)
+  - [Resources](#resources)
+  - [Contribution](#contribution)
+  - [License](#license)
 
 ## Usage
 
@@ -95,13 +97,6 @@ docker logs -f 000000000000 2>&1 | jlv
 
 ```sh
 brew install hedhyw/main/jlv
-# jlv application.log
-```
-
-### Go
-
-```sh
-go install github.com/hedhyw/json-log-viewer/cmd/jlv@latest
 # jlv application.log
 ```
 
