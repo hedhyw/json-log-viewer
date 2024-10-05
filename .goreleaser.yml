@@ -1,22 +1,24 @@
-build:
-  binary: jlv
-  main: ./cmd/jlv
-  goos:
-    - windows
-    - darwin
-    - linux
-  goarch:
-    - "386"
-    - amd64
-    - arm
-    - arm64
-  goarm:
-    - "6"
-  ignore:
-    - goos: darwin
-      goarch: "386"
-  env:
-    - CGO_ENABLED=0
+version: 2
+
+builds:
+  - binary: jlv
+    main: ./cmd/jlv
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - "386"
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - "6"
+    ignore:
+      - goos: darwin
+        goarch: "386"
+    env:
+      - CGO_ENABLED=0
 
 gomod:
   proxy: false
@@ -55,7 +57,7 @@ brews:
     description: JSON Log Viewer tool.
     license: MIT
     homepage: https://github.com/hedhyw/homebrews
-    tap:
+    repository:
       owner: hedhyw
       name: homebrew-main
     test: system "#{bin}/jlv", "-help"
