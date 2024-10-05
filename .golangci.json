@@ -27,7 +27,8 @@
       "execinquery",
       "tagalign",
       "mnd",
-      "nlreturn"
+      "nlreturn",
+      "exportloopref"
     ]
   },
   "linters-settings": {
