@@ -11,7 +11,7 @@ require (
 	github.com/charmbracelet/bubbles v0.18.0
 	github.com/charmbracelet/bubbletea v1.1.1
 	github.com/charmbracelet/lipgloss v0.13.0
-	github.com/go-playground/validator/v10 v10.22.0
+	github.com/go-playground/validator/v10 v10.22.1
 	github.com/hedhyw/jsoncjson v1.1.0
 	github.com/hedhyw/semerr v0.6.7
 	github.com/muesli/reflow v0.3.0
