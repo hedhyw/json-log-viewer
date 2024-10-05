@@ -23,11 +23,13 @@ func TestStateError(t *testing.T) {
 
 		_, ok := model.(app.StateErrorModel)
 		assert.Truef(t, ok, "%s", model)
+
 		return model
 	}
 
 	t.Run("rendered", func(t *testing.T) {
 		t.Parallel()
+
 		model := setup()
 		rendered := model.View()
 		assert.Contains(t, rendered, errTest.Error())
@@ -35,14 +37,27 @@ func TestStateError(t *testing.T) {
 
 	t.Run("any_key_msg", func(t *testing.T) {
 		t.Parallel()
+
 		model := setup()
 
 		_, cmd := model.Update(tea.KeyMsg{})
 		assert.Equal(t, tea.Quit(), cmd())
 	})
 
+	t.Run("unknown_message", func(t *testing.T) {
+		t.Parallel()
+
+		model := setup()
+
+		model, _ = model.Update(nil)
+
+		_, ok := model.(app.StateErrorModel)
+		assert.Truef(t, ok, "%s", model)
+	})
+
 	t.Run("stringer", func(t *testing.T) {
 		t.Parallel()
+
 		model := setup()
 
 		stringer, ok := model.(fmt.Stringer)
