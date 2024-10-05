@@ -1,4 +1,5 @@
 GOLANG_CI_LINT_VER:=v1.61.0
+GORELEASER_VERSION:=v2.3.2
 OUT_BIN?=${PWD}/bin/jlv
 COVER_PACKAGES=./...
 VERSION?=${shell git describe --tags}
@@ -52,6 +53,13 @@ vendor:
 	go mod tidy
 	go mod vendor
 .PHONY: vendor
+
+goreleaser.check:
+	docker run --rm -it \
+		-v ${PWD}:/go/src/github.com/hedhyw/json-log-viewer \
+		-w /go/src/github.com/hedhyw/json-log-viewer \
+		goreleaser/goreleaser:${GORELEASER_VERSION} check
+.PHONY: goreleaser.check
 
 bin/golangci-lint-${GOLANG_CI_LINT_VER}:
 	curl \
