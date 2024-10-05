@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
+	"io"
+	"io/fs"
 	"os"
 	"path"
 
@@ -25,48 +28,80 @@ func main() {
 	printVersion := flag.Bool("version", false, "Print version")
 	flag.Parse()
 
-	if *printVersion {
-		// nolint: forbidigo // Version command.
-		print("github.com/hedhyw/json-log-viewer@" + version + "\n")
+	err := runApp(applicationArguments{
+		Stdout: os.Stdout,
+		Stdin:  os.Stdin,
 
-		return
+		ConfigPath:   *configPath,
+		PrintVersion: *printVersion,
+		Args:         flag.Args(),
+
+		RunProgram: func(p *tea.Program) (tea.Model, error) {
+			return p.Run()
+		},
+	})
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error: "+err.Error())
+		os.Exit(1)
+	}
+}
+
+type applicationArguments struct {
+	Stdout io.Writer
+	Stdin  fs.File
+
+	ConfigPath   string
+	PrintVersion bool
+	Args         []string
+
+	RunProgram func(*tea.Program) (tea.Model, error)
+}
+
+func runApp(args applicationArguments) (err error) {
+	if args.PrintVersion {
+		// nolint: forbidigo // Version command.
+		fmt.Fprintln(args.Stdout, "github.com/hedhyw/json-log-viewer@"+version)
+
+		return nil
 	}
 
-	cfg, err := readConfig(*configPath)
+	cfg, err := readConfig(args.ConfigPath)
 	if err != nil {
-		fatalf("Error reading config: %s\n", err)
+		return fmt.Errorf("reading config: %w", err)
 	}
 
 	fileName := ""
 	var inputSource *source.Source
 
-	switch flag.NArg() {
+	switch len(args.Args) {
 	case 0:
 		// Tee stdin to a temp file, so that we can
 		// lazy load the log entries using random access.
 		fileName = "-"
 
-		stdIn, err := getStdinReader(os.Stdin)
+		stdin, err := getStdinReader(args.Stdin)
 		if err != nil {
-			fatalf("Stdin: %s\n", err)
+			return fmt.Errorf("getting stdin: %w", err)
 		}
 
-		inputSource, err = source.Reader(stdIn, cfg)
+		inputSource, err = source.Reader(stdin, cfg)
 		if err != nil {
-			fatalf("Could not create temp flie: %s\n", err)
+			return fmt.Errorf("creating a temporary file: %w", err)
 		}
-		defer inputSource.Close()
 
+		defer func() { err = errors.Join(err, inputSource.Close()) }()
 	case 1:
-		fileName = flag.Arg(0)
+		fileName = args.Args[0]
+
 		inputSource, err = source.File(fileName, cfg)
 		if err != nil {
-			fatalf("Could not create temp flie: %s\n", err)
+			return fmt.Errorf("reading file: %w", err)
 		}
-		defer inputSource.Close()
 
+		defer func() { err = errors.Join(err, inputSource.Close()) }()
 	default:
-		fatalf("Invalid arguments, usage: %s file.log\n", os.Args[0])
+		// nolint: err113 // One time case.
+		return fmt.Errorf("invalid arguments, usage: %s file.log", os.Args[0])
 	}
 
 	appModel := app.NewModel(fileName, cfg, version)
@@ -80,14 +115,11 @@ func main() {
 		}
 	})
 
-	if _, err := program.Run(); err != nil {
-		fatalf("Error running program: %s\n", err)
+	if _, err := args.RunProgram(program); err != nil {
+		return fmt.Errorf("running program: %w", err)
 	}
-}
 
-func fatalf(message string, args ...any) {
-	fmt.Fprintf(os.Stderr, message, args...)
-	os.Exit(1)
+	return nil
 }
 
 // readConfig tries to read config from working directory or home directory.

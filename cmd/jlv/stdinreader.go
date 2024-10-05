@@ -1,5 +1,3 @@
-//go:build !mock_stdin
-
 package main
 
 import (
