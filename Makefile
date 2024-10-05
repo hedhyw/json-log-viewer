@@ -53,6 +53,13 @@ vendor:
 	go mod vendor
 .PHONY: vendor
 
+goreleaser.check:
+	docker run --rm -it \
+		-v ${PWD}:/go/src/github.com/hedhyw/json-log-viewer \
+		-w /go/src/github.com/hedhyw/json-log-viewer \
+		goreleaser/goreleaser:v2.3.2 check
+.PHONY: goreleaser.check
+
 bin/golangci-lint-${GOLANG_CI_LINT_VER}:
 	curl \
 		-sSfL \
