@@ -14,6 +14,7 @@ type KeyMap struct {
 	ToggleFullHelp  key.Binding
 	GotoTop         key.Binding
 	GotoBottom      key.Binding
+	ShowPreview     key.Binding
 }
 
 var defaultKeys = KeyMap{
@@ -59,6 +60,10 @@ var defaultKeys = KeyMap{
 	GotoBottom: key.NewBinding(
 		key.WithKeys("end", "G"),
 		key.WithHelp("end", "go to end"),
+	),
+	ShowPreview: key.NewBinding(
+		key.WithKeys("p", "enter"),
+		key.WithHelp("enter", "show preview"),
 	),
 }
 
