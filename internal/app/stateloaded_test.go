@@ -201,7 +201,8 @@ func BenchmarkStateLoadedBig(b *testing.B) {
 
 	inputSource, err := source.Reader(contentReader, cfg)
 	require.NoError(b, err)
-	b.Cleanup(func() { _ = inputSource.Close() })
+
+	b.Cleanup(func() { assert.NoError(b, inputSource.Close()) })
 
 	logEntries, err := inputSource.ParseLogEntries()
 	if err != nil {
