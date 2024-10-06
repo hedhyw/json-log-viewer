@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 
+	units "github.com/docker/go-units"
 	"github.com/go-playground/validator/v10"
 	"github.com/hedhyw/jsoncjson"
 )
@@ -23,7 +25,7 @@ type Config struct {
 	CustomLevelMapping map[string]string `json:"customLevelMapping"`
 
 	// MaxFileSizeBytes is the maximum size of the file to load.
-	MaxFileSizeBytes int64 `json:"maxFileSizeBytes" validate:"min=1"`
+	MaxFileSizeBytes ByteSize `json:"maxFileSizeBytes" validate:"min=1"`
 }
 
 // FieldKind describes the type of the log field.
@@ -55,7 +57,7 @@ func GetDefaultConfig() *Config {
 	return &Config{
 		Path:               "default",
 		CustomLevelMapping: GetDefaultCustomLevelMapping(),
-		MaxFileSizeBytes:   1024 * 1024 * 1024,
+		MaxFileSizeBytes:   2 * units.GB,
 		Fields: []Field{{
 			Title:      "Time",
 			Kind:       FieldKindNumericTime,
@@ -148,4 +150,35 @@ func GetDefaultCustomLevelMapping() map[string]string {
 		"50": "error",
 		"60": "fatal",
 	}
+}
+
+// ByteSize supports decoding from byte count or number with unit.
+//
+// Example: 1k, 1.5m, 1g, 1t, 1p.
+type ByteSize int
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (s *ByteSize) UnmarshalJSON(text []byte) error {
+	value := string(text)
+
+	valueUnquoted, err := strconv.Unquote(value)
+	if err == nil {
+		value = valueUnquoted
+	}
+
+	parsedBytes, err := strconv.Atoi(value)
+	if err == nil {
+		*s = ByteSize(parsedBytes)
+
+		return nil
+	}
+
+	size, err := units.FromHumanSize(value)
+	if err != nil {
+		return fmt.Errorf("parsing unit: %w", err)
+	}
+
+	*s = ByteSize(size)
+
+	return nil
 }
