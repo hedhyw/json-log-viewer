@@ -65,5 +65,15 @@
     },
     // The maximum size of the file in bytes.
     // The rest of the file will be ignored.
-    "maxFileSizeBytes": 1073741824,
+    //
+    // It accepts the number of bytes:
+    //
+    //   "maxFileSizeBytes": 1073741824
+    //
+    // Or a text value with a unit:
+    //
+    //   "maxFileSizeBytes": "1000k"
+    //   "maxFileSizeBytes": "1.5m"
+    //   "maxFileSizeBytes": "1g"
+    "maxFileSizeBytes": "2g"
 }

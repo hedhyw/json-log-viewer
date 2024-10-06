@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/docker/go-units"
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/assert"
 
@@ -297,5 +298,47 @@ func TestValidateField(t *testing.T) {
 				assert.Error(t, err)
 			}
 		})
+	}
+}
+
+func TestByteSize(t *testing.T) {
+	t.Parallel()
+
+	testCases := [...]struct {
+		Value    string
+		Expected config.ByteSize
+	}{{
+		Value:    `"1k"`,
+		Expected: units.KB,
+	}, {
+		Value:    `"1m"`,
+		Expected: units.MB,
+	}, {
+		Value:    `"1.5m"`,
+		Expected: units.MB * 1.5,
+	}, {
+		Value:    `"1g"`,
+		Expected: units.GB,
+	}, {
+		Value:    `"1t"`,
+		Expected: units.TB,
+	}, {
+		Value:    `"1p"`,
+		Expected: units.PB,
+	}, {
+		Value:    "1",
+		Expected: 1,
+	}, {
+		Value:    "12345",
+		Expected: 12345,
+	}}
+
+	for _, testCase := range testCases {
+		var actual config.ByteSize
+
+		err := json.Unmarshal([]byte(testCase.Value), &actual)
+		if assert.NoError(t, err, testCase.Value) {
+			assert.Equal(t, testCase.Expected, actual, testCase.Value)
+		}
 	}
 }

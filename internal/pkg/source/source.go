@@ -66,7 +66,7 @@ func File(name string, cfg *config.Config) (*Source, error) {
 	var err error
 
 	source := &Source{
-		maxSize: cfg.MaxFileSizeBytes,
+		maxSize: int64(cfg.MaxFileSizeBytes),
 		name:    name,
 	}
 
@@ -94,7 +94,7 @@ func Reader(input io.Reader, cfg *config.Config) (*Source, error) {
 	var err error
 
 	source := &Source{
-		maxSize: cfg.MaxFileSizeBytes,
+		maxSize: int64(cfg.MaxFileSizeBytes),
 	}
 
 	// We will write the as read to a temp file.  Seek against the temp file.
