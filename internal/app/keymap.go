@@ -61,10 +61,6 @@ var defaultKeys = KeyMap{
 		key.WithKeys("end", "G"),
 		key.WithHelp("end", "go to end"),
 	),
-	ShowPreview: key.NewBinding(
-		key.WithKeys("p", "enter"),
-		key.WithHelp("enter", "show preview"),
-	),
 }
 
 func (k KeyMap) ShortHelp() []key.Binding {
