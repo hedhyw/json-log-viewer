@@ -14,6 +14,7 @@ import (
 	"github.com/docker/go-units"
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/tests"
@@ -143,7 +144,7 @@ func ExampleGetDefaultConfig() {
 	//     "50": "error",
 	//     "60": "fatal"
 	//   },
-	//   "maxFileSizeBytes": 1073741824
+	//   "maxFileSizeBytes": 2000000000
 	// }
 }
 
@@ -341,4 +342,35 @@ func TestByteSize(t *testing.T) {
 			assert.Equal(t, testCase.Expected, actual, testCase.Value)
 		}
 	}
+}
+
+func TestByteSizeParseFailed(t *testing.T) {
+	t.Parallel()
+
+	t.Run("invalid_number", func(t *testing.T) {
+		t.Parallel()
+
+		var value config.ByteSize
+
+		err := json.Unmarshal([]byte(`"123.123.123"`), &value)
+		require.Error(t, err)
+	})
+
+	t.Run("invalid_suffix", func(t *testing.T) {
+		t.Parallel()
+
+		var value config.ByteSize
+
+		err := json.Unmarshal([]byte(`"123X"`), &value)
+		require.Error(t, err)
+	})
+
+	t.Run("empty", func(t *testing.T) {
+		t.Parallel()
+
+		var value config.ByteSize
+
+		err := json.Unmarshal([]byte(`""`), &value)
+		require.Error(t, err)
+	})
 }
