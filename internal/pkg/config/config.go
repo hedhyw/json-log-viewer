@@ -152,7 +152,8 @@ func GetDefaultCustomLevelMapping() map[string]string {
 	}
 }
 
-// ByteSize supports encoding from the number of bytes of by suffixed value.
+// ByteSize supports decoding from byte count or number with unit.
+//
 // Example: 1k, 1.5m, 1g, 1t, 1p.
 type ByteSize int
 
