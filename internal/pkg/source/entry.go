@@ -16,6 +16,12 @@ import (
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 )
 
+const (
+	unitSeconds = "s"
+	unitMilli   = "ms"
+	unitMicro   = "us"
+)
+
 // LazyLogEntry holds unredenred LogEntry. Use `LogEntry` getter.
 type LazyLogEntry struct {
 	offset int64
@@ -129,7 +135,7 @@ func parseField(
 			unquotedField = string(jsonField)
 		}
 
-		return formatField(unquotedField, field.Kind, cfg)
+		return formatField(unquotedField, field, cfg)
 	}
 
 	return "-"
@@ -138,10 +144,17 @@ func parseField(
 //nolint:cyclop // The cyclomatic complexity here is so high because of the number of FieldKinds.
 func formatField(
 	value string,
-	kind config.FieldKind,
+	field config.Field,
 	cfg *config.Config,
 ) string {
+	kind := field.Kind
 	value = strings.TrimSpace(value)
+
+	timeFormat := config.DefaultTimeFormat
+
+	if field.TimeFormat != nil {
+		timeFormat = *field.TimeFormat
+	}
 
 	// Numeric time attempts to infer the duration based on the length of the string
 	if kind == config.FieldKindNumericTime {
@@ -156,11 +169,11 @@ func formatField(
 	case config.FieldKindTime:
 		return formatMessage(value)
 	case config.FieldKindSecondTime:
-		return formatMessage(formatTimeString(value, "s"))
+		return formatMessage(formatTimeValue(value, unitSeconds, timeFormat))
 	case config.FieldKindMilliTime:
-		return formatMessage(formatTimeString(value, "ms"))
+		return formatMessage(formatTimeValue(value, unitMilli, timeFormat))
 	case config.FieldKindMicroTime:
-		return formatMessage(formatTimeString(value, "us"))
+		return formatMessage(formatTimeValue(value, unitMicro, timeFormat))
 	case config.FieldKindAny:
 		return formatMessage(value)
 	default:
@@ -262,11 +275,11 @@ func guessTimeFieldKind(timeStr string) config.FieldKind {
 	}
 }
 
-func formatTimeString(timeStr string, unit string) string {
-	duration, err := time.ParseDuration(timeStr + unit)
+func formatTimeValue(timeValue string, unit string, format string) string {
+	duration, err := time.ParseDuration(timeValue + unit)
 	if err != nil {
-		return timeStr
+		return timeValue
 	}
 
-	return time.UnixMilli(0).Add(duration).UTC().Format(time.RFC3339)
+	return time.UnixMilli(0).Add(duration).UTC().Format(format)
 }

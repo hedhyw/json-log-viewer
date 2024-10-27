@@ -20,7 +20,19 @@
                 "$.t",
                 "$.ts"
             ],
-            "width": 30
+            "width": 30,
+            //	Year: "2006" "06"
+            //	Month: "Jan" "January" "01" "1"
+            //	Day of the week: "Mon" "Monday"
+            //	Day of the month: "2" "_2" "02"
+            //	Day of the year: "__2" "002"
+            //	Hour: "15" "3" "03" (PM or AM)
+            //	Minute: "4" "04"
+            //	Second: "5" "05"
+            //	AM/PM mark: "PM"
+            //
+            // More details: https://go.dev/src/time/format.go.
+            "time_format": "2006-01-02T15:04:05Z07:00"
         },
         {
             "title": "Level",
