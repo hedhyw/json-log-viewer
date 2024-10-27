@@ -339,11 +339,9 @@ func TestLazyLogEntriesFilter(t *testing.T) {
 func TestSecondTimeFormatting(t *testing.T) {
 	t.Parallel()
 
-	cfg := getTimestampFormattingConfig(config.FieldKindSecondTime)
-
 	expectedOutput := time.Unix(1, 0).UTC().Format(time.RFC3339)
 
-	secondsTestCases := [...]TimeFormattingTestCase{{
+	secondsTestCases := [...]timeFormattingTestCase{{
 		TestName:       "Seconds (float)",
 		JSON:           `{"timestamp":1.0}`,
 		ExpectedOutput: expectedOutput,
@@ -369,6 +367,8 @@ func TestSecondTimeFormatting(t *testing.T) {
 		t.Run(testCase.TestName, func(t *testing.T) {
 			t.Parallel()
 
+			cfg := getTimestampFormattingConfig(config.FieldKindSecondTime, testCase.Format)
+
 			actual := parseTableRow(t, testCase.JSON, cfg)
 			assert.Equal(t, testCase.ExpectedOutput, actual[0])
 		})
@@ -378,11 +378,9 @@ func TestSecondTimeFormatting(t *testing.T) {
 func TestMillisecondTimeFormatting(t *testing.T) {
 	t.Parallel()
 
-	cfg := getTimestampFormattingConfig(config.FieldKindMilliTime)
-
 	expectedOutput := time.Unix(2, 0).UTC().Format(time.RFC3339)
 
-	millisecondTestCases := [...]TimeFormattingTestCase{{
+	millisecondTestCases := [...]timeFormattingTestCase{{
 		TestName:       "Milliseconds (float)",
 		JSON:           `{"timestamp":2000.0}`,
 		ExpectedOutput: expectedOutput,
@@ -404,6 +402,8 @@ func TestMillisecondTimeFormatting(t *testing.T) {
 		t.Run(testCase.TestName, func(t *testing.T) {
 			t.Parallel()
 
+			cfg := getTimestampFormattingConfig(config.FieldKindMilliTime, testCase.Format)
+
 			actual := parseTableRow(t, testCase.JSON, cfg)
 			assert.Equal(t, testCase.ExpectedOutput, actual[0])
 		})
@@ -413,11 +413,9 @@ func TestMillisecondTimeFormatting(t *testing.T) {
 func TestMicrosecondTimeFormatting(t *testing.T) {
 	t.Parallel()
 
-	cfg := getTimestampFormattingConfig(config.FieldKindMicroTime)
-
 	expectedOutput := time.Unix(4, 0).UTC().Format(time.RFC3339)
 
-	microsecondTestCases := [...]TimeFormattingTestCase{{
+	microsecondTestCases := [...]timeFormattingTestCase{{
 		TestName:       "Microseconds (float)",
 		JSON:           `{"timestamp":4000000.0}`,
 		ExpectedOutput: expectedOutput,
@@ -439,6 +437,8 @@ func TestMicrosecondTimeFormatting(t *testing.T) {
 		t.Run(testCase.TestName, func(t *testing.T) {
 			t.Parallel()
 
+			cfg := getTimestampFormattingConfig(config.FieldKindMicroTime, testCase.Format)
+
 			actual := parseTableRow(t, testCase.JSON, cfg)
 			assert.Equal(t, testCase.ExpectedOutput, actual[0])
 		})
@@ -448,7 +448,7 @@ func TestMicrosecondTimeFormatting(t *testing.T) {
 func TestFormattingUnknown(t *testing.T) {
 	t.Parallel()
 
-	cfg := getTimestampFormattingConfig(config.FieldKind("unknown"))
+	cfg := getTimestampFormattingConfig(config.FieldKind("unknown"), config.DefaultTimeFormat)
 
 	actual := parseTableRow(t, `{"timestamp": 1}`, cfg)
 	assert.Equal(t, "1", actual[0])
@@ -457,7 +457,7 @@ func TestFormattingUnknown(t *testing.T) {
 func TestFormattingAny(t *testing.T) {
 	t.Parallel()
 
-	cfg := getTimestampFormattingConfig(config.FieldKindAny)
+	cfg := getTimestampFormattingConfig(config.FieldKindAny, config.DefaultTimeFormat)
 
 	actual := parseTableRow(t, `{"timestamp": 1}`, cfg)
 	assert.Equal(t, "1", actual[0])
@@ -466,9 +466,7 @@ func TestFormattingAny(t *testing.T) {
 func TestNumericKindTimeFormatting(t *testing.T) {
 	t.Parallel()
 
-	cfg := getTimestampFormattingConfig(config.FieldKindNumericTime)
-
-	numericKindCases := [...]TimeFormattingTestCase{{
+	numericKindCases := [...]timeFormattingTestCase{{
 		TestName:       "Date passthru",
 		JSON:           `{"timestamp":"2023-10-08 20:00:00"}`,
 		ExpectedOutput: "2023-10-08 20:00:00",
@@ -521,6 +519,8 @@ func TestNumericKindTimeFormatting(t *testing.T) {
 	for _, testCase := range numericKindCases {
 		t.Run(testCase.TestName, func(t *testing.T) {
 			t.Parallel()
+
+			cfg := getTimestampFormattingConfig(config.FieldKindNumericTime, testCase.Format)
 
 			actual := parseTableRow(t, testCase.JSON, cfg)
 			assert.Equal(t, testCase.ExpectedOutput, actual[0])
@@ -613,6 +613,56 @@ func TestLazyLogEntryLogEntry(t *testing.T) {
 	})
 }
 
+func TestTimeFormat(t *testing.T) {
+	t.Parallel()
+
+	logDate := time.Date(
+		2000, // Year.
+		time.January,
+		2, // Day.
+		3, // Hour.
+		4, // Minutes.
+		5, // Seconds.
+		0, // Nanoseconds.
+		time.UTC,
+	)
+
+	jsonContent := fmt.Sprintf(`{"timestamp":"%d"}`, logDate.Unix())
+
+	numericKindCases := [...]timeFormattingTestCase{{
+		TestName:       "RFC3339",
+		JSON:           jsonContent,
+		ExpectedOutput: logDate.Format(time.RFC3339),
+		Format:         time.RFC3339,
+	}, {
+		TestName:       "RFC1123",
+		JSON:           jsonContent,
+		ExpectedOutput: logDate.Format(time.RFC1123),
+		Format:         time.RFC1123,
+	}, {
+		TestName:       "TimeOnly",
+		JSON:           jsonContent,
+		ExpectedOutput: logDate.Format(time.TimeOnly),
+		Format:         time.TimeOnly,
+	}, {
+		TestName:       "TimeOnly",
+		JSON:           jsonContent,
+		ExpectedOutput: "invalid",
+		Format:         "invalid",
+	}}
+
+	for _, testCase := range numericKindCases {
+		t.Run(testCase.TestName, func(t *testing.T) {
+			t.Parallel()
+
+			cfg := getTimestampFormattingConfig(config.FieldKindSecondTime, testCase.Format)
+
+			actual := parseTableRow(t, testCase.JSON, cfg)
+			assert.Equal(t, testCase.ExpectedOutput, actual[0])
+		})
+	}
+}
+
 func parseLazyLogEntry(tb testing.TB, value string, cfg *config.Config) source.LazyLogEntry {
 	tb.Helper()
 
@@ -653,20 +703,28 @@ func getFieldKindToValue(cfg *config.Config, entries []string) map[config.FieldK
 	return fieldKindToValue
 }
 
-type TimeFormattingTestCase struct {
+type timeFormattingTestCase struct {
 	TestName       string
 	JSON           string
 	ExpectedOutput string
+	Format         string
 }
 
-func getTimestampFormattingConfig(fieldKind config.FieldKind) *config.Config {
+func getTimestampFormattingConfig(fieldKind config.FieldKind, format string) *config.Config {
 	cfg := config.GetDefaultConfig()
+
+	var timeFormat *string
+
+	if format != "" {
+		timeFormat = &format
+	}
 
 	cfg.Fields = []config.Field{{
 		Title:      "Time",
 		Kind:       fieldKind,
 		References: []string{"$.timestamp", "$.time", "$.t", "$.ts"},
 		Width:      30,
+		TimeFormat: timeFormat,
 	}}
 
 	return cfg

@@ -134,6 +134,7 @@ Example configuration: [example.jlv.jsonc](example.jlv.jsonc).
 
 ### Time Formats
 JSON Log Viewer can handle a variety of datetime formats when parsing your logs.
+The value is formatted by default in the "[RFC3339](https://www.rfc-editor.org/rfc/rfc3339)" format. The format is configurable, see the `time_format` field in the [config](example.jlv.jsonc).
 
 #### `time`
 This will return the exact value that was set in the JSON document.

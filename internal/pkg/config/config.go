@@ -6,11 +6,15 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	units "github.com/docker/go-units"
 	"github.com/go-playground/validator/v10"
 	"github.com/hedhyw/jsoncjson"
 )
+
+// DefaultTimeFormat is a time format used in formatting timestamps by default.
+const DefaultTimeFormat = time.RFC3339
 
 // PathDefault is a fake path to the default config.
 const PathDefault = "default"
@@ -49,10 +53,13 @@ type Field struct {
 	Kind       FieldKind `json:"kind" validate:"required,oneof=time message numerictime secondtime millitime microtime level any"`
 	References []string  `json:"ref" validate:"min=1,dive,required"`
 	Width      int       `json:"width" validate:"min=0"`
+	TimeFormat *string   `json:"time_format,omitempty"`
 }
 
 // GetDefaultConfig returns the configuration with default values.
 func GetDefaultConfig() *Config {
+	defaultTimeFormat := DefaultTimeFormat
+
 	// nolint: mnd // Default config.
 	return &Config{
 		Path:               "default",
@@ -63,6 +70,7 @@ func GetDefaultConfig() *Config {
 			Kind:       FieldKindNumericTime,
 			References: []string{"$.timestamp", "$.time", "$.t", "$.ts"},
 			Width:      30,
+			TimeFormat: &defaultTimeFormat,
 		}, {
 			Title:      "Level",
 			Kind:       FieldKindLevel,
