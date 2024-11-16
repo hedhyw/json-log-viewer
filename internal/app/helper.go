@@ -15,17 +15,17 @@ import (
 )
 
 func (app *Application) getLogLevelStyle(
-	logEntries source.LazyLogEntries,
+	renderedRows []table.Row,
 	baseStyle lipgloss.Style,
 	rowID int,
 ) lipgloss.Style {
-	if rowID < 0 || rowID >= logEntries.Len() {
+	if rowID < 0 || rowID >= len(renderedRows) {
 		return baseStyle
 	}
 
-	entry := logEntries.Entries[rowID].LogEntry(logEntries.Seeker, app.Config)
+	row := renderedRows[rowID]
 
-	color := getColorForLogLevel(app.getLogLevelFromLogEntry(entry))
+	color := getColorForLogLevel(app.getLogLevelFromLogRow(row))
 	if color == "" {
 		return baseStyle
 	}
@@ -62,8 +62,8 @@ func getColorForLogLevel(level source.Level) lipgloss.Color {
 	}
 }
 
-func (app *Application) getLogLevelFromLogEntry(logEntry source.LogEntry) source.Level {
-	return source.Level(getFieldByKind(app.Config, config.FieldKindLevel, logEntry))
+func (app *Application) getLogLevelFromLogRow(row table.Row) source.Level {
+	return source.Level(getCellByKind(app.Config, config.FieldKindLevel, row))
 }
 
 func (app *Application) handleErrorOccuredMsg(msg events.ErrorOccuredMsg) (tea.Model, tea.Cmd) {
@@ -97,13 +97,13 @@ func (app *Application) handleOpenJSONRowRequestedMsg(
 
 func (app *Application) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 	switch {
-	case key.Matches(msg, defaultKeys.Exit):
+	case key.Matches(msg, app.keys.Exit):
 		return tea.Quit
-	case key.Matches(msg, defaultKeys.Filter):
+	case key.Matches(msg, app.keys.Filter):
 		return events.FilterKeyClicked
-	case key.Matches(msg, defaultKeys.Open):
+	case key.Matches(msg, app.keys.Open):
 		return events.EnterKeyClicked
-	case key.Matches(msg, defaultKeys.ToggleViewArrow):
+	case key.Matches(msg, app.keys.ToggleViewArrow):
 		return events.ArrowRightKeyClicked
 	default:
 		return nil
@@ -151,24 +151,31 @@ func removeClearSequence(value string) string {
 	return strings.ReplaceAll(value, "\x1b[0", "\x1b[39")
 }
 
-func getFieldByKind(
+func getCellByKind(
 	cfg *config.Config,
 	kind config.FieldKind,
-	logEntry source.LogEntry,
+	row table.Row,
 ) string {
-	for i, f := range cfg.Fields {
-		if f.Kind != kind {
-			continue
-		}
+	index := getIndexByKind(cfg, kind)
 
-		if i >= len(logEntry.Fields) {
-			return "-"
-		}
-
-		return logEntry.Fields[i]
+	if index < 0 || index >= len(row) {
+		return "-"
 	}
 
-	return ""
+	return row[index]
+}
+
+func getIndexByKind(
+	cfg *config.Config,
+	kind config.FieldKind,
+) int {
+	for i, f := range cfg.Fields {
+		if f.Kind == kind {
+			return i
+		}
+	}
+
+	return -1
 }
 
 func batched[T any](m T, cmd tea.Cmd) func(batch []tea.Cmd) (T, []tea.Cmd) {

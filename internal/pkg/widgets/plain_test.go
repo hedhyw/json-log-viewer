@@ -6,13 +6,14 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/hedhyw/json-log-viewer/internal/keymap"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/widgets"
 )
 
 const text = "hello world"
 
 func TestPlainLogModelInit(t *testing.T) {
-	model, _ := widgets.NewPlainLogModel(text, getFakeTeaWindowSizeMsg())
+	model, _ := widgets.NewPlainLogModel(text, getFakeTeaWindowSizeMsg(), keymap.GetDefaultKeys())
 
 	cmd := model.Init()
 	assert.Nil(t, cmd)
@@ -20,7 +21,7 @@ func TestPlainLogModelInit(t *testing.T) {
 
 func TestPlainLogModelUpdateTeaWindowSizeMsg(t *testing.T) {
 	windowSize := getFakeTeaWindowSizeMsg()
-	model, _ := widgets.NewPlainLogModel(text, windowSize)
+	model, _ := widgets.NewPlainLogModel(text, windowSize, keymap.GetDefaultKeys())
 
 	windowSize.Height++
 	windowSize.Width++
@@ -32,7 +33,7 @@ func TestPlainLogModelUpdateTeaWindowSizeMsg(t *testing.T) {
 }
 
 func TestPlainLogModelView(t *testing.T) {
-	model, _ := widgets.NewPlainLogModel(text, getFakeTeaWindowSizeMsg())
+	model, _ := widgets.NewPlainLogModel(text, getFakeTeaWindowSizeMsg(), keymap.GetDefaultKeys())
 
 	actual := model.View()
 	assert.Contains(t, actual, text)

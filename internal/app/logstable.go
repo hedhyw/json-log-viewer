@@ -20,8 +20,6 @@ type logsTableModel struct {
 }
 
 func newLogsTableModel(application *Application, logEntries source.LazyLogEntries) logsTableModel {
-	const cellIDLogLevel = 1
-
 	tableLogs := table.New(
 		table.WithColumns(getColumns(application.LastWindowSize.Width, application.Config)),
 		table.WithFocused(true),
@@ -33,25 +31,6 @@ func newLogsTableModel(application *Application, logEntries source.LazyLogEntrie
 	tableLogs.KeyMap.GotoTop = application.keys.GotoTop
 
 	tableLogs.SetStyles(getTableStyles())
-
-	tableStyles := getTableStyles()
-	tableStyles.RenderCell = func(_ table.Model, value string, position table.CellPosition) string {
-		style := tableStyles.Cell
-
-		if position.Column == cellIDLogLevel {
-			return removeClearSequence(
-				application.getLogLevelStyle(
-					logEntries,
-					style,
-					position.RowID,
-				).Render(value),
-			)
-		}
-
-		return style.Render(value)
-	}
-
-	tableLogs.SetStyles(tableStyles)
 
 	lazyTable := lazyTableModel{
 		Application:  application,

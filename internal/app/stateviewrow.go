@@ -3,6 +3,7 @@ package app
 import (
 	tea "github.com/charmbracelet/bubbletea"
 
+	"github.com/hedhyw/json-log-viewer/internal/keymap"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/widgets"
@@ -18,17 +19,23 @@ type StateViewRowModel struct {
 	logEntry source.LogEntry
 	jsonView tea.Model
 
-	keys KeyMap
+	keys keymap.KeyMap
 }
 
 func newStateViewRow(
 	logEntry source.LogEntry,
 	previousState stateModel,
 ) StateViewRowModel {
-	jsonViewModel, cmd := widgets.NewJSONViewModel(logEntry.Line, previousState.getApplication().LastWindowSize)
+	app := previousState.getApplication()
+
+	jsonViewModel, cmd := widgets.NewJSONViewModel(
+		logEntry.Line,
+		app.LastWindowSize,
+		app.keys,
+	)
 
 	return StateViewRowModel{
-		Application: previousState.getApplication(),
+		Application: app,
 
 		previousState: previousState,
 		initCmd:       cmd,
@@ -36,7 +43,7 @@ func newStateViewRow(
 		logEntry: logEntry,
 		jsonView: jsonViewModel,
 
-		keys: defaultKeys,
+		keys: previousState.getApplication().keys,
 	}
 }
 

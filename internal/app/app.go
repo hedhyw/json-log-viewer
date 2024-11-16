@@ -5,6 +5,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
+	"github.com/hedhyw/json-log-viewer/internal/keymap"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
@@ -22,7 +23,7 @@ type Application struct {
 	Entries        source.LazyLogEntries
 	Version        string
 
-	keys KeyMap
+	keys keymap.KeyMap
 	help help.Model
 }
 
@@ -49,7 +50,7 @@ func newApplication(
 		},
 
 		Version: version,
-		keys:    defaultKeys,
+		keys:    keymap.GetDefaultKeys(),
 		help:    help.New(),
 	}
 }

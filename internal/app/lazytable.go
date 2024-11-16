@@ -8,13 +8,17 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 )
 
 // rowGetter renders the row.
 type rowGetter interface {
 	// Row return a rendered table row.
 	Row(cfg *config.Config, i int) table.Row
+	// Len returns the number of all rows.
 	Len() int
+	// LogEntry getter
+	LogEntry(cfg *config.Config, i int) source.LogEntry
 }
 
 // lazyTableModel lazily renders table rows.
@@ -65,6 +69,27 @@ func (m lazyTableModel) Update(msg tea.Msg) (lazyTableModel, tea.Cmd) {
 	}
 
 	return m, cmd
+}
+
+func (m lazyTableModel) getCellRenderer() func(table.Model, string, table.CellPosition) string {
+	cellIDLogLevel := getIndexByKind(m.Config, config.FieldKindLevel)
+	tableStyles := getTableStyles()
+
+	return func(_ table.Model, value string, position table.CellPosition) string {
+		style := tableStyles.Cell
+
+		if position.Column == cellIDLogLevel {
+			return removeClearSequence(
+				m.Application.getLogLevelStyle(
+					m.renderedRows,
+					style,
+					position.RowID,
+				).Render(value),
+			)
+		}
+
+		return style.Render(value)
+	}
 }
 
 func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) (lazyTableModel, bool) {
@@ -170,13 +195,16 @@ func (m lazyTableModel) RenderedRows() lazyTableModel {
 	}
 	end := min(m.offset+m.table.Height(), m.entries.Len())
 
-	m.renderedRows = []table.Row{}
+	m.renderedRows = m.renderedRows[:0]
+	renderedEntries := make([]source.LogEntry, 0, cap(m.renderedRows))
 	for i := m.offset; i < end; i++ {
 		m.renderedRows = append(m.renderedRows, m.entries.Row(m.Config, i))
+		renderedEntries = append(renderedEntries, m.entries.LogEntry(m.Config, i))
 	}
 
 	if m.reverse {
 		slices.Reverse(m.renderedRows)
+		slices.Reverse(renderedEntries)
 	}
 
 	m.table.SetRows(m.renderedRows)
@@ -189,6 +217,10 @@ func (m lazyTableModel) RenderedRows() lazyTableModel {
 	}
 
 	m.lastCursor = m.table.Cursor()
+
+	tableStyles := getTableStyles()
+	tableStyles.RenderCell = m.getCellRenderer()
+	m.table.SetStyles(tableStyles)
 
 	return m
 }
