@@ -3,6 +3,7 @@ package widgets_test
 import (
 	"testing"
 
+	"github.com/hedhyw/json-log-viewer/internal/keymap"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/widgets"
 
 	"github.com/stretchr/testify/assert"
@@ -14,7 +15,11 @@ func TestNewJSONViewModel(t *testing.T) {
 	t.Run("plain_text", func(t *testing.T) {
 		t.Parallel()
 
-		model, _ := widgets.NewJSONViewModel([]byte(text), getFakeTeaWindowSizeMsg())
+		model, _ := widgets.NewJSONViewModel(
+			[]byte(text),
+			getFakeTeaWindowSizeMsg(),
+			keymap.GetDefaultKeys(),
+		)
 
 		_, ok := model.(widgets.PlainLogModel)
 		assert.Truef(t, ok, "actual type: %T", model)
@@ -26,6 +31,7 @@ func TestNewJSONViewModel(t *testing.T) {
 		model, _ := widgets.NewJSONViewModel(
 			[]byte(`{"hello":"world"}`),
 			getFakeTeaWindowSizeMsg(),
+			keymap.GetDefaultKeys(),
 		)
 
 		_, ok := model.(widgets.PlainLogModel)

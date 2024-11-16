@@ -5,6 +5,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 
+	"github.com/hedhyw/json-log-viewer/internal/keymap"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
 )
 
@@ -16,7 +17,7 @@ type StateFilteringModel struct {
 	table         logsTableModel
 
 	textInput textinput.Model
-	keys      KeyMap
+	keys      keymap.KeyMap
 }
 
 func newStateFiltering(
@@ -32,7 +33,7 @@ func newStateFiltering(
 		table:         previousState.table,
 
 		textInput: textInput,
-		keys:      defaultKeys,
+		keys:      previousState.getApplication().keys,
 	}
 }
 

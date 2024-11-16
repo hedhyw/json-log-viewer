@@ -97,13 +97,13 @@ func (app *Application) handleOpenJSONRowRequestedMsg(
 
 func (app *Application) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 	switch {
-	case key.Matches(msg, defaultKeys.Exit):
+	case key.Matches(msg, app.keys.Exit):
 		return tea.Quit
-	case key.Matches(msg, defaultKeys.Filter):
+	case key.Matches(msg, app.keys.Filter):
 		return events.FilterKeyClicked
-	case key.Matches(msg, defaultKeys.Open):
+	case key.Matches(msg, app.keys.Open):
 		return events.EnterKeyClicked
-	case key.Matches(msg, defaultKeys.ToggleViewArrow):
+	case key.Matches(msg, app.keys.ToggleViewArrow):
 		return events.ArrowRightKeyClicked
 	default:
 		return nil
