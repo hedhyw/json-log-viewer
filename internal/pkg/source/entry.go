@@ -77,9 +77,15 @@ type LazyLogEntries struct {
 
 // Row returns table.Row representation of the log entry.
 func (entries LazyLogEntries) Row(cfg *config.Config, i int) table.Row {
-	return entries.Entries[i].LogEntry(entries.Seeker, cfg).Fields
+	return entries.LogEntry(cfg, i).Fields
 }
 
+// LogEntry getter.
+func (entries LazyLogEntries) LogEntry(cfg *config.Config, i int) LogEntry {
+	return entries.Entries[i].LogEntry(entries.Seeker, cfg)
+}
+
+// Len return the number of all entries.
 func (entries LazyLogEntries) Len() int {
 	return len(entries.Entries)
 }
