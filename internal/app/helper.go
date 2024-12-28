@@ -14,35 +14,6 @@ import (
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 )
 
-func (app *Application) getLogLevelStyle(
-	renderedRows []table.Row,
-	baseStyle lipgloss.Style,
-	rowID int,
-) lipgloss.Style {
-	if rowID < 0 || rowID >= len(renderedRows) {
-		return baseStyle
-	}
-
-	row := renderedRows[rowID]
-
-	color := getColorForLogLevel(app.getLogLevelFromLogRow(row))
-	if color == "" {
-		return baseStyle
-	}
-
-	return baseStyle.Foreground(color)
-}
-
-// Update application state.
-func (app *Application) Update(msg tea.Msg) {
-	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		app.LastWindowSize = msg
-	case events.LogEntriesUpdateMsg:
-		app.Entries = source.LazyLogEntries(msg)
-	}
-}
-
 func getColorForLogLevel(level source.Level) lipgloss.Color {
 	switch level {
 	case source.LevelTrace:

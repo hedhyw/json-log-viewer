@@ -71,7 +71,7 @@ func (s StateFilteringModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (s StateFilteringModel) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch {
-	case key.Matches(msg, s.keys.Back):
+	case key.Matches(msg, s.keys.Back) && string(msg.Runes) != "q":
 		return s.previousState.refresh()
 	case key.Matches(msg, s.keys.Open):
 		return s.handleEnterKeyClickedMsg()

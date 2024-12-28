@@ -30,7 +30,7 @@ func newStateViewRow(
 
 	jsonViewModel, cmd := widgets.NewJSONViewModel(
 		logEntry.Line,
-		app.LastWindowSize,
+		app.LastWindowSize(),
 		app.keys,
 	)
 

@@ -23,7 +23,12 @@ func newStateViewLogs(
 	application *Application,
 	logEntries source.LazyLogEntries,
 ) StateLoadedModel {
-	table := newLogsTableModel(application, logEntries)
+	table := newLogsTableModel(
+		application,
+		logEntries,
+		true, // follow.
+		true, // reverse.
+	)
 
 	return StateLoadedModel{
 		Application: application,
@@ -77,7 +82,7 @@ func (s StateLoadedModel) viewHelp() string {
 			Padding(0, 1).
 			Render(s.Version)
 
-		width := s.Application.LastWindowSize.Width
+		width := s.Application.LastWindowSize().Width
 		fillerText := lipgloss.NewStyle().
 			Background(lipgloss.Color("#353533")).
 			Width(width - lipgloss.Width(toggleText) - lipgloss.Width(versionText)).
@@ -141,7 +146,7 @@ func (s StateLoadedModel) handleKeyMsg(msg tea.KeyMsg) []tea.Cmd {
 }
 
 func (s StateLoadedModel) handleRequestOpenJSON() (tea.Model, tea.Cmd) {
-	return s, events.OpenJSONRowRequested(s.Entries, s.table.Cursor())
+	return s, events.OpenJSONRowRequested(s.entries, s.table.Cursor())
 }
 
 func (s StateLoadedModel) handleFilterKeyClickedMsg() (tea.Model, tea.Cmd) {
@@ -153,9 +158,12 @@ func (s StateLoadedModel) getApplication() *Application {
 }
 
 func (s StateLoadedModel) refresh() (_ stateModel, cmd tea.Cmd) {
-	s.table, cmd = s.table.Update(s.Application.LastWindowSize)
+	var cmdFirst, cmdSecond tea.Cmd
 
-	return s, cmd
+	s.table, cmdSecond = s.table.Update(s.Application.LastWindowSize())
+	s.table, cmdFirst = s.table.Update(events.LogEntriesUpdateMsg(s.Application.Entries()))
+
+	return s, tea.Batch(cmdFirst, cmdSecond)
 }
 
 // String implements fmt.Stringer.

@@ -60,8 +60,8 @@ func (s StateFilteredModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s, msg = s.handleStateFilteredModel()
 	}
 
-	if _, ok := msg.(*events.LogEntriesUpdateMsg); ok {
-		s, msg = s.handleLogEntriesUpdateMsg()
+	if _, ok := msg.(events.LogEntriesUpdateMsg); ok {
+		return s, nil
 	}
 
 	switch typedMsg := msg.(type) {
@@ -73,8 +73,6 @@ func (s StateFilteredModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if mdl, cmd := s.handleKeyMsg(typedMsg); mdl != nil {
 			return mdl, cmd
 		}
-	default:
-		s.table, cmdBatch = batched(s.table.Update(typedMsg))(cmdBatch)
 	}
 
 	s.table, cmdBatch = batched(s.table.Update(msg))(cmdBatch)
@@ -95,27 +93,21 @@ func (s StateFilteredModel) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 }
 
-func (s StateFilteredModel) handleLogEntriesUpdateMsg() (StateFilteredModel, tea.Msg) {
-	entries, err := s.Application.Entries.Filter(s.filterText)
-	if err != nil {
-		return s, events.ShowError(err)()
-	}
-
-	s.logEntries = entries
-
-	return s, events.LogEntriesUpdateMsg(entries)
-}
-
 func (s StateFilteredModel) handleStateFilteredModel() (StateFilteredModel, tea.Msg) {
-	entries, err := s.Application.Entries.Filter(s.filterText)
+	entries, err := s.Application.Entries().Filter(s.filterText)
 	if err != nil {
 		return s, events.ShowError(err)()
 	}
 
 	s.logEntries = entries
-	s.table = newLogsTableModel(s.Application, entries)
+	s.table = newLogsTableModel(
+		s.Application,
+		entries,
+		false, // follow.
+		s.previousState.table.lazyTable.reverse,
+	)
 
-	return s, events.LogEntriesUpdateMsg(entries)
+	return s, nil
 }
 
 func (s StateFilteredModel) handleFilterKeyClickedMsg() (tea.Model, tea.Cmd) {
@@ -136,7 +128,7 @@ func (s StateFilteredModel) getApplication() *Application {
 }
 
 func (s StateFilteredModel) refresh() (_ stateModel, cmd tea.Cmd) {
-	s.table, cmd = s.table.Update(s.Application.LastWindowSize)
+	s.table, cmd = s.table.Update(s.Application.LastWindowSize())
 
 	return s, cmd
 }

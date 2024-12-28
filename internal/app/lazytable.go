@@ -119,9 +119,6 @@ func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) (lazyTableModel, 
 		if offset != m.offset {
 			m.offset = offset
 			render = true
-		} else {
-			// we were at the first item, so we should follow the log
-			m.follow = true
 		}
 	}
 
