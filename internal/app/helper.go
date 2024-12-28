@@ -35,12 +35,31 @@ func (app *Application) getLogLevelStyle(
 
 // Update application state.
 func (app *Application) Update(msg tea.Msg) {
+	app.lock.Lock()
+	defer app.lock.Unlock()
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		app.LastWindowSize = msg
+		app.lastWindowSize = msg
 	case events.LogEntriesUpdateMsg:
-		app.Entries = source.LazyLogEntries(msg)
+		app.entries = source.LazyLogEntries(msg)
 	}
+}
+
+// Entries getter
+func (app *Application) Entries() source.LazyLogEntries {
+	app.lock.Lock()
+	defer app.lock.Unlock()
+
+	return app.entries
+}
+
+// LastWindowSize getter
+func (app *Application) LastWindowSize() tea.WindowSizeMsg {
+	app.lock.Lock()
+	defer app.lock.Unlock()
+
+	return app.lastWindowSize
 }
 
 func getColorForLogLevel(level source.Level) lipgloss.Color {

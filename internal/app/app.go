@@ -1,6 +1,8 @@
 package app
 
 import (
+	"sync"
+
 	"github.com/charmbracelet/bubbles/help"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -13,14 +15,16 @@ import (
 
 // Application global state.
 type Application struct {
+	lock *sync.Mutex
+
 	FileName string
 	Config   *config.Config
 
 	BaseStyle   lipgloss.Style
 	FooterStyle lipgloss.Style
 
-	LastWindowSize tea.WindowSizeMsg
-	Entries        source.LazyLogEntries
+	lastWindowSize tea.WindowSizeMsg
+	entries        source.LazyLogEntries
 	Version        string
 
 	keys keymap.KeyMap
@@ -38,13 +42,15 @@ func newApplication(
 	)
 
 	return Application{
+		lock: &sync.Mutex{},
+
 		FileName: fileName,
 		Config:   config,
 
 		BaseStyle:   getBaseStyle(),
 		FooterStyle: getFooterStyle(),
 
-		LastWindowSize: tea.WindowSizeMsg{
+		lastWindowSize: tea.WindowSizeMsg{
 			Width:  initialWidth,
 			Height: initialHeight,
 		},

@@ -19,11 +19,16 @@ type logsTableModel struct {
 	logEntries source.LazyLogEntries
 }
 
-func newLogsTableModel(application *Application, logEntries source.LazyLogEntries) logsTableModel {
+func newLogsTableModel(
+	application *Application,
+	logEntries source.LazyLogEntries,
+	follow bool,
+	reverse bool,
+) logsTableModel {
 	tableLogs := table.New(
-		table.WithColumns(getColumns(application.LastWindowSize.Width, application.Config)),
+		table.WithColumns(getColumns(application.LastWindowSize().Width, application.Config)),
 		table.WithFocused(true),
-		table.WithHeight(application.LastWindowSize.Height),
+		table.WithHeight(application.LastWindowSize().Height),
 	)
 	tableLogs.KeyMap.LineUp = application.keys.Up
 	tableLogs.KeyMap.LineDown = application.keys.Down
@@ -34,8 +39,8 @@ func newLogsTableModel(application *Application, logEntries source.LazyLogEntrie
 
 	lazyTable := lazyTableModel{
 		Application:  application,
-		reverse:      true,
-		follow:       true,
+		reverse:      reverse,
+		follow:       follow,
 		table:        tableLogs,
 		entries:      logEntries,
 		lastCursor:   0,
@@ -47,7 +52,7 @@ func newLogsTableModel(application *Application, logEntries source.LazyLogEntrie
 		lazyTable:   lazyTable,
 		logEntries:  logEntries,
 		footerSize:  1,
-	}.handleWindowSizeMsg(application.LastWindowSize)
+	}.handleWindowSizeMsg(application.LastWindowSize())
 
 	return msg
 }
