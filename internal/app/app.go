@@ -107,7 +107,7 @@ func (app *Application) Update(msg tea.Msg) {
 	}
 }
 
-// Entries getter
+// Entries getter.
 func (app *Application) Entries() source.LazyLogEntries {
 	app.lock.Lock()
 	defer app.lock.Unlock()
@@ -115,7 +115,7 @@ func (app *Application) Entries() source.LazyLogEntries {
 	return app.entries
 }
 
-// LastWindowSize getter
+// LastWindowSize getter.
 func (app *Application) LastWindowSize() tea.WindowSizeMsg {
 	app.lock.Lock()
 	defer app.lock.Unlock()
