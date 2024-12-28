@@ -99,6 +99,7 @@ func (s StateFilteredModel) handleStateFilteredModel() (StateFilteredModel, tea.
 		return s, events.ShowError(err)()
 	}
 
+	s.logEntries = entries
 	s.table = newLogsTableModel(
 		s.Application,
 		entries,
