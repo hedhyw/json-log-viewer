@@ -52,31 +52,4 @@ plain text log
 {"time":865900800,"level":"TRACE","message": "Money doesn't talk, it swears","author": "Bob Dylan"}
 {"time":883612800.45,"level":"WARN","message": "If a man knows not to which port he sails, no wind is favorable","author": "Seneca"}
 {"time":"915148800000.45","level":"VERBOSE","message": "Begin at once to live, and count each separate day as a separate life","author": "Seneca"}
-{"time":946684800.45,"level":"VERBOSE","message": "Begin at once to live, and count each separate day as a separate life","author": "Seneca"}test
-
-test
-test
-test
-test
-test
-test
-test
-testXXXX
-testXXXX
-testTTTTT
-
-Sat 28 Dec 14:08:48 EET 2024
-
-Sat 28 Dec 14:09:00 EET 2024
-
-Sat 28 Dec 14:09:10 EET 2024
-
-Sat 28 Dec 14:09:27 EET 2024
-
-Sat 28 Dec 14:09:41 EET 2024
-
-Sat 28 Dec 14:09:55 EET 2024
-
-Sat 28 Dec 14:09:56 EET 2024
-
-Sat 28 Dec 14:10:14 EET 2024
+{"time":946684800.45,"level":"VERBOSE","message": "Begin at once to live, and count each separate day as a separate life","author": "Seneca"}
