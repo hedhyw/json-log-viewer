@@ -12,7 +12,7 @@ require (
 	github.com/charmbracelet/bubbletea v1.2.4
 	github.com/charmbracelet/lipgloss v1.0.0
 	github.com/docker/go-units v0.5.0
-	github.com/go-playground/validator/v10 v10.23.0
+	github.com/go-playground/validator/v10 v10.24.0
 	github.com/hedhyw/jsoncjson v1.1.0
 	github.com/hedhyw/semerr v0.6.7
 	github.com/muesli/reflow v0.3.0
@@ -27,7 +27,7 @@ require (
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
-	github.com/gabriel-vasile/mimetype v1.4.5 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
@@ -42,10 +42,10 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sahilm/fuzzy v0.1.1 // indirect
-	golang.org/x/crypto v0.28.0 // indirect
-	golang.org/x/net v0.30.0 // indirect
-	golang.org/x/sync v0.9.0 // indirect
-	golang.org/x/sys v0.27.0 // indirect
-	golang.org/x/text v0.19.0 // indirect
+	golang.org/x/crypto v0.32.0 // indirect
+	golang.org/x/net v0.34.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/sys v0.29.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
