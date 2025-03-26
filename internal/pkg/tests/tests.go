@@ -20,7 +20,7 @@ const ErrTest semerr.Error = "test error"
 func RequireCreateFile(tb testing.TB, content []byte) string {
 	tb.Helper()
 
-	f, err := os.CreateTemp("", "json_log_viewer_test")
+	f, err := os.CreateTemp(tb.TempDir(), "json_log_viewer_test")
 	require.NoError(tb, err)
 
 	defer func() { assert.NoError(tb, f.Close()) }()

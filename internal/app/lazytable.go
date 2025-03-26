@@ -80,7 +80,7 @@ func (m lazyTableModel) getCellRenderer() func(table.Model, string, table.CellPo
 
 		if position.Column == cellIDLogLevel {
 			return removeClearSequence(
-				m.Application.getLogLevelStyle(
+				m.getLogLevelStyle(
 					m.renderedRows,
 					style,
 					position.RowID,
@@ -94,7 +94,7 @@ func (m lazyTableModel) getCellRenderer() func(table.Model, string, table.CellPo
 
 func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) (lazyTableModel, bool) {
 	// toggle the reverse display of items.
-	if key.Matches(msg, m.Application.keys.Reverse) {
+	if key.Matches(msg, m.keys.Reverse) {
 		m.reverse = !m.reverse
 		render = true
 	}
@@ -128,21 +128,21 @@ func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) (lazyTableModel, 
 		increaseOffset, decreaseOffset = decreaseOffset, increaseOffset
 	}
 
-	if key.Matches(msg, m.Application.keys.Down) {
+	if key.Matches(msg, m.keys.Down) {
 		m.follow = false
 		if m.table.Cursor()+1 == m.table.Height() {
 			increaseOffset() // move the viewport
 		}
 	}
 
-	if key.Matches(msg, m.Application.keys.Up) {
+	if key.Matches(msg, m.keys.Up) {
 		m.follow = false
 		if m.table.Cursor() == 0 {
 			decreaseOffset() // move the viewport
 		}
 	}
 
-	if key.Matches(msg, m.Application.keys.GotoTop) {
+	if key.Matches(msg, m.keys.GotoTop) {
 		if m.reverse {
 			// when follow is enabled, rendering will handle setting the offset to the correct value
 			m.follow = true
@@ -153,7 +153,7 @@ func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) (lazyTableModel, 
 		render = true
 	}
 
-	if key.Matches(msg, m.Application.keys.GotoBottom) {
+	if key.Matches(msg, m.keys.GotoBottom) {
 		if m.reverse {
 			m.follow = false
 			m.offset = 0

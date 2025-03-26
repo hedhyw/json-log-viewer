@@ -82,7 +82,7 @@ func (s StateLoadedModel) viewHelp() string {
 			Padding(0, 1).
 			Render(s.Version)
 
-		width := s.Application.LastWindowSize().Width
+		width := s.LastWindowSize().Width
 		fillerText := lipgloss.NewStyle().
 			Background(lipgloss.Color("#353533")).
 			Width(width - lipgloss.Width(toggleText) - lipgloss.Width(versionText)).
@@ -160,8 +160,8 @@ func (s StateLoadedModel) getApplication() *Application {
 func (s StateLoadedModel) refresh() (_ stateModel, cmd tea.Cmd) {
 	var cmdFirst, cmdSecond tea.Cmd
 
-	s.table, cmdSecond = s.table.Update(s.Application.LastWindowSize())
-	s.table, cmdFirst = s.table.Update(events.LogEntriesUpdateMsg(s.Application.Entries()))
+	s.table, cmdSecond = s.table.Update(s.LastWindowSize())
+	s.table, cmdFirst = s.table.Update(events.LogEntriesUpdateMsg(s.Entries()))
 
 	return s, tea.Batch(cmdFirst, cmdSecond)
 }
