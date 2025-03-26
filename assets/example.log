@@ -53,3 +53,4 @@ plain text log
 {"time":883612800.45,"level":"WARN","message": "If a man knows not to which port he sails, no wind is favorable","author": "Seneca"}
 {"time":"915148800000.45","level":"VERBOSE","message": "Begin at once to live, and count each separate day as a separate life","author": "Seneca"}
 {"time":946684800.45,"level":"VERBOSE","message": "Begin at once to live, and count each separate day as a separate life","author": "Seneca"}
+{"@timestamp":"2025-03-06T11:55:53.723682+01:00","@version":1,"host":"bad21ee895cd","message":"Message ..","level":"INFO"}

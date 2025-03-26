@@ -68,7 +68,7 @@ func GetDefaultConfig() *Config {
 		Fields: []Field{{
 			Title:      "Time",
 			Kind:       FieldKindNumericTime,
-			References: []string{"$.timestamp", "$.time", "$.t", "$.ts"},
+			References: []string{"$.timestamp", "$.time", "$.t", "$.ts", "$[\"@timestamp\"]"},
 			Width:      30,
 			TimeFormat: &defaultTimeFormat,
 		}, {
