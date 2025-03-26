@@ -25,6 +25,8 @@ type Config struct {
 	Path string `json:"-"`
 
 	Fields []Field `json:"fields" validate:"min=1"`
+	// TimeLayouts to reformat.
+	TimeLayouts []string `json:"time_layouts"`
 
 	CustomLevelMapping map[string]string `json:"customLevelMapping"`
 
@@ -65,6 +67,25 @@ func GetDefaultConfig() *Config {
 		Path:               "default",
 		CustomLevelMapping: GetDefaultCustomLevelMapping(),
 		MaxFileSizeBytes:   2 * units.GB,
+		TimeLayouts: []string{
+			time.Layout,
+			time.ANSIC,
+			time.UnixDate,
+			time.RubyDate,
+			time.RFC822,
+			time.RFC822Z,
+			time.RFC850,
+			time.RFC1123,
+			time.RFC1123Z,
+			time.RFC3339,
+			time.RFC3339Nano,
+			time.Stamp,
+			time.StampMilli,
+			time.StampMicro,
+			time.StampNano,
+			time.DateTime,
+			time.DateOnly,
+		},
 		Fields: []Field{{
 			Title:      "Time",
 			Kind:       FieldKindNumericTime,

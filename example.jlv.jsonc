@@ -65,6 +65,31 @@
             "width": 0
         }
     ],
+    // Time layouts to reformat.
+    //
+    // If the time field has been parsed to any of the specified layouts,
+    // it will be formatted according to "time_format" configuration.
+    //
+    // See: https://pkg.go.dev/time#pkg-constants.
+    "time_layouts": [
+	    "01/02 03:04:05PM '06 -0700",
+	    "Mon Jan _2 15:04:05 2006",
+	    "Mon Jan _2 15:04:05 MST 2006",
+	    "Mon Jan 02 15:04:05 -0700 2006",
+	    "02 Jan 06 15:04 MST",
+	    "02 Jan 06 15:04 -0700",
+	    "Monday, 02-Jan-06 15:04:05 MST",
+	    "Mon, 02 Jan 2006 15:04:05 MST",
+	    "Mon, 02 Jan 2006 15:04:05 -0700",
+	    "2006-01-02T15:04:05Z07:00",
+	    "2006-01-02T15:04:05.999999999Z07:00",
+	    "Jan _2 15:04:05",
+	    "Jan _2 15:04:05.000",
+	    "Jan _2 15:04:05.000000",
+	    "Jan _2 15:04:05.000000000",
+	    "2006-01-02 15:04:05",
+	    "2006-01-02"
+	],
     // Mapping of log level.
     // Possible values: none, trace, debug, info, warn, error, panic, fatal.
     "customLevelMapping": {
