@@ -18,7 +18,8 @@
                 "$.timestamp",
                 "$.time",
                 "$.t",
-                "$.ts"
+                "$.ts",
+                "$[\"@timestamp\"]"
             ],
             "width": 30,
             //	Year: "2006" "06"

@@ -1,43 +1,72 @@
 {
+  "formatters": {
+    "enable": [
+      "gofmt",
+      "gofumpt",
+      "goimports"
+    ],
+    "exclusions": {
+      "generated": "lax",
+      "paths": [
+        "third_party$",
+        "builtin$",
+        "examples$"
+      ]
+    },
+    "settings": {
+      "goimports": {
+        "local-prefixes": [
+          "github.com/hedhyw/json-log-viewer/"
+        ]
+      }
+    }
+  },
   "linters": {
-    "enable-all": true,
+    "default": "all",
     "disable": [
-      "lll",
-      "gochecknoglobals",
       "bodyclose",
-      "wsl",
-      "funlen",
-      "gci",
-      "wrapcheck",
-      "varnamelen",
-      "testpackage",
-      "exhaustive",
-      "gomnd",
-      "thelper",
-      "paralleltest",
-      "tagliatelle",
-      "nonamedreturns",
-      "exhaustruct",
-      "nolintlint",
-      "wastedassign",
-      "rowserrcheck",
       "depguard",
-      "ireturn",
+      "exhaustive",
+      "exhaustruct",
+      "funlen",
+      "gochecknoglobals",
       "gomoddirectives",
-      "execinquery",
-      "tagalign",
+      "ireturn",
+      "lll",
       "mnd",
       "nlreturn",
-      "exportloopref"
-    ]
+      "nolintlint",
+      "nonamedreturns",
+      "paralleltest",
+      "rowserrcheck",
+      "tagalign",
+      "tagliatelle",
+      "testpackage",
+      "thelper",
+      "varnamelen",
+      "wastedassign",
+      "wrapcheck",
+      "wsl"
+    ],
+    "exclusions": {
+      "generated": "lax",
+      "paths": [
+        "third_party$",
+        "builtin$",
+        "examples$"
+      ],
+      "presets": [
+        "comments",
+        "common-false-positives",
+        "legacy",
+        "std-error-handling"
+      ]
+    },
+    "settings": {
+      "cyclop": {
+        "max-complexity": 15
+      }
+    }
   },
-  "linters-settings": {
-    "goimports": {
-      "local-prefixes": "github.com/hedhyw/json-log-viewer/"
-    },
-    "cyclop": {
-      "max-complexity": 15
-    },
-    "revive": {}
-  }
+  "version": "2"
 }

@@ -43,7 +43,7 @@ func (s StateFilteredModel) Init() tea.Cmd {
 
 // View renders component. It implements tea.Model.
 func (s StateFilteredModel) View() string {
-	footer := s.Application.FooterStyle.Render(
+	footer := s.FooterStyle.Render(
 		fmt.Sprintf("filtered %d by: %s", s.logEntries.Len(), s.filterText),
 	)
 
@@ -128,7 +128,7 @@ func (s StateFilteredModel) getApplication() *Application {
 }
 
 func (s StateFilteredModel) refresh() (_ stateModel, cmd tea.Cmd) {
-	s.table, cmd = s.table.Update(s.Application.LastWindowSize())
+	s.table, cmd = s.table.Update(s.LastWindowSize())
 
 	return s, cmd
 }

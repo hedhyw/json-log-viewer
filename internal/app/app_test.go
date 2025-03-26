@@ -102,6 +102,6 @@ func requireCmdMsg(tb testing.TB, expected tea.Msg, cmd tea.Cmd) {
 }
 
 func getTestError() error {
-	// nolint: goerr113 // It is a test.
+	// nolint: err113 // It is a test.
 	return errors.New("error description")
 }

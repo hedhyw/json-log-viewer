@@ -722,7 +722,7 @@ func getTimestampFormattingConfig(fieldKind config.FieldKind, format string) *co
 	cfg.Fields = []config.Field{{
 		Title:      "Time",
 		Kind:       fieldKind,
-		References: []string{"$.timestamp", "$.time", "$.t", "$.ts"},
+		References: []string{"$.timestamp", "$.time", "$.t", "$.ts", "$[\"@timestamp\"]"},
 		Width:      30,
 		TimeFormat: timeFormat,
 	}}
