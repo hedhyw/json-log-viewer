@@ -12,7 +12,7 @@ require (
 	github.com/charmbracelet/bubbletea v1.3.4
 	github.com/charmbracelet/lipgloss v1.0.0
 	github.com/docker/go-units v0.5.0
-	github.com/go-playground/validator/v10 v10.24.0
+	github.com/go-playground/validator/v10 v10.25.0
 	github.com/hedhyw/jsoncjson v1.1.0
 	github.com/hedhyw/semerr v0.6.7
 	github.com/muesli/reflow v0.3.0
