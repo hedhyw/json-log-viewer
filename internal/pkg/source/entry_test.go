@@ -469,7 +469,11 @@ func TestNumericKindTimeFormatting(t *testing.T) {
 	numericKindCases := [...]timeFormattingTestCase{{
 		TestName:       "Date passthru",
 		JSON:           `{"timestamp":"2023-10-08 20:00:00"}`,
-		ExpectedOutput: "2023-10-08 20:00:00",
+		ExpectedOutput: "2023-10-08T20:00:00Z",
+	}, {
+		TestName:       "RFC1123 passthru",
+		JSON:           `{"@timestamp":"Mon, 02 Jan 2006 15:04:05 MST"}`,
+		ExpectedOutput: "2006-01-02T15:04:05Z",
 	}, {
 		TestName:       "Non-date string",
 		JSON:           `{"timestamp":"-"}`,

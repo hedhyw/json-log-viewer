@@ -173,7 +173,7 @@ func formatField(
 	case config.FieldKindLevel:
 		return string(ParseLevel(formatMessage(value), cfg.CustomLevelMapping))
 	case config.FieldKindTime:
-		return formatMessage(value)
+		return formatMessage(reformatTime(value, cfg.TimeLayouts, timeFormat))
 	case config.FieldKindSecondTime:
 		return formatMessage(formatTimeValue(value, unitSeconds, timeFormat))
 	case config.FieldKindMilliTime:
@@ -185,6 +185,17 @@ func formatField(
 	default:
 		return formatMessage(value)
 	}
+}
+
+func reformatTime(value string, layoutsToReformat []string, timeFormat string) string {
+	for _, laoyout := range layoutsToReformat {
+		parsed, err := time.Parse(laoyout, value)
+		if err == nil {
+			return parsed.Format(timeFormat)
+		}
+	}
+
+	return value
 }
 
 // parseLogEntry parses a single log entry from the json line.
