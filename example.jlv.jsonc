@@ -33,7 +33,7 @@
             //	AM/PM mark: "PM"
             //
             // More details: https://go.dev/src/time/format.go.
-            "time_format": "2006-01-02T15:04:05Z07:00"
+            "timeFormat": "2006-01-02T15:04:05Z07:00"
         },
         {
             "title": "Level",
@@ -70,7 +70,7 @@
     // Time layouts to reformat.
     //
     // If the time field has been parsed to any of the specified layouts,
-    // it will be formatted according to "time_format" configuration.
+    // it will be formatted according to "timeFormat" configuration.
     //
     // See: https://pkg.go.dev/time#pkg-constants.
     "timeLayouts": [
