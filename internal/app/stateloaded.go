@@ -26,8 +26,8 @@ func newStateViewLogs(
 	table := newLogsTableModel(
 		application,
 		logEntries,
-		true, // follow.
-		true, // reverse.
+		true,                                // follow.
+		application.Config.IsReverseDefault, // reverse.
 	)
 
 	return StateLoadedModel{

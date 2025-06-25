@@ -19,14 +19,26 @@ import (
 
 const testVersion = "v0.0.1"
 
-func newTestModel(tb testing.TB, content []byte) tea.Model {
+type configSetter func(*config.Config)
+
+func newTestModel(
+	tb testing.TB,
+	content []byte,
+	configSetters ...configSetter,
+) tea.Model {
 	tb.Helper()
 
 	testFile := tests.RequireCreateFile(tb, content)
 
-	inputSource, err := source.File(testFile, config.GetDefaultConfig())
+	cfg := config.GetDefaultConfig()
+
+	for _, set := range configSetters {
+		set(cfg)
+	}
+
+	inputSource, err := source.File(testFile, cfg)
 	require.NoError(tb, err)
-	model := app.NewModel(testFile, config.GetDefaultConfig(), testVersion)
+	model := app.NewModel(testFile, cfg, testVersion)
 
 	entries, err := inputSource.ParseLogEntries()
 	require.NoError(tb, err)

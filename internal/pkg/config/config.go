@@ -25,8 +25,12 @@ type Config struct {
 	Path string `json:"-"`
 
 	Fields []Field `json:"fields" validate:"min=1"`
+
+	TimeLayoutsDeprecated []string `json:"time_layouts,omitempty"`
 	// TimeLayouts to reformat.
-	TimeLayouts []string `json:"time_layouts"`
+	TimeLayouts []string `json:"timeLayouts"`
+
+	IsReverseDefault bool `json:"isReverseDefault"`
 
 	CustomLevelMapping map[string]string `json:"customLevelMapping"`
 
@@ -55,7 +59,9 @@ type Field struct {
 	Kind       FieldKind `json:"kind" validate:"required,oneof=time message numerictime secondtime millitime microtime level any"`
 	References []string  `json:"ref" validate:"min=1,dive,required"`
 	Width      int       `json:"width" validate:"min=0"`
-	TimeFormat *string   `json:"time_format,omitempty"`
+
+	TimeFormatDeprecated *string `json:"time_format,omitempty"`
+	TimeFormat           *string `json:"timeFormat,omitempty"`
 }
 
 // GetDefaultConfig returns the configuration with default values.
@@ -102,6 +108,7 @@ func GetDefaultConfig() *Config {
 			Kind:       FieldKindMessage,
 			References: []string{"$.message", "$.msg", "$.error", "$.err"},
 		}},
+		IsReverseDefault: true,
 	}
 }
 
@@ -164,6 +171,18 @@ func readConfigFromFile(path string) (cfg *Config, err error) {
 	}
 
 	cfg.Path = path
+
+	if len(cfg.TimeLayoutsDeprecated) != 0 {
+		cfg.TimeLayouts = cfg.TimeLayoutsDeprecated
+	}
+
+	for i, f := range cfg.Fields {
+		if f.TimeFormatDeprecated != nil && *f.TimeFormatDeprecated != "" {
+			f.TimeFormat = f.TimeFormatDeprecated
+		}
+
+		cfg.Fields[i] = f
+	}
 
 	return cfg, nil
 }

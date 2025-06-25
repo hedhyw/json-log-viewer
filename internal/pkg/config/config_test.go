@@ -114,7 +114,7 @@ func ExampleGetDefaultConfig() {
 	//         "$[\"@timestamp\"]"
 	//       ],
 	//       "width": 30,
-	//       "time_format": "2006-01-02T15:04:05Z07:00"
+	//       "timeFormat": "2006-01-02T15:04:05Z07:00"
 	//     },
 	//     {
 	//       "title": "Level",
@@ -138,7 +138,7 @@ func ExampleGetDefaultConfig() {
 	//       "width": 0
 	//     }
 	//   ],
-	//   "time_layouts": [
+	//   "timeLayouts": [
 	//     "01/02 03:04:05PM '06 -0700",
 	//     "Mon Jan _2 15:04:05 2006",
 	//     "Mon Jan _2 15:04:05 MST 2006",
@@ -157,6 +157,7 @@ func ExampleGetDefaultConfig() {
 	//     "2006-01-02 15:04:05",
 	//     "2006-01-02"
 	//   ],
+	//   "isReverseDefault": true,
 	//   "customLevelMapping": {
 	//     "10": "trace",
 	//     "20": "debug",
@@ -394,4 +395,43 @@ func TestByteSizeParseFailed(t *testing.T) {
 		err := json.Unmarshal([]byte(`""`), &value)
 		require.Error(t, err)
 	})
+}
+
+func TestReadTimeLayoutsDeprecated(t *testing.T) {
+	t.Parallel()
+
+	cfg := config.GetDefaultConfig()
+	cfg.TimeLayoutsDeprecated = []string{time.Layout}
+	cfg.TimeLayouts = nil
+
+	configJSON := tests.RequireEncodeJSON(t, cfg)
+	fileFirst := tests.RequireCreateFile(t, configJSON)
+
+	actual, err := config.Read(fileFirst)
+	if assert.NoError(t, err) {
+		assert.ElementsMatch(t, actual.TimeLayouts, cfg.TimeLayoutsDeprecated)
+	}
+}
+
+func TestReadTimeFormatDeprecated(t *testing.T) {
+	t.Parallel()
+
+	timeFormat := time.Layout
+
+	cfg := config.GetDefaultConfig()
+	cfg.Fields = []config.Field{{
+		Title:                "Time",
+		Kind:                 config.FieldKindNumericTime,
+		References:           []string{"$.timestamp", "$.time", "$.t", "$.ts", "$[\"@timestamp\"]"},
+		Width:                30,
+		TimeFormatDeprecated: &timeFormat,
+	}}
+
+	configJSON := tests.RequireEncodeJSON(t, cfg)
+	fileFirst := tests.RequireCreateFile(t, configJSON)
+
+	actual, err := config.Read(fileFirst)
+	if assert.NoError(t, err) {
+		assert.Equal(t, timeFormat, *actual.Fields[0].TimeFormat)
+	}
 }

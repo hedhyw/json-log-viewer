@@ -32,10 +32,10 @@ func TestStateLoadedEmpty(t *testing.T) {
 func TestStateLoaded(t *testing.T) {
 	t.Parallel()
 
-	setup := func() tea.Model {
+	setup := func(configSetters ...configSetter) tea.Model {
 		const jsonFile = `{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "test"}`
 
-		model := newTestModel(t, []byte(jsonFile))
+		model := newTestModel(t, []byte(jsonFile), configSetters...)
 
 		_, ok := model.(app.StateLoadedModel)
 		require.Truef(t, ok, "%s", model)
@@ -109,6 +109,17 @@ func TestStateLoaded(t *testing.T) {
 
 		view := model.View()
 		assert.Contains(t, view, "reverse")
+	})
+
+	t.Run("label_reverse_disabled_in_config", func(t *testing.T) {
+		t.Parallel()
+
+		model := setup(func(cfg *config.Config) {
+			cfg.IsReverseDefault = false
+		})
+
+		view := model.View()
+		assert.NotContains(t, view, "reverse")
 	})
 
 	t.Run("label_not_reverse", func(t *testing.T) {
