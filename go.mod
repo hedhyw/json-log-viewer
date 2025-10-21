@@ -16,7 +16,7 @@ require (
 	github.com/hedhyw/jsoncjson v1.1.0
 	github.com/hedhyw/semerr v1.0.1
 	github.com/muesli/reflow v0.3.0
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	github.com/yalp/jsonpath v0.0.0-20180802001716-5cc68e5049a0
 )
 
