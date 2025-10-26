@@ -11,6 +11,8 @@ type KeyMap struct {
 	Up              key.Binding
 	Reverse         key.Binding
 	Down            key.Binding
+	PageUp          key.Binding
+	PageDown        key.Binding
 	Filter          key.Binding
 	ToggleFullHelp  key.Binding
 	GotoTop         key.Binding
@@ -20,6 +22,7 @@ type KeyMap struct {
 
 // GetDefaultKeys returns default KeyMap.
 func GetDefaultKeys() KeyMap {
+	const spacebar = " "
 	return KeyMap{
 		Exit: key.NewBinding(
 			key.WithKeys("ctrl+c", "f10"),
@@ -48,6 +51,14 @@ func GetDefaultKeys() KeyMap {
 			key.WithKeys("down"),
 			key.WithHelp("↓", "Down"),
 		),
+		PageUp: key.NewBinding(
+			key.WithKeys("pgup"),
+			key.WithHelp("pgup", "page up"),
+		),
+		PageDown: key.NewBinding(
+			key.WithKeys("pgdown", spacebar),
+			key.WithHelp("pgdn", "page down"),
+		),
 		Filter: key.NewBinding(
 			key.WithKeys("f"),
 			key.WithHelp("f", "Filter"),
@@ -69,7 +80,7 @@ func GetDefaultKeys() KeyMap {
 
 func (k KeyMap) ShortHelp() []key.Binding {
 	return []key.Binding{
-		k.Back, k.Open, k.Up, k.Down, k.ToggleFullHelp,
+		k.Back, k.Open, k.Up, k.Down, k.PageUp, k.PageDown, k.ToggleFullHelp,
 	}
 }
 
@@ -78,6 +89,7 @@ func (k KeyMap) FullHelp() [][]key.Binding {
 		{k.Up, k.Down},
 		{k.Back, k.Open},
 		{k.Filter, k.Reverse},
+		{k.PageUp, k.PageDown},
 		{k.GotoTop, k.GotoBottom},
 		{k.ToggleFullHelp, k.Exit},
 	}

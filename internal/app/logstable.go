@@ -32,6 +32,8 @@ func newLogsTableModel(
 	)
 	tableLogs.KeyMap.LineUp = application.keys.Up
 	tableLogs.KeyMap.LineDown = application.keys.Down
+	tableLogs.KeyMap.PageUp = application.keys.PageUp
+	tableLogs.KeyMap.PageDown = application.keys.PageDown
 	tableLogs.KeyMap.GotoBottom = application.keys.GotoBottom
 	tableLogs.KeyMap.GotoTop = application.keys.GotoTop
 
