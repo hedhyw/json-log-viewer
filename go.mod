@@ -2,7 +2,7 @@ module github.com/hedhyw/json-log-viewer
 
 go 1.23.0
 
-replace github.com/antonmedv/fx => github.com/hedhyw/fx v0.0.3
+replace github.com/antonmedv/fx => github.com/hedhyw/fx v0.0.4-0.20251027095534-29fea24f8521
 
 replace github.com/charmbracelet/bubbles => github.com/hedhyw/bubbles v0.0.4
 
