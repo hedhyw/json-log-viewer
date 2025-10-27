@@ -50,15 +50,19 @@ func (m lazyTableModel) Update(msg tea.Msg) (lazyTableModel, tea.Cmd) {
 	var cmd tea.Cmd
 
 	render := false
+	captureMessage := false
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		m, render = m.handleKey(msg, render)
+		m, render, captureMessage = m.handleKey(msg, render)
 
 	case EntriesUpdateMsg:
 		m.entries = msg.Entries
 		render = true
 	}
-	m.table, cmd = m.table.Update(msg)
+
+	if !captureMessage {
+		m.table, cmd = m.table.Update(msg)
+	}
 
 	if m.table.Cursor() != m.lastCursor {
 		render = true
@@ -92,18 +96,20 @@ func (m lazyTableModel) getCellRenderer() func(table.Model, string, table.CellPo
 	}
 }
 
-func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) (lazyTableModel, bool) {
+func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) (lazyTableModel, bool, bool) {
+	captureMessage := false // when true, the key message must not be forwarded to the inner table
+
 	// toggle the reverse display of items.
 	if key.Matches(msg, m.keys.Reverse) {
 		m.reverse = !m.reverse
 		render = true
 	}
 
-	// this function increases the viewport offset by 1 if possible.  (scrolls down)
-	increaseOffset := func() {
+	// this function increases the viewport offset by n if possible.  (scrolls down)
+	increaseOffset := func(n int) {
 		maxOffset := max(m.entries.Len()-m.table.Height(), 0)
 
-		offset := min(m.offset+1, maxOffset)
+		offset := min(m.offset+n, maxOffset)
 		if offset != m.offset {
 			m.offset = offset
 			render = true
@@ -113,9 +119,9 @@ func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) (lazyTableModel, 
 		}
 	}
 
-	// this function decreases the viewport offset by 1 if possible.  (scrolls up)
-	decreaseOffset := func() {
-		offset := max(m.offset-1, 0)
+	// this function decreases the viewport offset by n if possible.  (scrolls up)
+	decreaseOffset := func(n int) {
+		offset := max(m.offset-n, 0)
 		if offset != m.offset {
 			m.offset = offset
 			render = true
@@ -131,15 +137,27 @@ func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) (lazyTableModel, 
 	if key.Matches(msg, m.keys.Down) {
 		m.follow = false
 		if m.table.Cursor()+1 == m.table.Height() {
-			increaseOffset() // move the viewport
+			increaseOffset(1) // move the viewport
 		}
 	}
 
 	if key.Matches(msg, m.keys.Up) {
 		m.follow = false
 		if m.table.Cursor() == 0 {
-			decreaseOffset() // move the viewport
+			decreaseOffset(1) // move the viewport
 		}
+	}
+
+	if key.Matches(msg, m.keys.PageDown) {
+		m.follow = false
+		increaseOffset(m.table.Height() - 1) // move the viewport
+		captureMessage = !m.follow
+	}
+
+	if key.Matches(msg, m.keys.PageUp) {
+		m.follow = false
+		decreaseOffset(m.table.Height() - 1) // move the viewport
+		captureMessage = !m.follow
 	}
 
 	if key.Matches(msg, m.keys.GotoTop) {
@@ -164,7 +182,7 @@ func (m lazyTableModel) handleKey(msg tea.KeyMsg, render bool) (lazyTableModel, 
 		render = true
 	}
 
-	return m, render
+	return m, render, captureMessage
 }
 
 func (m lazyTableModel) viewPortCursor() int {
