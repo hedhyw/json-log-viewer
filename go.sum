@@ -33,8 +33,8 @@ github.com/go-playground/validator/v10 v10.27.0 h1:w8+XrWVMhGkxOaaowyKH35gFydVHO
 github.com/go-playground/validator/v10 v10.27.0/go.mod h1:I5QpIEbmr8On7W0TktmJAumgzX4CA1XNl4ZmDuVHKKo=
 github.com/hedhyw/bubbles v0.0.4 h1:4QZeYNa6KcE2CAszgQ07rSk4qd2EDj4FlH9Q3oECq5w=
 github.com/hedhyw/bubbles v0.0.4/go.mod h1:0B5SDVyyRXMteAgJRkYRJQ6bvsKtWdzeepp8rN+RhXQ=
-github.com/hedhyw/fx v0.0.4-0.20251027095534-29fea24f8521 h1:xENAewa6Jr1a0ugzkNNgcYhron4hxUmkEygAmu6lSVo=
-github.com/hedhyw/fx v0.0.4-0.20251027095534-29fea24f8521/go.mod h1:km/FnS8aa6d/z086KPzYtYzLv/lWMEnF275IS3wC0jE=
+github.com/hedhyw/fx v0.0.4 h1:ZJjJTh+SpQcX21ypSXhwy4yW7g/03YsiM+tPpBHotoI=
+github.com/hedhyw/fx v0.0.4/go.mod h1:km/FnS8aa6d/z086KPzYtYzLv/lWMEnF275IS3wC0jE=
 github.com/hedhyw/jsoncjson v1.1.0 h1:uw/aqmbSXAQNJHDPLb+DpwlPNzMREGIsrs+TIwPk+f0=
 github.com/hedhyw/jsoncjson v1.1.0/go.mod h1:++nXlbEXzRMcqkoDLvH5I/z5qBkacAWSZDt1u6osUPc=
 github.com/hedhyw/semerr v1.0.1 h1:tl2S38sPoD7hLzu0NgFnmcYhIIP47rGZ8lnRZCsljMM=
