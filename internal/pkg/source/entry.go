@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -107,6 +108,36 @@ func (entries LazyLogEntries) Filter(term string) (LazyLogEntries, error) {
 		}
 
 		if bytes.Contains(bytes.ToLower(line), termLower) {
+			filtered = append(filtered, f)
+		}
+	}
+
+	return LazyLogEntries{
+		Seeker:  entries.Seeker,
+		Entries: filtered,
+	}, nil
+}
+
+// FilterRegEx filters entries by regex ignoring case
+func (entries LazyLogEntries) FilterRegExp(regex string) (LazyLogEntries, error) {
+	if regex == "" {
+		return entries, nil
+	}
+
+	re, err := regexp.Compile(regex)
+	if err != nil {
+		return LazyLogEntries{}, err
+	}
+
+	filtered := make([]LazyLogEntry, 0, len(entries.Entries))
+
+	for _, f := range entries.Entries {
+		line, err := f.Line(entries.Seeker)
+		if err != nil {
+			return LazyLogEntries{}, err
+		}
+
+		if re.Match([]byte(bytes.ToLower(line))) {
 			filtered = append(filtered, f)
 		}
 	}
