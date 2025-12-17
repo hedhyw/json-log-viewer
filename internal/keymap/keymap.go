@@ -30,7 +30,7 @@ func GetDefaultKeys() KeyMap {
 		),
 		Back: key.NewBinding(
 			key.WithKeys("esc", "q"),
-			key.WithHelp("esc", "Back"),
+			key.WithHelp("(esc, q)", "Back"),
 		),
 		Open: key.NewBinding(
 			key.WithKeys("enter"),
@@ -73,7 +73,7 @@ func GetDefaultKeys() KeyMap {
 		),
 		GotoBottom: key.NewBinding(
 			key.WithKeys("end", "G"),
-			key.WithHelp("end", "go to end"),
+			key.WithHelp("(end, G)", "go to end"),
 		),
 	}
 }
