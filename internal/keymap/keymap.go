@@ -40,16 +40,16 @@ func GetDefaultKeys() KeyMap {
 			key.WithKeys("right"),
 		),
 		Up: key.NewBinding(
-			key.WithKeys("up"),
-			key.WithHelp("↑", "Up"),
+			key.WithKeys("up", "k"),
+			key.WithHelp("(↑, k)", "Up"),
 		),
 		Reverse: key.NewBinding(
 			key.WithKeys("r"),
 			key.WithHelp("r", "Reverse"),
 		),
 		Down: key.NewBinding(
-			key.WithKeys("down"),
-			key.WithHelp("↓", "Down"),
+			key.WithKeys("down", "j"),
+			key.WithHelp("(↓, j)", "Down"),
 		),
 		PageUp: key.NewBinding(
 			key.WithKeys("pgup"),

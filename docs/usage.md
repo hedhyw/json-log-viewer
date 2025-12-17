@@ -10,7 +10,7 @@
 | R      | Reverse           |
 | Ctrl+C | Exit              |
 | F10    | Exit              |
-| ↑↓     | Line Up / Down    |
+| ↑↓ / jk| Line Up / Down    |
 | PgUp   | Page Up           |
 | PgDown | Page Down         |
 | Home   | Navigate to Start |
