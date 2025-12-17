@@ -10,11 +10,11 @@
 | R      | Reverse           |
 | Ctrl+C | Exit              |
 | F10    | Exit              |
-| ↑↓     | Line Up / Down    |
+| ↑↓ / jk| Line Up / Down    |
 | PgUp   | Page Up           |
 | PgDown | Page Down         |
 | Home   | Navigate to Start |
-| End    | Navigate to End   |
+| End / G| Navigate to End   |
 | ?      | Show/Hide help    |
 
 > Attempting to navigate past the last line in the log will put you in follow mode.
