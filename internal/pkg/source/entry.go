@@ -124,7 +124,8 @@ func (entries LazyLogEntries) FilterRegExp(regex string) (LazyLogEntries, error)
 		return entries, nil
 	}
 
-	re, err := regexp.Compile(regex)
+	re, err := regexp.Compile(strings.ToLower(regex))
+
 	if err != nil {
 		return LazyLogEntries{}, err
 	}
