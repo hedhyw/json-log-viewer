@@ -59,7 +59,7 @@ func Context(t *testing.T) context.Context {
 		deadline = time.Now().Add(defaultTimeout)
 	}
 
-	ctx, cancel := context.WithDeadline(context.Background(), deadline)
+	ctx, cancel := context.WithDeadline(t.Context(), deadline)
 	t.Cleanup(cancel)
 
 	return ctx
