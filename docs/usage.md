@@ -7,6 +7,7 @@
 | Enter  | Open log          |
 | Esc    | Back              |
 | F      | Filter            |
+| /      | RegExp Filter     |
 | R      | Reverse           |
 | Ctrl+C | Exit              |
 | F10    | Exit              |

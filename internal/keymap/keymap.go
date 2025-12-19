@@ -14,6 +14,7 @@ type KeyMap struct {
 	PageUp          key.Binding
 	PageDown        key.Binding
 	Filter          key.Binding
+	FilterRegex     key.Binding
 	ToggleFullHelp  key.Binding
 	GotoTop         key.Binding
 	GotoBottom      key.Binding
@@ -63,6 +64,10 @@ func GetDefaultKeys() KeyMap {
 			key.WithKeys("f"),
 			key.WithHelp("f", "Filter"),
 		),
+		FilterRegex: key.NewBinding(
+			key.WithKeys("/"),
+			key.WithHelp("/", "RegExp Filter"),
+		),
 		ToggleFullHelp: key.NewBinding(
 			key.WithKeys("?"),
 			key.WithHelp("?", "Help"),
@@ -92,5 +97,6 @@ func (k KeyMap) FullHelp() [][]key.Binding {
 		{k.PageUp, k.PageDown},
 		{k.GotoTop, k.GotoBottom},
 		{k.ToggleFullHelp, k.Exit},
+		{k.FilterRegex},
 	}
 }

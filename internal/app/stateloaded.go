@@ -118,6 +118,8 @@ func (s StateLoadedModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return s, tea.Quit
 		case key.Matches(msg, s.keys.Filter):
 			return s.handleFilterKeyClickedMsg()
+		case key.Matches(msg, s.keys.FilterRegex):
+			return s.handleRegexFilterKeyClickedMsg()
 		case key.Matches(msg, s.keys.ToggleViewArrow), key.Matches(msg, s.keys.Open):
 			return s.handleRequestOpenJSON()
 		case key.Matches(msg, s.keys.ToggleFullHelp):
@@ -151,6 +153,10 @@ func (s StateLoadedModel) handleRequestOpenJSON() (tea.Model, tea.Cmd) {
 
 func (s StateLoadedModel) handleFilterKeyClickedMsg() (tea.Model, tea.Cmd) {
 	return initializeModel(newStateFiltering(s))
+}
+
+func (s StateLoadedModel) handleRegexFilterKeyClickedMsg() (tea.Model, tea.Cmd) {
+	return initializeModel(newStateRegexFiltering(s))
 }
 
 func (s StateLoadedModel) getApplication() *Application {
