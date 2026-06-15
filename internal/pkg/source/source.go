@@ -135,6 +135,7 @@ func (s *Source) ParseLogEntries() (LazyLogEntries, error) {
 			return LazyLogEntries{}, err
 		}
 
+		entry.index = len(logEntries)
 		logEntries = append(logEntries, entry)
 	}
 

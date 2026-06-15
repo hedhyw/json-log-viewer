@@ -104,3 +104,9 @@ func (m logsTableModel) handleWindowSizeMsg(msg tea.WindowSizeMsg) logsTableMode
 func (m logsTableModel) Cursor() int {
 	return m.lazyTable.viewPortCursor()
 }
+
+func (m logsTableModel) Select(index int) logsTableModel {
+	m.lazyTable = m.lazyTable.Select(index)
+
+	return m
+}

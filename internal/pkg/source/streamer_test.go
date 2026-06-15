@@ -111,6 +111,52 @@ func TestStartStreamingUpdates(t *testing.T) {
 	}
 }
 
+func TestStartStreamingLogEntryIndex(t *testing.T) {
+	t.Parallel()
+
+	pipeReader, pipeWriter := io.Pipe()
+
+	t.Cleanup(func() {
+		assert.NoError(t, pipeReader.Close())
+		assert.NoError(t, pipeWriter.Close())
+	})
+
+	cfg := config.GetDefaultConfig()
+
+	inputSource, err := source.Reader(pipeReader, cfg)
+	require.NoError(t, err)
+
+	t.Cleanup(func() { assert.NoError(t, inputSource.Close()) })
+
+	ctx := tests.Context(t)
+
+	entries := make(chan source.LazyLogEntries)
+
+	inputSource.StartStreaming(ctx, func(msg source.LazyLogEntries, _ error) {
+		if msg.Len() < 2 {
+			return
+		}
+
+		select {
+		case entries <- msg:
+		case <-ctx.Done():
+		}
+	})
+
+	_, err = fmt.Fprintln(pipeWriter, `{"message":"first"}`)
+	require.NoError(t, err)
+	_, err = fmt.Fprintln(pipeWriter, `{"message":"second"}`)
+	require.NoError(t, err)
+
+	select {
+	case msg := <-entries:
+		assert.Equal(t, 0, msg.LogEntry(cfg, 0).Index)
+		assert.Equal(t, 1, msg.LogEntry(cfg, 1).Index)
+	case <-ctx.Done():
+		t.Fatal(ctx.Err())
+	}
+}
+
 func TestStartStreamingContextClosed(t *testing.T) {
 	t.Parallel()
 

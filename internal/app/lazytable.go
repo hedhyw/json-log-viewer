@@ -195,6 +195,28 @@ func (m lazyTableModel) viewPortCursor() int {
 	return m.offset + m.table.Cursor()
 }
 
+func (m lazyTableModel) Select(index int) lazyTableModel {
+	if index < 0 || index >= m.entries.Len() {
+		return m
+	}
+
+	m.follow = false
+
+	height := max(m.table.Height(), 1)
+	maxOffset := max(m.entries.Len()-height, 0)
+	m.offset = min(max(index-height/2, 0), maxOffset)
+
+	viewSize := m.viewPortEnd() - m.viewPortStart()
+	cursor := index - m.offset
+	if m.reverse {
+		cursor = viewSize - 1 - cursor
+	}
+
+	m.table.SetCursor(cursor)
+
+	return m.RenderedRows()
+}
+
 func (m lazyTableModel) viewPortStart() int {
 	return m.offset
 }

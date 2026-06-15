@@ -6,10 +6,12 @@ import (
 	"testing"
 
 	"github.com/hedhyw/json-log-viewer/internal/app"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/config"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestStateFiltered(t *testing.T) {
@@ -130,6 +132,40 @@ func TestStateFiltered(t *testing.T) {
 
 		_, ok := model.(app.StateLoadedModel)
 		assert.Truef(t, ok, "%s", model)
+	})
+
+	t.Run("returned_to_selected_entry", func(t *testing.T) {
+		t.Parallel()
+
+		const jsonFile = `
+		{"time":"1970-01-01T00:00:00.00","level":"INFO","message":"tail"}
+		{"time":"1970-01-01T00:00:00.00","level":"INFO","message":"included 1"}
+		{"time":"1970-01-01T00:00:00.00","level":"INFO","message":"other"}
+		{"time":"1970-01-01T00:00:00.00","level":"INFO","message":"included 2"}
+		{"time":"1970-01-01T00:00:00.00","level":"INFO","message":"end"}
+		`
+
+		model := newTestModel(t, []byte(jsonFile), func(cfg *config.Config) {
+			cfg.IsReverseDefault = false
+		})
+
+		model = handleUpdate(model, tea.KeyMsg{
+			Type:  tea.KeyRunes,
+			Runes: []rune{'f'},
+		})
+		model = handleUpdate(model, tea.KeyMsg{
+			Type:  tea.KeyRunes,
+			Runes: []rune("included"),
+		})
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyEnter})
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyDown})
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyEsc})
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyEnter})
+
+		_, ok := model.(app.StateViewRowModel)
+		require.Truef(t, ok, "%s", model)
+		assert.Contains(t, model.View(), "included 2")
+		assert.NotContains(t, model.View(), "end")
 	})
 
 	t.Run("stringer", func(t *testing.T) {

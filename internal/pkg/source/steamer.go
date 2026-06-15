@@ -107,6 +107,7 @@ func (s *Source) readLogEntries(
 		}
 
 		logEntriesLock.Lock()
+		entry.index = len(*logEntries)
 		*logEntries = append(*logEntries, entry)
 		logEntriesLock.Unlock()
 	}

@@ -91,7 +91,7 @@ func (s StateFilteredModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (s StateFilteredModel) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch {
 	case key.Matches(msg, s.keys.Back):
-		return s.previousState.refresh()
+		return s.handleBackKeyClickedMsg()
 	case key.Matches(msg, s.keys.Filter):
 		return s.handleFilterKeyClickedMsg()
 	case key.Matches(msg, s.keys.ToggleViewArrow), key.Matches(msg, s.keys.Open):
@@ -99,6 +99,16 @@ func (s StateFilteredModel) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	default:
 		return nil, nil
 	}
+}
+
+func (s StateFilteredModel) handleBackKeyClickedMsg() (tea.Model, tea.Cmd) {
+	cursor := s.table.Cursor()
+	if cursor >= 0 && cursor < s.logEntries.Len() {
+		entry := s.logEntries.LogEntry(s.Config, cursor)
+		s.previousState.table = s.previousState.table.Select(entry.Index)
+	}
+
+	return s.previousState.refresh()
 }
 
 func (s StateFilteredModel) handleStateFilteredModel() (StateFilteredModel, tea.Msg) {

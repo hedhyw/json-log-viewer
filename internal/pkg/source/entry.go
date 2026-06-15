@@ -26,6 +26,7 @@ const (
 type LazyLogEntry struct {
 	offset int64
 	length int
+	index  int
 }
 
 // Length of the entry.
@@ -50,15 +51,20 @@ func (e LazyLogEntry) LogEntry(file *os.File, cfg *config.Config) LogEntry {
 	line, err := e.Line(file)
 	if err != nil {
 		return LogEntry{
+			Index: e.index,
 			Error: err,
 		}
 	}
 
-	return parseLogEntry(line, cfg)
+	entry := parseLogEntry(line, cfg)
+	entry.Index = e.index
+
+	return entry
 }
 
 // LogEntry is a single partly-parse record of the log.
 type LogEntry struct {
+	Index  int
 	Fields []string
 	Line   json.RawMessage
 	Error  error

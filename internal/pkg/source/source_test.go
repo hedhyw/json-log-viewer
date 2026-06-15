@@ -54,6 +54,24 @@ func TestParseLogEntries(t *testing.T) {
 		assert.NotEmpty(t, logEntries)
 	})
 
+	t.Run("log_entry_index", func(t *testing.T) {
+		t.Parallel()
+
+		reader := strings.NewReader("\n{\"message\":\"first\"}\n\n{\"message\":\"second\"}\n")
+
+		source, err := source.Reader(reader, config.GetDefaultConfig())
+		require.NoError(t, err)
+
+		t.Cleanup(func() { assert.NoError(t, source.Close()) })
+
+		logEntries, err := source.ParseLogEntries()
+		require.NoError(t, err)
+
+		require.Equal(t, 2, logEntries.Len())
+		assert.Equal(t, 0, logEntries.LogEntry(config.GetDefaultConfig(), 0).Index)
+		assert.Equal(t, 1, logEntries.LogEntry(config.GetDefaultConfig(), 1).Index)
+	})
+
 	t.Run("failed", func(t *testing.T) {
 		t.Parallel()
 
