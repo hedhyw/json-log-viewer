@@ -60,6 +60,7 @@ brews:
     repository:
       owner: hedhyw
       name: homebrew-main
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     test: system "#{bin}/jlv", "-help"
     install: |-
       bin.install "jlv"
