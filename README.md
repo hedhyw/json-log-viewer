@@ -21,6 +21,20 @@ brew install hedhyw/main/jlv
 
 https://github.com/hedhyw/json-log-viewer/releases/latest
 
+## Quick start
+
+```shell
+# Open a log file.
+jlv application.log
+
+# Or read from stdin.
+kubectl logs pod/my-pod -f | jlv
+```
+
+Press `?` inside the viewer to see all hotkeys, `F` to filter, `Enter` to
+expand a log entry, and `Ctrl+C` to exit. See [usage](docs/usage.md) for
+more examples.
+
 ## Documentation
 
 - [Features](docs/features.md).

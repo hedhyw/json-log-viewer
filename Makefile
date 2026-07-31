@@ -1,4 +1,4 @@
-GOLANG_CI_LINT_VER:=v2.0.2
+GOLANG_CI_LINT_VER:=v2.12.2
 GORELEASER_VERSION:=v2.3.2
 OUT_BIN?=${PWD}/bin/jlv
 COVER_PACKAGES=./...
@@ -62,8 +62,5 @@ goreleaser.check:
 .PHONY: goreleaser.check
 
 bin/golangci-lint-${GOLANG_CI_LINT_VER}:
-	curl \
-		-sSfL \
-		https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-		| sh -s $(GOLANG_CI_LINT_VER)
+	GOBIN=$(PWD)/bin go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANG_CI_LINT_VER)
 	mv ./bin/golangci-lint ./bin/golangci-lint-${GOLANG_CI_LINT_VER}

@@ -1,0 +1,30 @@
+# json-log-viewer
+
+> Interactive terminal (TUI) viewer for structured JSON logs. The `jlv`
+> command shows a compact, colorized, filterable table of log entries from
+> a file or stdin and can expand any entry into a prettified JSON tree.
+
+Key facts:
+
+- Written in Go (1.25+); TUI built on charmbracelet/bubbletea, JSON tree
+  view based on antonmedv/fx.
+- Install: `brew install hedhyw/main/jlv`, or download binaries/DEB/RPM
+  from GitHub releases, or `go install ./cmd/jlv` from source.
+- Usage: `jlv file.log`, `jlv < file.log`, or pipe any log stream
+  (`kubectl logs ... | jlv`); non-JSON lines are captured too.
+- Configurable via JSONC config `.jlv.jsonc` (working or home directory,
+  or `-config` flag): custom columns with JSONPath selectors and multiple
+  time formats. See `example.jlv.jsonc`.
+- It is a standalone application, not an importable Go library.
+
+## Docs
+
+- [README](https://github.com/hedhyw/json-log-viewer/blob/main/README.md):
+  overview, installation, links to all documentation
+- [AGENTS.md](https://github.com/hedhyw/json-log-viewer/blob/main/AGENTS.md):
+  guide for AI coding agents (layout, build/test/lint, conventions)
+- [Features](https://github.com/hedhyw/json-log-viewer/blob/main/docs/features.md)
+- [Usage](https://github.com/hedhyw/json-log-viewer/blob/main/docs/usage.md):
+  hotkeys and advanced usage
+- [Customization](https://github.com/hedhyw/json-log-viewer/blob/main/docs/customization.md):
+  config format and time formats

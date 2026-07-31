@@ -26,8 +26,10 @@
     "disable": [
       "bodyclose",
       "depguard",
+      "embeddedstructfieldcheck",
       "exhaustive",
       "exhaustruct",
+      "funcorder",
       "funlen",
       "gochecknoglobals",
       "gomoddirectives",
@@ -35,6 +37,7 @@
       "lll",
       "mnd",
       "nlreturn",
+      "noinlineerr",
       "nolintlint",
       "nonamedreturns",
       "paralleltest",
@@ -46,7 +49,8 @@
       "varnamelen",
       "wastedassign",
       "wrapcheck",
-      "wsl"
+      "wsl",
+      "wsl_v5"
     ],
     "exclusions": {
       "generated": "lax",
@@ -60,6 +64,14 @@
         "common-false-positives",
         "legacy",
         "std-error-handling"
+      ],
+      "rules": [
+        {
+          "linters": [
+            "goconst"
+          ],
+          "path": "_test\\.go"
+        }
       ]
     },
     "settings": {
