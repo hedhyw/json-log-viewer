@@ -62,8 +62,5 @@ goreleaser.check:
 .PHONY: goreleaser.check
 
 bin/golangci-lint-${GOLANG_CI_LINT_VER}:
-	curl \
-		-sSfL \
-		https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-		| sh -s $(GOLANG_CI_LINT_VER)
+	GOBIN=$(PWD)/bin go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANG_CI_LINT_VER)
 	mv ./bin/golangci-lint ./bin/golangci-lint-${GOLANG_CI_LINT_VER}
