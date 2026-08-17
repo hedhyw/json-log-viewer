@@ -250,13 +250,15 @@ func TestLazyLogEntriesFilter(t *testing.T) {
 `, term)
 
 	createEntries := func(tb testing.TB) (source.LazyLogEntries, source.LazyLogEntry) {
+		tb.Helper()
+
 		source, err := source.Reader(bytes.NewReader([]byte(logs)), config.GetDefaultConfig())
-		require.NoError(t, err)
+		require.NoError(tb, err)
 
 		tb.Cleanup(func() { assert.NoError(tb, source.Close()) })
 
 		logEntries, err := source.ParseLogEntries()
-		require.NoError(t, err)
+		require.NoError(tb, err)
 
 		logEntry := logEntries.Entries[1]
 
@@ -362,6 +364,21 @@ func TestLazyLogEntriesFilter(t *testing.T) {
 		assert.Empty(t, filtered.Entries)
 	})
 
+	t.Run("anchored_regex_matches_end_of_line", func(t *testing.T) {
+		t.Parallel()
+
+		logEntries, logEntry := createEntries(t)
+
+		// The stored line keeps its trailing line break, it has to be
+		// trimmed for `$` to be able to match.
+		filtered, err := logEntries.Filter(`/search by in the test: [^"]+"}$/`, "", nil)
+		require.NoError(t, err)
+
+		if assert.Len(t, filtered.Entries, 1) {
+			assert.Equal(t, logEntry, filtered.Entries[0])
+		}
+	})
+
 	t.Run("seeker_failed", func(t *testing.T) {
 		t.Parallel()
 
@@ -419,6 +436,96 @@ func TestLazyLogEntriesFieldFilter(t *testing.T) {
 		if assert.Len(t, filtered.Entries, 1) {
 			assert.Equal(t, logEntry, filtered.Entries[0])
 		}
+	})
+
+	t.Run("found_regex", func(t *testing.T) {
+		t.Parallel()
+
+		logEntries, logEntry := createEntries(t)
+
+		// A field holds a single rendered value, so it can be anchored.
+		filtered, err := logEntries.Filter("/^info$/", "level", defaultConfig)
+		require.NoError(t, err)
+
+		if assert.Len(t, filtered.Entries, 1) {
+			assert.Equal(t, logEntry, filtered.Entries[0])
+		}
+	})
+
+	t.Run("invalid_regex", func(t *testing.T) {
+		t.Parallel()
+
+		logEntries, _ := createEntries(t)
+
+		_, err := logEntries.Filter("/(/", "level", defaultConfig)
+		require.ErrorIs(t, err, source.ErrInvalidFilter)
+	})
+
+	t.Run("unknown_field", func(t *testing.T) {
+		t.Parallel()
+
+		logEntries, _ := createEntries(t)
+
+		_, err := logEntries.Filter(term, "not-a-field", defaultConfig)
+		require.ErrorIs(t, err, source.ErrInvalidFilter)
+	})
+
+	t.Run("nil_config", func(t *testing.T) {
+		t.Parallel()
+
+		logEntries, _ := createEntries(t)
+
+		_, err := logEntries.Filter(term, "level", nil)
+		require.ErrorIs(t, err, source.ErrInvalidFilter)
+	})
+}
+
+// TestNewMatcher pins how a term is classified as a regular expression,
+// which the filter tests above cannot show on their own: their fixtures hold
+// no slash, so a substring term and a broken matcher both return no entries.
+func TestNewMatcher(t *testing.T) {
+	t.Parallel()
+
+	const value = "GET /api/v1/users 200"
+
+	for _, testCase := range []struct {
+		Name    string
+		Term    string
+		Matches bool
+	}{
+		{Name: "substring", Term: "api/v1", Matches: true},
+		{Name: "substring_ignore_case", Term: "API/V1", Matches: true},
+		// A slash-wrapped term is a regular expression, so the surrounding
+		// slashes delimit it instead of being matched literally.
+		{Name: "regex_strips_delimiters", Term: "/api/v1/", Matches: true},
+		{Name: "regex_is_not_literal", Term: "/api.v1/", Matches: true},
+		{Name: "regex_anchored", Term: "/^GET/", Matches: true},
+		{Name: "regex_anchored_no_match", Term: "/^POST/", Matches: false},
+		// A lone slash and a pair of slashes hold no expression, so they
+		// stay plain substring searches.
+		{Name: "single_slash_is_substring", Term: "/", Matches: true},
+		{Name: "double_slash_is_substring", Term: "//", Matches: false},
+		{Name: "triple_slash_is_regex", Term: "///", Matches: true},
+		{Name: "unterminated_is_substring", Term: "/api", Matches: true},
+	} {
+		t.Run(testCase.Name, func(t *testing.T) {
+			t.Parallel()
+
+			matches, err := source.NewMatcher(testCase.Term)
+			require.NoError(t, err)
+
+			assert.Equal(t, testCase.Matches, matches([]byte(value)))
+		})
+	}
+
+	t.Run("invalid_regex", func(t *testing.T) {
+		t.Parallel()
+
+		_, err := source.NewMatcher("/(/")
+		require.ErrorIs(t, err, source.ErrInvalidFilter)
+		// The injected case-insensitivity flag must not leak into the
+		// message shown to the user.
+		assert.NotContains(t, err.Error(), "(?i)")
 	})
 }
 
