@@ -318,6 +318,50 @@ func TestLazyLogEntriesFilter(t *testing.T) {
 		assert.Empty(t, filtered.Entries)
 	})
 
+	t.Run("found_regex", func(t *testing.T) {
+		t.Parallel()
+
+		logEntries, logEntry := createEntries(t)
+
+		filtered, err := logEntries.Filter("/SPECIAL.*search by/", "", nil)
+		require.NoError(t, err)
+
+		if assert.Len(t, filtered.Entries, 1) {
+			assert.Equal(t, logEntry, filtered.Entries[0])
+		}
+	})
+
+	t.Run("not_found_regex", func(t *testing.T) {
+		t.Parallel()
+
+		logEntries, _ := createEntries(t)
+
+		filtered, err := logEntries.Filter("/^special/", "", nil)
+		require.NoError(t, err)
+
+		assert.Empty(t, filtered.Entries)
+	})
+
+	t.Run("invalid_regex", func(t *testing.T) {
+		t.Parallel()
+
+		logEntries, _ := createEntries(t)
+
+		_, err := logEntries.Filter("/(/", "", nil)
+		require.Error(t, err)
+	})
+
+	t.Run("single_slash_is_not_regex", func(t *testing.T) {
+		t.Parallel()
+
+		logEntries, _ := createEntries(t)
+
+		filtered, err := logEntries.Filter("/", "", nil)
+		require.NoError(t, err)
+
+		assert.Empty(t, filtered.Entries)
+	})
+
 	t.Run("seeker_failed", func(t *testing.T) {
 		t.Parallel()
 

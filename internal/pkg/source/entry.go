@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -96,7 +97,8 @@ func (entries LazyLogEntries) Len() int {
 	return len(entries.Entries)
 }
 
-// Filter filters entries by ignore case exact match.
+// Filter filters entries by ignore case exact match. A term wrapped in
+// slashes (/.../) is matched as a regular expression instead.
 func (entries LazyLogEntries) Filter(term string, fieldName string, c *config.Config) (LazyLogEntries, error) {
 	if term == "" {
 		return entries, nil
@@ -104,7 +106,10 @@ func (entries LazyLogEntries) Filter(term string, fieldName string, c *config.Co
 
 	fieldIndex := getFilterFieldNameIndex(fieldName, c)
 
-	termLower := bytes.ToLower([]byte(term))
+	matches, err := newMatcher(term)
+	if err != nil {
+		return LazyLogEntries{}, err
+	}
 
 	filtered := make([]LazyLogEntry, 0, len(entries.Entries))
 
@@ -116,7 +121,7 @@ func (entries LazyLogEntries) Filter(term string, fieldName string, c *config.Co
 
 		if len(fieldName) == 0 {
 			// fulltext mode
-			if bytes.Contains(bytes.ToLower(line), termLower) {
+			if matches(line) {
 				filtered = append(filtered, f)
 			}
 		} else {
@@ -126,7 +131,7 @@ func (entries LazyLogEntries) Filter(term string, fieldName string, c *config.Co
 				return LazyLogEntries{}, entry.Error
 			}
 
-			if bytes.Contains(bytes.ToLower([]byte(entry.Fields[fieldIndex])), termLower) {
+			if matches([]byte(entry.Fields[fieldIndex])) {
 				filtered = append(filtered, f)
 			}
 		}
@@ -135,6 +140,28 @@ func (entries LazyLogEntries) Filter(term string, fieldName string, c *config.Co
 	return LazyLogEntries{
 		Seeker:  entries.Seeker,
 		Entries: filtered,
+	}, nil
+}
+
+// newMatcher returns a case-insensitive predicate for the given term. A term
+// wrapped in slashes (/.../) is compiled as a regular expression, otherwise
+// a substring match is used.
+func newMatcher(term string) (func(value []byte) bool, error) {
+	if expr, ok := strings.CutPrefix(term, "/"); ok {
+		if expr, ok := strings.CutSuffix(expr, "/"); ok && expr != "" {
+			exp, err := regexp.Compile("(?i)" + expr)
+			if err != nil {
+				return nil, fmt.Errorf("compiling regular expression: %w", err)
+			}
+
+			return exp.Match, nil
+		}
+	}
+
+	termLower := bytes.ToLower([]byte(term))
+
+	return func(value []byte) bool {
+		return bytes.Contains(bytes.ToLower(value), termLower)
 	}, nil
 }
 

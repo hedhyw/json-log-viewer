@@ -19,6 +19,17 @@
 
 > Attempting to navigate past the last line in the log will put you in follow mode.
 
+## Filtering
+
+The filter matches a case-insensitive substring by default. Wrap the query in
+slashes to match a regular expression instead:
+
+```text
+/error.*timeout/
+```
+
+Both forms work for a full-text filter and for a filter by field.
+
 ## Configuration
 
 ```shell
