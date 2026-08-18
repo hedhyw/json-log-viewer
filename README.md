@@ -21,6 +21,12 @@ brew install hedhyw/main/jlv
 
 https://github.com/hedhyw/json-log-viewer/releases/latest
 
+### Go
+
+```shell
+go install github.com/hedhyw/json-log-viewer/cmd/jlv@latest
+```
+
 ## Quick start
 
 ```shell

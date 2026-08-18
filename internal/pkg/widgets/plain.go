@@ -1,9 +1,9 @@
 package widgets
 
 import (
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/hedhyw/bubbles/key"
+	"github.com/hedhyw/bubbles/viewport"
 	"github.com/muesli/reflow/wordwrap"
 
 	"github.com/hedhyw/json-log-viewer/internal/keymap"

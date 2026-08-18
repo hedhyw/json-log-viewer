@@ -9,9 +9,10 @@ tool for viewing and analyzing structured JSON logs. It shows a compact,
 colorized, filterable table of log entries and can expand any entry into a
 prettified JSON tree. It is built on
 [charmbracelet/bubbletea](https://github.com/charmbracelet/bubbletea) for
-the TUI and [antonmedv/fx](https://github.com/antonmedv/fx) for JSON
-viewing. It is an application, not a library: `internal/` packages are not
-importable by other projects.
+the TUI and [hedhyw/fx](https://github.com/hedhyw/fx), a fork of
+[antonmedv/fx](https://github.com/antonmedv/fx), for JSON viewing. It is
+an application, not a library: `internal/` packages are not importable by
+other projects.
 
 ## CLI usage
 
@@ -77,8 +78,9 @@ make install      # go install ./cmd/jlv
 - Tests live next to the code (`*_test.go`) and use
   `github.com/stretchr/testify`. TUI behavior is tested with
   `charmbracelet/x/exp/teatest`. Keep the high coverage bar (~94%).
-- `go.mod` contains `replace` directives pointing
-  `github.com/antonmedv/fx` and `github.com/charmbracelet/bubbles` to
-  `hedhyw/*` forks. Do not remove these when updating dependencies.
+- The project depends on the `github.com/hedhyw/fx` and
+  `github.com/hedhyw/bubbles` forks instead of the upstream modules. Keep
+  it that way when updating dependencies, and do not add `replace`
+  directives: they are ignored by `go install`.
 - CI (`.github/workflows/check.yml`) runs `make build`, `make lint`,
   `make test` on every PR; actions are pinned to commit SHAs.

@@ -3,11 +3,11 @@ package widgets
 import (
 	"strings"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/hedhyw/bubbles/help"
+	"github.com/hedhyw/bubbles/key"
+	"github.com/hedhyw/bubbles/textinput"
 )
 
 // PillInputModel is a widget that allows inputting text with optional prefix selected from autocomplete suggestion.

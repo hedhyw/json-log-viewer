@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/hedhyw/bubbles/table"
 )
 
 // Component sizes.
