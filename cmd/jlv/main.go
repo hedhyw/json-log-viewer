@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 
@@ -112,8 +113,23 @@ func runApp(args applicationArguments) (err error) {
 
 		defer func() { err = errors.Join(err, inputSource.Close()) }()
 	default:
-		// nolint: err113 // One time case.
-		return fmt.Errorf("invalid arguments, usage: %s file.log", os.Args[0])
+		// Multiple files are concatenated and teed to a temporary file,
+		// so that we can lazy load the log entries using random access.
+		fileName = fmt.Sprintf("%s (+%d)", args.Args[0], len(args.Args)-1)
+
+		logFiles, errOpen := openLogFiles(args.Args)
+		if errOpen != nil {
+			return fmt.Errorf("reading files: %w", errOpen)
+		}
+
+		defer func() { err = errors.Join(err, logFiles.Close()) }()
+
+		inputSource, err = source.Reader(logFiles, cfg)
+		if err != nil {
+			return fmt.Errorf("creating a temporary file: %w", err)
+		}
+
+		defer func() { err = errors.Join(err, inputSource.Close()) }()
 	}
 
 	if stdinIsPipe && args.InterruptProcessGroup != nil {
@@ -138,6 +154,56 @@ func runApp(args applicationArguments) (err error) {
 	}
 
 	return nil
+}
+
+// logFiles reads the content of several files one after another.
+type logFiles struct {
+	reader io.Reader
+	files  []*os.File
+}
+
+// Read implements io.Reader.
+func (f *logFiles) Read(p []byte) (int, error) {
+	return f.reader.Read(p)
+}
+
+// Close implements io.Closer.
+//
+// It closes all opened files.
+func (f *logFiles) Close() error {
+	errMulti := make([]error, 0, len(f.files))
+
+	for _, file := range f.files {
+		errMulti = append(errMulti, file.Close())
+	}
+
+	return errors.Join(errMulti...)
+}
+
+// openLogFiles opens all given files and returns a reader that reads them
+// one after another. The files are separated by a line break, because the
+// last line of a file is not guaranteed to have one. Empty lines are
+// skipped while parsing.
+func openLogFiles(names []string) (*logFiles, error) {
+	logFiles := &logFiles{
+		files: make([]*os.File, 0, len(names)),
+	}
+
+	readers := make([]io.Reader, 0, 2*len(names))
+
+	for _, name := range names {
+		file, err := os.Open(name)
+		if err != nil {
+			return nil, errors.Join(fmt.Errorf("opening: %w", err), logFiles.Close())
+		}
+
+		logFiles.files = append(logFiles.files, file)
+		readers = append(readers, file, strings.NewReader("\n"))
+	}
+
+	logFiles.reader = io.MultiReader(readers...)
+
+	return logFiles, nil
 }
 
 // readConfig tries to read config from working directory or home directory.

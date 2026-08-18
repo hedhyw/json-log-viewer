@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hedhyw/json-log-viewer/internal/app"
@@ -61,13 +62,73 @@ func TestRunAppRunProgramReadConfigInvalid(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestRunAppUnexpectedNumberOfArgs(t *testing.T) {
+func TestRunAppReadMultipleFilesNotFound(t *testing.T) {
 	t.Parallel()
 
 	err := runApp(applicationArguments{
 		Args: []string{"1", "2", "3"},
+		RunProgram: func(*tea.Program) (tea.Model, error) {
+			t.Fatal("Should not run")
+
+			return app.NewModel("", config.GetDefaultConfig(), version), nil
+		},
 	})
 	require.Error(t, err)
+}
+
+func TestRunAppReadMultipleFilesSuccess(t *testing.T) {
+	t.Parallel()
+
+	firstFile := tests.RequireCreateFile(t, []byte(`{"message":"first"}`))
+	secondFile := tests.RequireCreateFile(t, []byte(`{"message":"second"}`+"\n"))
+
+	var isStarted bool
+
+	err := runApp(applicationArguments{
+		Args: []string{firstFile, secondFile},
+		RunProgram: func(p *tea.Program) (tea.Model, error) {
+			assert.NotNil(t, p)
+			isStarted = true
+
+			return app.NewModel("", config.GetDefaultConfig(), version), nil
+		},
+	})
+	require.NoError(t, err)
+
+	assert.True(t, isStarted)
+}
+
+func TestOpenLogFiles(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
+		// The first file has no trailing line break, so the files have
+		// to be separated while concatenating.
+		firstFile := tests.RequireCreateFile(t, []byte(`{"message":"first"}`))
+		secondFile := tests.RequireCreateFile(t, []byte(`{"message":"second"}`+"\n"))
+
+		logFiles, err := openLogFiles([]string{firstFile, secondFile})
+		require.NoError(t, err)
+
+		defer func() { assert.NoError(t, logFiles.Close()) }()
+
+		content, err := io.ReadAll(logFiles)
+		require.NoError(t, err)
+
+		expected := []string{`{"message":"first"}`, `{"message":"second"}`, "", ""}
+		assert.Equal(t, expected, strings.Split(string(content), "\n"))
+	})
+
+	t.Run("not_found", func(t *testing.T) {
+		t.Parallel()
+
+		existingFile := tests.RequireCreateFile(t, []byte(`{"message":"first"}`))
+
+		_, err := openLogFiles([]string{existingFile, t.Name() + "not found"})
+		require.Error(t, err)
+	})
 }
 
 func TestRunAppReadFileSuccess(t *testing.T) {

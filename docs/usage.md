@@ -19,6 +19,17 @@
 
 > Attempting to navigate past the last line in the log will put you in follow mode.
 
+## Multiple files
+
+Several files can be opened at once:
+
+```shell
+jlv application-2025-02-03-*.log
+```
+
+They are shown one after another, in the order they are given. New lines are
+followed only when a single file is opened.
+
 ## Filtering
 
 The filter matches a case-insensitive substring by default. Wrap the query in
