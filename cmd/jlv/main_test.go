@@ -132,6 +132,96 @@ func TestRunAppReadStdinSuccess(t *testing.T) {
 	assert.True(t, isStarted)
 }
 
+func TestRunAppInterruptWriter(t *testing.T) {
+	t.Parallel()
+
+	newStdin := func(mode os.FileMode) fakeFile {
+		return fakeFile{
+			Reader: bytes.NewReader([]byte(t.Name())),
+			StatFileInfo: fakeFileInfo{
+				FileMode: mode,
+			},
+		}
+	}
+
+	t.Run("pipe", func(t *testing.T) {
+		t.Parallel()
+
+		var isInterrupted bool
+
+		err := runApp(applicationArguments{
+			Args:  []string{},
+			Stdin: newStdin(os.ModeNamedPipe),
+			RunProgram: func(*tea.Program) (tea.Model, error) {
+				assert.False(t, isInterrupted, "Should be interrupted after the exit")
+
+				return app.NewModel("", config.GetDefaultConfig(), version), nil
+			},
+			InterruptProcessGroup: func() error {
+				isInterrupted = true
+
+				return nil
+			},
+		})
+		require.NoError(t, err)
+
+		assert.True(t, isInterrupted)
+	})
+
+	t.Run("pipe_error", func(t *testing.T) {
+		t.Parallel()
+
+		err := runApp(applicationArguments{
+			Args:  []string{},
+			Stdin: newStdin(os.ModeNamedPipe),
+			RunProgram: func(*tea.Program) (tea.Model, error) {
+				return app.NewModel("", config.GetDefaultConfig(), version), nil
+			},
+			InterruptProcessGroup: func() error {
+				return tests.ErrTest
+			},
+		})
+		require.ErrorIs(t, err, tests.ErrTest)
+	})
+
+	t.Run("redirected_file", func(t *testing.T) {
+		t.Parallel()
+
+		err := runApp(applicationArguments{
+			Args:  []string{},
+			Stdin: newStdin(0),
+			RunProgram: func(*tea.Program) (tea.Model, error) {
+				return app.NewModel("", config.GetDefaultConfig(), version), nil
+			},
+			InterruptProcessGroup: func() error {
+				t.Fatal("Should not interrupt")
+
+				return nil
+			},
+		})
+		require.NoError(t, err)
+	})
+
+	t.Run("file_argument", func(t *testing.T) {
+		t.Parallel()
+
+		fileName := tests.RequireCreateFile(t, []byte(t.Name()))
+
+		err := runApp(applicationArguments{
+			Args: []string{fileName},
+			RunProgram: func(*tea.Program) (tea.Model, error) {
+				return app.NewModel("", config.GetDefaultConfig(), version), nil
+			},
+			InterruptProcessGroup: func() error {
+				t.Fatal("Should not interrupt")
+
+				return nil
+			},
+		})
+		require.NoError(t, err)
+	})
+}
+
 func TestRunAppReadStdinStatFailed(t *testing.T) {
 	t.Parallel()
 
@@ -169,8 +259,9 @@ func TestGetStdinSource(t *testing.T) {
 
 		input, err := getStdinReader(file)
 		require.NoError(t, err)
+		assert.True(t, input.IsPipe)
 
-		data, err := io.ReadAll(input)
+		data, err := io.ReadAll(input.Reader)
 		require.NoError(t, err)
 		assert.Equal(t, content, string(data))
 	})
@@ -187,8 +278,9 @@ func TestGetStdinSource(t *testing.T) {
 
 		input, err := getStdinReader(file)
 		require.NoError(t, err)
+		assert.False(t, input.IsPipe)
 
-		data, err := io.ReadAll(input)
+		data, err := io.ReadAll(input.Reader)
 		require.NoError(t, err)
 		assert.Empty(t, data)
 	})

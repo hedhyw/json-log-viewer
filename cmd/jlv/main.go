@@ -21,7 +21,12 @@ import (
 // version will be set on build.
 var version = "development"
 
-const configFileName = ".jlv.jsonc"
+const (
+	configFileName = ".jlv.jsonc"
+	// stdinFileName is displayed instead of a file name if the log is
+	// read from the standard input.
+	stdinFileName = "-"
+)
 
 func main() {
 	configPath := flag.String("config", "", "Path to the config")
@@ -35,6 +40,8 @@ func main() {
 		ConfigPath:   *configPath,
 		PrintVersion: *printVersion,
 		Args:         flag.Args(),
+
+		InterruptProcessGroup: interruptProcessGroup,
 
 		RunProgram: func(p *tea.Program) (tea.Model, error) {
 			return p.Run()
@@ -54,7 +61,8 @@ type applicationArguments struct {
 	PrintVersion bool
 	Args         []string
 
-	RunProgram func(*tea.Program) (tea.Model, error)
+	RunProgram            func(*tea.Program) (tea.Model, error)
+	InterruptProcessGroup func() error
 }
 
 func runApp(args applicationArguments) (err error) {
@@ -71,25 +79,29 @@ func runApp(args applicationArguments) (err error) {
 	}
 
 	fileName := ""
+	stdinIsPipe := false
+
 	var inputSource *source.Source
 
 	switch len(args.Args) {
 	case 0:
 		// Tee stdin to a temp file, so that we can
 		// lazy load the log entries using random access.
-		fileName = "-"
+		fileName = stdinFileName
 
 		stdin, err := getStdinReader(args.Stdin)
 		if err != nil {
 			return fmt.Errorf("getting stdin: %w", err)
 		}
 
-		inputSource, err = source.Reader(stdin, cfg)
+		inputSource, err = source.Reader(stdin.Reader, cfg)
 		if err != nil {
 			return fmt.Errorf("creating a temporary file: %w", err)
 		}
 
 		defer func() { err = errors.Join(err, inputSource.Close()) }()
+
+		stdinIsPipe = stdin.IsPipe
 	case 1:
 		fileName = args.Args[0]
 
@@ -102,6 +114,12 @@ func runApp(args applicationArguments) (err error) {
 	default:
 		// nolint: err113 // One time case.
 		return fmt.Errorf("invalid arguments, usage: %s file.log", os.Args[0])
+	}
+
+	if stdinIsPipe && args.InterruptProcessGroup != nil {
+		// The signal is sent only after the program is stopped, so the
+		// writer is not interrupted while its output is still read.
+		defer func() { err = errors.Join(err, args.InterruptProcessGroup()) }()
 	}
 
 	appModel := app.NewModel(fileName, cfg, version)
