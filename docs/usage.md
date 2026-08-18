@@ -19,6 +19,10 @@
 
 > Attempting to navigate past the last line in the log will put you in follow mode.
 
+An opened log entry is shown in a JSON view with its own hotkeys (expand,
+collapse, search, preview, dig, yank, etc.). Press `?` there to see the full
+list, and any key to hide it again.
+
 ## Filtering
 
 The filter matches a case-insensitive substring by default. Wrap the query in
