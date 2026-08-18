@@ -109,12 +109,12 @@ func TestOpenLogFiles(t *testing.T) {
 		firstFile := tests.RequireCreateFile(t, []byte(`{"message":"first"}`))
 		secondFile := tests.RequireCreateFile(t, []byte(`{"message":"second"}`+"\n"))
 
-		reader, closeFiles, err := openLogFiles([]string{firstFile, secondFile})
+		logFiles, err := openLogFiles([]string{firstFile, secondFile})
 		require.NoError(t, err)
 
-		defer func() { assert.NoError(t, closeFiles()) }()
+		defer func() { assert.NoError(t, logFiles.Close()) }()
 
-		content, err := io.ReadAll(reader)
+		content, err := io.ReadAll(logFiles)
 		require.NoError(t, err)
 
 		expected := []string{`{"message":"first"}`, `{"message":"second"}`, "", ""}
@@ -126,7 +126,7 @@ func TestOpenLogFiles(t *testing.T) {
 
 		existingFile := tests.RequireCreateFile(t, []byte(`{"message":"first"}`))
 
-		_, _, err := openLogFiles([]string{existingFile, t.Name() + "not found"})
+		_, err := openLogFiles([]string{existingFile, t.Name() + "not found"})
 		require.Error(t, err)
 	})
 }
