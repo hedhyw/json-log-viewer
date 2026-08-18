@@ -85,13 +85,14 @@ func (m logsTableModel) Update(msg tea.Msg) (logsTableModel, tea.Cmd) {
 
 func (m logsTableModel) handleWindowSizeMsg(msg tea.WindowSizeMsg) logsTableModel {
 	const (
-		heightOffset = 4
-		widthOffset  = -10
+		// The table header and its bottom border.
+		headerSize  = 2
+		widthOffset = -10
 	)
 
 	x, y := m.BaseStyle.GetFrameSize()
 	m.lazyTable.table.SetWidth(msg.Width - x*2)
-	m.lazyTable.table.SetHeight(msg.Height - y*2 - m.footerSize - heightOffset)
+	m.lazyTable.table.SetHeight(max(msg.Height-y-headerSize-m.footerSize, 1))
 	m.lazyTable.table.SetColumns(getColumns(m.lazyTable.table.Width()+widthOffset, m.Config))
 	m.lastWindowSize = msg
 
