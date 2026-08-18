@@ -1,0 +1,38 @@
+name: maintenance-json-log-viewer
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: Close stale issues and pull requests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
+        with:
+          days-before-stale: 60
+          days-before-close: 14
+          stale-issue-label: stale
+          stale-pr-label: stale
+          exempt-issue-labels: pinned,security,bug,enhancement
+          exempt-pr-labels: pinned,security,dependencies
+          exempt-all-milestones: true
+          stale-issue-message: >
+            This issue has been inactive for 60 days and is marked as stale.
+            Comment to keep it open, otherwise it will be closed in 14 days.
+          close-issue-message: >
+            Closing this issue because it has been stale for 14 days without activity.
+            Feel free to reopen it if it is still relevant.
+          stale-pr-message: >
+            This pull request has been inactive for 60 days and is marked as stale.
+            Comment or push to keep it open, otherwise it will be closed in 14 days.
+          close-pr-message: >
+            Closing this pull request because it has been stale for 14 days without activity.
+            Feel free to reopen it if you want to continue the work.
+          operations-per-run: 100
