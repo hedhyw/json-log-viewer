@@ -5,7 +5,15 @@
 - `make`;
 - `go` 1.25+.
 
-## Run
+## Go install
+
+```shell
+go install github.com/hedhyw/json-log-viewer/cmd/jlv@latest
+```
+
+The binary is placed in `$(go env GOPATH)/bin`.
+
+## Build manually
 
 Get the source code:
 ```shell

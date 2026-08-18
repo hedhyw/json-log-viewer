@@ -3,10 +3,10 @@ package app
 import (
 	"sync"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/hedhyw/bubbles/help"
+	"github.com/hedhyw/bubbles/table"
 
 	"github.com/hedhyw/json-log-viewer/internal/keymap"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"

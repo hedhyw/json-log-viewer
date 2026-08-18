@@ -2,17 +2,13 @@ module github.com/hedhyw/json-log-viewer
 
 go 1.25.0
 
-replace github.com/antonmedv/fx => github.com/hedhyw/fx v0.0.4
-
-replace github.com/charmbracelet/bubbles => github.com/hedhyw/bubbles v0.0.4
-
 require (
-	github.com/antonmedv/fx v0.0.0-20260728113644-63eb255ad014
-	github.com/charmbracelet/bubbles v1.0.0
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/docker/go-units v0.5.0
 	github.com/go-playground/validator/v10 v10.30.3
+	github.com/hedhyw/bubbles v0.0.5
+	github.com/hedhyw/fx v0.0.5
 	github.com/hedhyw/jsoncjson v1.1.0
 	github.com/hedhyw/semerr v1.1.0
 	github.com/muesli/reflow v0.3.0
@@ -23,6 +19,7 @@ require (
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
+	github.com/charmbracelet/bubbles v0.16.1 // indirect
 	github.com/charmbracelet/colorprofile v0.4.3 // indirect
 	github.com/charmbracelet/x/ansi v0.11.7 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.15 // indirect

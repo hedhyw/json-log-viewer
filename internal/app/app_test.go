@@ -8,8 +8,8 @@ import (
 	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/tests"
 
-	"github.com/charmbracelet/bubbles/cursor"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/hedhyw/bubbles/cursor"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

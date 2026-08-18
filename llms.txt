@@ -7,9 +7,10 @@
 Key facts:
 
 - Written in Go (1.25+); TUI built on charmbracelet/bubbletea, JSON tree
-  view based on antonmedv/fx.
-- Install: `brew install hedhyw/main/jlv`, or download binaries/DEB/RPM
-  from GitHub releases, or `go install ./cmd/jlv` from source.
+  view based on the hedhyw/fx fork of antonmedv/fx.
+- Install: `brew install hedhyw/main/jlv`,
+  `go install github.com/hedhyw/json-log-viewer/cmd/jlv@latest`, or
+  download binaries/DEB/RPM from GitHub releases.
 - Usage: `jlv file.log`, `jlv < file.log`, or pipe any log stream
   (`kubectl logs ... | jlv`); non-JSON lines are captured too.
 - Configurable via JSONC config `.jlv.jsonc` (working or home directory,

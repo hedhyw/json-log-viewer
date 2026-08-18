@@ -11,7 +11,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/charmbracelet/bubbles/table"
+	"github.com/hedhyw/bubbles/table"
 	"github.com/yalp/jsonpath"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/config"

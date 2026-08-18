@@ -1,6 +1,6 @@
 package keymap
 
-import "github.com/charmbracelet/bubbles/key"
+import "github.com/hedhyw/bubbles/key"
 
 // KeyMap of the app.
 type KeyMap struct {

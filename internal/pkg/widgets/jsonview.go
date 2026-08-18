@@ -3,8 +3,8 @@ package widgets
 import (
 	"bytes"
 
-	fx "github.com/antonmedv/fx/pkg/model"
 	tea "github.com/charmbracelet/bubbletea"
+	fx "github.com/hedhyw/fx/pkg/model"
 
 	"github.com/hedhyw/json-log-viewer/internal/keymap"
 )

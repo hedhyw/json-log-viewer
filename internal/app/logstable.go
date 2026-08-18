@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/hedhyw/bubbles/table"
 
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
 
