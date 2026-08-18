@@ -105,6 +105,11 @@ func (m logsTableModel) Cursor() int {
 	return m.lazyTable.viewPortCursor()
 }
 
+// NewerEntriesCount returns the number of entries after the selected row.
+func (m logsTableModel) NewerEntriesCount() int {
+	return m.lazyTable.newerEntriesCount()
+}
+
 func (m logsTableModel) Select(index int) logsTableModel {
 	m.lazyTable = m.lazyTable.Select(index)
 

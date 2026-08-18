@@ -52,7 +52,7 @@ func (s StateLoadedModel) viewTable() string {
 }
 
 func (s StateLoadedModel) toggles() string {
-	toggles := make([]string, 0, 2)
+	toggles := make([]string, 0, 3)
 
 	if s.table.lazyTable.reverse {
 		toggles = append(toggles, "reverse")
@@ -60,6 +60,8 @@ func (s StateLoadedModel) toggles() string {
 
 	if s.table.lazyTable.follow {
 		toggles = append(toggles, "following")
+	} else if newer := s.table.NewerEntriesCount(); newer > 0 {
+		toggles = append(toggles, fmt.Sprintf("%d newer", newer))
 	}
 
 	if len(toggles) > 0 {

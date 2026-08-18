@@ -145,6 +145,79 @@ func TestStateLoaded(t *testing.T) {
 	})
 }
 
+func TestStateLoadedNewerEntriesCount(t *testing.T) {
+	t.Parallel()
+
+	const entriesCount = 5
+
+	setup := func(configSetters ...configSetter) tea.Model {
+		lines := make([]string, 0, entriesCount)
+
+		for i := range entriesCount {
+			lines = append(lines, fmt.Sprintf(
+				`{"time":"1970-01-01T00:00:00.00","level":"INFO","message":"test %d"}`,
+				i,
+			))
+		}
+
+		model := newTestModel(t, []byte(strings.Join(lines, "\n")), configSetters...)
+
+		_, ok := model.(app.StateLoadedModel)
+		require.Truef(t, ok, "%s", model)
+
+		return model
+	}
+
+	t.Run("hidden_while_following", func(t *testing.T) {
+		t.Parallel()
+
+		model := setup()
+
+		assert.NotContains(t, model.View(), "newer")
+	})
+
+	t.Run("counts_entries_after_cursor", func(t *testing.T) {
+		t.Parallel()
+
+		model := setup(func(cfg *config.Config) {
+			cfg.IsReverseDefault = false
+		})
+
+		// The cursor is on the last entry, so there is nothing newer.
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyUp})
+		assert.Contains(t, model.View(), "1 newer")
+
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyUp})
+		assert.Contains(t, model.View(), "2 newer")
+
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyDown})
+		assert.Contains(t, model.View(), "1 newer")
+	})
+
+	t.Run("hidden_on_the_newest_entry", func(t *testing.T) {
+		t.Parallel()
+
+		model := setup(func(cfg *config.Config) {
+			cfg.IsReverseDefault = false
+		})
+
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyUp})
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyDown})
+
+		assert.NotContains(t, model.View(), "newer")
+	})
+
+	t.Run("reverse", func(t *testing.T) {
+		t.Parallel()
+
+		model := setup()
+
+		// In the reverse mode the newest entry is on the top.
+		model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyDown})
+		assert.Contains(t, model.View(), "1 newer")
+	})
+}
+
 func TestStateLoadedQuit(t *testing.T) {
 	t.Parallel()
 
