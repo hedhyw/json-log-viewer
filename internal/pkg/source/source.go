@@ -19,6 +19,9 @@ const (
 	temporaryFilePattern = "jlv-*.log"
 
 	ErrFileTruncated semerr.Error = "file truncated"
+	// ErrInvalidFilter marks a filter term that the user can fix by
+	// retyping it. Unlike I/O errors it is not fatal for the application.
+	ErrInvalidFilter semerr.Error = "invalid filter"
 )
 
 type Source struct {

@@ -234,3 +234,47 @@ func TestStateFilteringReset(t *testing.T) {
 		assert.Truef(t, ok, "%s", model)
 	})
 }
+
+func TestStateFilteringInvalidRegex(t *testing.T) {
+	t.Parallel()
+
+	const jsonFile = `
+	{"time":"1970-01-01T00:00:00.00","level":"INFO","message": "hello"}
+	`
+
+	model := newTestModel(t, []byte(jsonFile))
+
+	// Open filtering.
+	model = handleUpdate(model, tea.KeyMsg{
+		Type:  tea.KeyRunes,
+		Runes: []rune{'f'},
+	})
+
+	// Write a malformed regular expression.
+	model = handleUpdate(model, tea.KeyMsg{
+		Type:  tea.KeyRunes,
+		Runes: []rune("/(/"),
+	})
+
+	model = handleUpdate(model, tea.KeyMsg{
+		Type: tea.KeyEnter,
+	})
+
+	// The term is rejected, but the user stays in the prompt and keeps it,
+	// instead of being thrown into the fatal error state.
+	_, ok := model.(app.StateFilteringModel)
+	if assert.Truef(t, ok, "%s", model) {
+		rendered := model.View()
+		assert.Contains(t, rendered, "invalid filter")
+		assert.Contains(t, rendered, "/(/")
+	}
+
+	// Correcting the term dismisses the message and filters as usual.
+	model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyBackspace})
+	assert.NotContains(t, model.View(), "invalid filter")
+
+	model = handleUpdate(model, tea.KeyMsg{Type: tea.KeyEnter})
+
+	_, ok = model.(app.StateFilteredModel)
+	assert.Truef(t, ok, "%s", model)
+}

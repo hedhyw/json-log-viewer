@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -96,45 +97,95 @@ func (entries LazyLogEntries) Len() int {
 	return len(entries.Entries)
 }
 
-// Filter filters entries by ignore case exact match.
+// Filter filters entries by a case-insensitive substring match. A term
+// wrapped in slashes (/.../) is matched as a regular expression instead.
+//
+// In fulltext mode the term is matched against the whole raw JSON line, in
+// field mode against the rendered value of the given field.
 func (entries LazyLogEntries) Filter(term string, fieldName string, c *config.Config) (LazyLogEntries, error) {
 	if term == "" {
 		return entries, nil
 	}
 
 	fieldIndex := getFilterFieldNameIndex(fieldName, c)
+	if len(fieldName) != 0 && fieldIndex < 0 {
+		return LazyLogEntries{}, fmt.Errorf("%w: unknown field: %s", ErrInvalidFilter, fieldName)
+	}
 
-	termLower := bytes.ToLower([]byte(term))
+	matches, err := NewMatcher(term)
+	if err != nil {
+		return LazyLogEntries{}, err
+	}
 
 	filtered := make([]LazyLogEntry, 0, len(entries.Entries))
 
 	for _, f := range entries.Entries {
-		line, err := f.Line(entries.Seeker)
-		if err != nil {
-			return LazyLogEntries{}, err
-		}
+		var value []byte
 
 		if len(fieldName) == 0 {
-			// fulltext mode
-			if bytes.Contains(bytes.ToLower(line), termLower) {
-				filtered = append(filtered, f)
+			// Fulltext mode. The stored line keeps the trailing line break,
+			// it is trimmed so that the `$` anchor can match the end of it.
+			line, err := f.Line(entries.Seeker)
+			if err != nil {
+				return LazyLogEntries{}, err
 			}
+
+			value = bytes.TrimRight(line, "\r\n")
 		} else {
-			// field mode
+			// Field mode.
 			entry := f.LogEntry(entries.Seeker, c)
 			if entry.Error != nil {
 				return LazyLogEntries{}, entry.Error
 			}
 
-			if bytes.Contains(bytes.ToLower([]byte(entry.Fields[fieldIndex])), termLower) {
-				filtered = append(filtered, f)
-			}
+			// A field of a non-JSON line holds the untouched line, which
+			// still keeps its trailing line break, so it is trimmed too.
+			value = bytes.TrimRight([]byte(entry.Fields[fieldIndex]), "\r\n")
+		}
+
+		if matches(value) {
+			filtered = append(filtered, f)
 		}
 	}
 
 	return LazyLogEntries{
 		Seeker:  entries.Seeker,
 		Entries: filtered,
+	}, nil
+}
+
+// NewMatcher returns a case-insensitive predicate for the given term. A term
+// wrapped in slashes (/.../) is compiled as a regular expression, otherwise
+// a substring match is used.
+//
+// It returns an error wrapping ErrInvalidFilter if the term holds a malformed
+// regular expression. Callers can validate a term up front to report the
+// problem while the user can still correct it.
+func NewMatcher(term string) (func(value []byte) bool, error) {
+	// A term is a regular expression only if it is wrapped in slashes and
+	// holds at least one character in between, so that `/` and `//` stay
+	// plain substring searches.
+	if len(term) > 2 && term[0] == '/' && term[len(term)-1] == '/' {
+		expr := term[1 : len(term)-1]
+
+		exp, err := regexp.Compile("(?i)" + expr)
+		if err != nil {
+			// Report the failure against the expression that the user typed,
+			// without the case-insensitivity flag that is injected above.
+			if _, userErr := regexp.Compile(expr); userErr != nil {
+				err = userErr
+			}
+
+			return nil, fmt.Errorf("%w: compiling regular expression: %w", ErrInvalidFilter, err)
+		}
+
+		return exp.Match, nil
+	}
+
+	termLower := bytes.ToLower([]byte(term))
+
+	return func(value []byte) bool {
+		return bytes.Contains(bytes.ToLower(value), termLower)
 	}, nil
 }
 

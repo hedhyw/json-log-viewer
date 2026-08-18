@@ -6,6 +6,7 @@ import (
 
 	"github.com/hedhyw/json-log-viewer/internal/keymap"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/events"
+	"github.com/hedhyw/json-log-viewer/internal/pkg/source"
 	"github.com/hedhyw/json-log-viewer/internal/pkg/widgets"
 )
 
@@ -18,6 +19,10 @@ type StateFilteringModel struct {
 
 	textInput widgets.PillInputModel
 	keys      keymap.KeyMap
+
+	// err holds a rejected filter term, it is shown next to the input so
+	// that the user can correct the term without losing it.
+	err error
 }
 
 func newStateFiltering(
@@ -49,7 +54,13 @@ func (s StateFilteringModel) Init() tea.Cmd {
 
 // View renders component. It implements tea.Model.
 func (s StateFilteringModel) View() string {
-	return s.BaseStyle.Render(s.table.View()) + "\n" + s.textInput.View()
+	view := s.BaseStyle.Render(s.table.View()) + "\n" + s.textInput.View()
+
+	if s.err != nil {
+		view += "\n" + s.FooterStyle.Render(s.err.Error())
+	}
+
+	return view
 }
 
 // Update handles events. It implements tea.Model.
@@ -62,6 +73,10 @@ func (s StateFilteringModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case events.ErrorOccuredMsg:
 		return s.handleErrorOccuredMsg(msg)
 	case tea.KeyMsg:
+		// Any key press means the user is amending the term, so a previously
+		// reported problem with it is no longer relevant.
+		s.err = nil
+
 		if mdl, cmd := s.handleKeyMsg(msg); mdl != nil {
 			return mdl, cmd
 		}
@@ -93,6 +108,15 @@ func (s StateFilteringModel) handleEnterKeyClickedMsg() (tea.Model, tea.Cmd) {
 	filterField, input := s.textInput.Value()
 	if input == "" {
 		return s, events.EscKeyClicked
+	}
+
+	// Reject a malformed term here, while the user still has it in the input
+	// and can correct it. Reporting it later would surface it as a fatal
+	// application error.
+	if _, err := source.NewMatcher(input); err != nil {
+		s.err = err
+
+		return s, nil
 	}
 
 	return initializeModel(newStateFiltered(

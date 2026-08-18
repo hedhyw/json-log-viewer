@@ -19,6 +19,43 @@
 
 > Attempting to navigate past the last line in the log will put you in follow mode.
 
+## Filtering
+
+The filter matches a case-insensitive substring by default. Wrap the query in
+slashes to match a regular expression instead:
+
+```text
+/timeout|deadline exceeded/
+```
+
+Both forms work for a full-text filter and for a filter by field, but they
+match different text:
+
+- A full-text filter matches the raw JSON line, so it sees field names, the
+  quoting and the JSON escaping rather than what the table shows. `/^error/`
+  never matches because every line starts with `{`, and a quote has to be
+  written as `\"`. Fields are matched in the order they appear in the log, so
+  a pattern spanning two of them, like `/error.*timeout/`, only matches the
+  lines that happen to store them in that order.
+- A filter by field matches the value as it is rendered in the column, after
+  the level mapping and the time formatting have been applied. A pattern can
+  only span one field, so anchors like `/^error$/` are useful here.
+
+A regular expression is case-insensitive like the default filter. Prefix it
+with `(?-i)` to make it case-sensitive:
+
+```text
+/(?-i)ERROR/
+```
+
+A term is only treated as a regular expression when it both starts and ends
+with a slash, so `/` and `//` stay plain substring searches. To search for a
+literal term that is wrapped in slashes, escape it with `\Q...\E`:
+
+```text
+/\Q/api/v1/\E/
+```
+
 ## Configuration
 
 ```shell
