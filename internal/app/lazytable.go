@@ -195,6 +195,12 @@ func (m lazyTableModel) viewPortCursor() int {
 	return m.offset + m.table.Cursor()
 }
 
+// newerEntriesCount returns the number of entries that come after the
+// selected one. It shows how many lines the user has not scrolled to yet.
+func (m lazyTableModel) newerEntriesCount() int {
+	return max(m.entries.Len()-1-m.viewPortCursor(), 0)
+}
+
 func (m lazyTableModel) Select(index int) lazyTableModel {
 	if index < 0 || index >= m.entries.Len() {
 		return m
