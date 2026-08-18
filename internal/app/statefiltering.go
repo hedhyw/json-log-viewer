@@ -44,7 +44,29 @@ func newStateFiltering(
 
 		textInput: textInput,
 		keys:      previousState.getApplication().keys,
+	}.resizeTable()
+}
+
+// footerSize is the number of lines rendered below the table: the input
+// itself, its hints and an optional error.
+func (s StateFilteringModel) footerSize() int {
+	const inputSize = 2
+
+	if s.err != nil {
+		return inputSize + 1
 	}
+
+	return inputSize
+}
+
+// resizeTable fits the table into the space that is left by the footer.
+func (s StateFilteringModel) resizeTable() StateFilteringModel {
+	if size := s.footerSize(); s.table.footerSize != size {
+		s.table.footerSize = size
+		s.table = s.table.handleWindowSizeMsg(s.table.lastWindowSize)
+	}
+
+	return s
 }
 
 // Init initializes component. It implements tea.Model.
@@ -76,6 +98,7 @@ func (s StateFilteringModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Any key press means the user is amending the term, so a previously
 		// reported problem with it is no longer relevant.
 		s.err = nil
+		s = s.resizeTable()
 
 		if mdl, cmd := s.handleKeyMsg(msg); mdl != nil {
 			return mdl, cmd
@@ -116,7 +139,7 @@ func (s StateFilteringModel) handleEnterKeyClickedMsg() (tea.Model, tea.Cmd) {
 	if _, err := source.NewMatcher(input); err != nil {
 		s.err = err
 
-		return s, nil
+		return s.resizeTable(), nil
 	}
 
 	return initializeModel(newStateFiltered(
