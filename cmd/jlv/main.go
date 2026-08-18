@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 
@@ -100,8 +101,23 @@ func runApp(args applicationArguments) (err error) {
 
 		defer func() { err = errors.Join(err, inputSource.Close()) }()
 	default:
-		// nolint: err113 // One time case.
-		return fmt.Errorf("invalid arguments, usage: %s file.log", os.Args[0])
+		// Multiple files are concatenated and teed to a temporary file,
+		// so that we can lazy load the log entries using random access.
+		fileName = fmt.Sprintf("%s (+%d)", args.Args[0], len(args.Args)-1)
+
+		reader, closeFiles, errOpen := openLogFiles(args.Args)
+		if errOpen != nil {
+			return fmt.Errorf("reading files: %w", errOpen)
+		}
+
+		defer func() { err = errors.Join(err, closeFiles()) }()
+
+		inputSource, err = source.Reader(reader, cfg)
+		if err != nil {
+			return fmt.Errorf("creating a temporary file: %w", err)
+		}
+
+		defer func() { err = errors.Join(err, inputSource.Close()) }()
 	}
 
 	appModel := app.NewModel(fileName, cfg, version)
@@ -120,6 +136,40 @@ func runApp(args applicationArguments) (err error) {
 	}
 
 	return nil
+}
+
+// openLogFiles opens all given files and returns a reader that reads them
+// one after another. The files are separated by a line break, because the
+// last line of a file is not guaranteed to have one. Empty lines are
+// skipped while parsing.
+//
+// The returned closer closes all opened files.
+func openLogFiles(names []string) (io.Reader, func() error, error) {
+	files := make([]*os.File, 0, len(names))
+
+	closeFiles := func() error {
+		errMulti := make([]error, 0, len(files))
+
+		for _, f := range files {
+			errMulti = append(errMulti, f.Close())
+		}
+
+		return errors.Join(errMulti...)
+	}
+
+	readers := make([]io.Reader, 0, 2*len(names))
+
+	for _, name := range names {
+		file, err := os.Open(name)
+		if err != nil {
+			return nil, nil, errors.Join(fmt.Errorf("opening: %w", err), closeFiles())
+		}
+
+		files = append(files, file)
+		readers = append(readers, file, strings.NewReader("\n"))
+	}
+
+	return io.MultiReader(readers...), closeFiles, nil
 }
 
 // readConfig tries to read config from working directory or home directory.
