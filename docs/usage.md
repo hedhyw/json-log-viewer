@@ -21,17 +21,14 @@
 
 ## Multiple files
 
-Several files can be opened at once, they are concatenated in the order they
-are given:
+Several files can be opened at once:
 
 ```shell
 jlv application-2025-02-03-*.log
 ```
 
-The lines are not reordered, every file is shown after the previous one. The
-`MaxFileSizeBytes` limit applies to the total size of all files. Multiple
-files are copied to a temporary file, so they are not followed for new lines,
-unlike a single file.
+They are shown one after another, in the order they are given. New lines are
+followed only when a single file is opened.
 
 ## Filtering
 

@@ -33,7 +33,7 @@ go install github.com/hedhyw/json-log-viewer/cmd/jlv@latest
 # Open a log file.
 jlv application.log
 
-# Or open several files at once, they are concatenated in the given order.
+# Or open several files at once.
 jlv application-2025-02-03-*.log
 
 # Or read from stdin.
