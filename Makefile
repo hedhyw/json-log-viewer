@@ -1,5 +1,7 @@
 GOLANG_CI_LINT_VER:=v2.13.0
-GORELEASER_VERSION:=v2.3.2
+# Pinned by digest: a tag alone is mutable. Docker rejects the reference
+# if the tag and the digest disagree, so the two cannot drift apart.
+GORELEASER_VERSION:=v2.3.2@sha256:d62b4a18dfe3af7bd4da9e5954b496548ef04e73ae8f98cd75ba63a9ed4d73e5
 OUT_BIN?=${PWD}/bin/jlv
 COVER_PACKAGES=./...
 VERSION?=${shell git describe --tags}
