@@ -5,6 +5,8 @@ GORELEASER_VERSION:=v2.3.2@sha256:d62b4a18dfe3af7bd4da9e5954b496548ef04e73ae8f98
 OUT_BIN?=${PWD}/bin/jlv
 COVER_PACKAGES=./...
 VERSION?=${shell git describe --tags}
+# Windows VERSIONINFO resources only accept numeric fields.
+VERSION_NUM=${shell echo "${VERSION}" | sed -E 's/^v//; s/-.*$$//'}
 
 all: lint test build
 
@@ -24,9 +26,20 @@ build:
 	@echo "building ${VERSION}"
 	go build \
 		-o ${OUT_BIN} \
-		--ldflags "-s -w -X main.version=${VERSION}" \
+		--ldflags "-X main.version=${VERSION}" \
 		./cmd/jlv
 .PHONY: build
+
+# Generates Windows VERSIONINFO resources (resource_windows_*.syso) that are
+# picked up automatically by the Go linker for windows targets.
+versioninfo:
+	cd cmd/jlv && GOOS= GOARCH= GOARM= go tool goversioninfo \
+		-platform-specific \
+		-propagate-ver-strings \
+		-file-version "${VERSION_NUM}" \
+		-product-version "${VERSION_NUM}" \
+		versioninfo.json
+.PHONY: versioninfo
 
 install:
 	go install ./cmd/jlv

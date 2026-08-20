@@ -17,6 +17,7 @@ require (
 )
 
 require (
+	github.com/akavel/rsrc v0.10.2 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/bubbles v0.16.1 // indirect
@@ -31,6 +32,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.15 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/josephspurrier/goversioninfo v1.7.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.5.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.4.0 // indirect
@@ -49,3 +51,5 @@ require (
 	golang.org/x/text v0.40.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+tool github.com/josephspurrier/goversioninfo/cmd/goversioninfo

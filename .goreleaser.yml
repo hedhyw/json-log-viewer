@@ -1,5 +1,9 @@
 version: 2
 
+before:
+  hooks:
+    - make versioninfo VERSION={{ .Version }}
+
 builds:
   - binary: jlv
     main: ./cmd/jlv
@@ -19,6 +23,11 @@ builds:
         goarch: "386"
     env:
       - CGO_ENABLED=0
+    # NOTE: do not add `-s -w` here. Stripping symbols and DWARF from
+    # cross-compiled Windows binaries is a known trigger for Microsoft
+    # Defender false positives (Trojan:Win32/Wacatac). See #175.
+    ldflags:
+      - -X main.version={{ .Version }}
 
 gomod:
   proxy: false
