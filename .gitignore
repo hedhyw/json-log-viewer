@@ -13,6 +13,9 @@ bin
 # Test binary, built with `go test -c`
 *.test
 
+# Generated Windows resources (see `make versioninfo`)
+*.syso
+
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
