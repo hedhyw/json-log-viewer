@@ -16,6 +16,10 @@ bin
 # Generated Windows resources (see `make versioninfo`)
 *.syso
 
+# GoReleaser output. Untracked files here make the Go toolchain stamp
+# released binaries as +dirty (vcs.modified=true).
+/dist/
+
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
