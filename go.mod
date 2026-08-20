@@ -1,6 +1,6 @@
 module github.com/hedhyw/json-log-viewer
 
-go 1.25.0
+go 1.27.0
 
 require (
 	github.com/charmbracelet/bubbletea v1.3.10
