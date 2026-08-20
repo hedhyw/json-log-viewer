@@ -21,6 +21,13 @@ brew install hedhyw/main/jlv
 
 https://github.com/hedhyw/json-log-viewer/releases/latest
 
+Release artifacts are built by GitHub Actions and carry a build provenance
+attestation. To verify that a downloaded file was produced by this repository:
+
+```shell
+gh attestation verify jlv_windows_amd64.zip --repo hedhyw/json-log-viewer
+```
+
 ### Go
 
 ```shell
