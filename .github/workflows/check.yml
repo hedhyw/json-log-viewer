@@ -29,6 +29,6 @@ jobs:
       - name: Test
         run: make test
 
-      - uses: shogo82148/actions-goveralls@9606dbc5ac5cf888a0e9ef901515c3cd516a2790 # v1.11.0
+      - uses: shogo82148/actions-goveralls@77a1912dca42260ee3e97f61bd13ea7ef40baa93 # v1.11.2
         with:
           path-to-profile: coverage.out
