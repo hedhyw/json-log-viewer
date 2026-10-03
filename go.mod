@@ -9,7 +9,7 @@ require (
 	github.com/go-playground/validator/v10 v10.30.5
 	github.com/hedhyw/bubbles v0.0.5
 	github.com/hedhyw/fx v0.0.5
-	github.com/hedhyw/jsoncjson v1.1.0
+	github.com/hedhyw/jsoncjson v1.3.0
 	github.com/hedhyw/semerr v1.1.0
 	github.com/muesli/reflow v0.3.0
 	github.com/stretchr/testify v1.11.1
